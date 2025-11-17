@@ -23,7 +23,6 @@ obj/
 *.test
 
 # Docker
-**/Dockerfile
 **/docker-compose.override.yml
 **/docker-compose.override.*
 *.env
