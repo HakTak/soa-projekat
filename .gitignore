@@ -1,0 +1,36 @@
+# .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.csproj.user
+*.vscode/
+
+# .NET publish output
+/app/publish/
+*.dll
+*.exe
+*.pdb
+
+# Visual Studio / Rider
+.vs/
+.idea/
+
+# Go
+*.exe
+*.out
+/vendor/
+*.test
+
+# Docker
+**/Dockerfile
+**/docker-compose.override.yml
+**/docker-compose.override.*
+*.env
+*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp

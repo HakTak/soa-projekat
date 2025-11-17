@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  gateway:
+    build: ./API_GATEWAY
+    container_name: gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./API_GATEWAY:/src  # bind mount lokalnog koda u /src, neće prepisati /app
+    depends_on:
+      - stakeholders
+      - blog
+
+  stakeholders:
+    build: ./STAKEHOLDERS
+    container_name: stakeholders
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./STAKEHOLDERS:/src  # bind mount lokalnog koda u /src
+
+  blog:
+    build: ./BLOG
+    container_name: blog
+    ports:
+      - "5251:5251"
+    volumes:
+      - ./BLOG:/src  # bind mount lokalnog koda u /src
