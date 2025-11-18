@@ -1,5 +1,8 @@
-public class MongoDatabaseSettings
+namespace BLOG.Database
 {
-    public string ConnectionString { get; set; } = null!;
-    public string DatabaseName { get; set; } = null!;
+    public class MongoDatabaseSettings
+    {
+        public string ConnectionString { get; set; } = null!;
+        public string DatabaseName { get; set; } = null!;
+    }
 }
