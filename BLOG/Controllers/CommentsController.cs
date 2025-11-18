@@ -17,14 +17,14 @@ namespace BLOG.Controllers
             _commentService = commentService;
         }
 
-        [HttpGet("{postId}")]
+        [HttpGet("getAllByPostId/{postId}")] //svi komentari za dati post
         public async Task<ActionResult<IEnumerable<Comment>>> GetComments(string postId)
         {
             var comments = await _commentService.GetCommentsByPostIdAsync(postId);
             return Ok(comments);
         }
 
-        [HttpGet("single/{id}")]
+        [HttpGet("getSingleByCommentId/{id}")] //jedan komentar po id-u
         public async Task<ActionResult<Comment>> GetComment(string id)
         {
             var comment = await _commentService.GetCommentByIdAsync(id);
@@ -32,27 +32,21 @@ namespace BLOG.Controllers
             return Ok(comment);
         }
 
-        [HttpPost]
+        [HttpPost("create")] //kreiranje komentara
         public async Task<ActionResult> CreateComment([FromBody] Comment comment)
         {
             await _commentService.CreateCommentAsync(comment);
             return CreatedAtAction(nameof(GetComment), new { id = comment.Id }, comment);
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("edit/{id}")] //azuriranje komentara
         public async Task<ActionResult> UpdateComment(string id, [FromBody] Comment updatedComment)
         {
-            var existingComment = await _commentService.GetCommentByIdAsync(id);
-            if (existingComment == null) return NotFound();
-
-            existingComment.Text = updatedComment.Text;
-            existingComment.UpdatedAt = System.DateTime.UtcNow;
-
-            await _commentService.UpdateCommentAsync(existingComment);
+            await _commentService.UpdateCommentAsync(id, updatedComment);
             return NoContent();
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete("delete/{id}")] //brisanje komentara
         public async Task<ActionResult> DeleteComment(string id)
         {
             await _commentService.DeleteCommentAsync(id);
