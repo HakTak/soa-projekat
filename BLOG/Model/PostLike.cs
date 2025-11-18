@@ -7,13 +7,13 @@ namespace BLOG.Model
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
-        public string? Id {get; set;}
+        public string Id {get; set;} = null!;
 
         [BsonElement("UserId")]
-        public string UserId { get; set; }
-
+        public string UserId { get; set; } = null!;
+ 
         [BsonElement("PostId")]
-        public string PostId { get; set; }
+        public string? PostId { get; set; } = null!;
 
         [BsonElement("LikedAt")]
         public DateTime LikedAt { get; set; } = DateTime.UtcNow;

@@ -11,16 +11,16 @@ namespace BLOG.Model
         public string? Id {get; set;}
 
         [BsonElement("Title")]
-        public string Title {get; set;}
+        public string Title {get; set;} = null!;
 
         [BsonElement("Description")]
-        public string Description {get; set;}
+        public string Description {get; set;} = null!;
 
         [BsonElement("CreatedAt")]
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("ImagePaths")]
-        public string[] ImagePaths {get; set;}
+        public string[]? ImagePaths {get; set;} = null!;
 
         [BsonElement("LikeCount")]
         public int LikeCount {get; set;}
