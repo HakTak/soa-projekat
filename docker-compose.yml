@@ -1,5 +1,23 @@
 version: "3.9"
 services:
+  # Postgres DB used by stakeholders (and can be used by others)
+  postgres:
+    image: postgres:15
+    container_name: stakeholders_postgres
+    environment:
+      POSTGRES_DB: stakeholders
+      POSTGRES_USER: stakeholders
+      POSTGRES_PASSWORD: secretpassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"   # optional: exposes DB to host
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stakeholders"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   gateway:
     build: ./API_GATEWAY
     container_name: gateway
@@ -14,6 +32,10 @@ services:
   stakeholders:
     build: ./STAKEHOLDERS
     container_name: stakeholders
+    environment:
+      DATABASE_URL: host=postgres user=stakeholders password=secretpassword dbname=stakeholders port=5432 sslmode=disable
+    depends_on:
+      - postgres
     ports:
       - "8081:8081"
     volumes:
@@ -26,3 +48,6 @@ services:
       - "5251:5251"
     volumes:
       - ./BLOG:/src  # bind mount lokalnog koda u /src
+
+volumes:
+  pgdata:
