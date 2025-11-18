@@ -10,6 +10,14 @@ services:
     depends_on:
       - stakeholders
       - blog
+  
+  auth:
+    build: ./AUTH
+    container_name: auth
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./AUTH:/src  # bind mount lokalnog koda u /src
 
   stakeholders:
     build: ./STAKEHOLDERS
