@@ -31,6 +31,8 @@ namespace BLOG.Repositories
 
         public async Task CreateCommentAsync(Comment comment)
         {
+            comment.UpdatedAt = null;
+            comment.CreatedAt = DateTime.UtcNow;
             await _comments.InsertOneAsync(comment);
         }
 
@@ -43,6 +45,7 @@ namespace BLOG.Repositories
         public async Task DeleteCommentAsync(string id)
         {
             await _comments.DeleteOneAsync(c => c.Id == id);
+            Console.WriteLine($"Comment with ID {id} has been deleted.");
         }
     }
 }

@@ -29,9 +29,20 @@ namespace BLOG.Services
             return _commentRepository.CreateCommentAsync(comment);
         }
 
-        public Task UpdateCommentAsync(Comment comment)
+        public async Task<bool> UpdateCommentAsync(string id, Comment updatedComment)
         {
-            return _commentRepository.UpdateCommentAsync(comment);
+            var existingComment = await _commentRepository.GetCommentByIdAsync(id);
+            if (existingComment == null)
+            {
+                return false; // Comment not found
+            }
+
+            existingComment.Text = updatedComment.Text;
+            existingComment.UpdatedAt = System.DateTime.UtcNow;
+
+            await _commentRepository.UpdateCommentAsync(existingComment);
+            return true; // Update successful
+            
         }
 
         public Task DeleteCommentAsync(string id)
