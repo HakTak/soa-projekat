@@ -1,3 +1,4 @@
+
 version: "3.9"
 services:
   # Postgres DB used by stakeholders (and can be used by others)
@@ -23,11 +24,37 @@ services:
     container_name: gateway
     ports:
       - "8080:8080"
-    volumes:
-      - ./API_GATEWAY:/src  # bind mount lokalnog koda u /src, neće prepisati /app
     depends_on:
       - stakeholders
       - blog
+      - auth
+
+  auth:
+    build: ./AUTH
+    container_name: auth
+    ports:
+      - "8082:8082"
+    environment:
+      DB_HOST: auth-db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: auth
+      DB_PORT: 5432
+    depends_on:
+      - auth-db
+
+  auth-db:
+    image: postgres:16
+    container_name: auth-db
+    restart: always
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth_data:/var/lib/postgresql/data
 
   stakeholders:
     build: ./STAKEHOLDERS
@@ -48,6 +75,24 @@ services:
       - "5251:5251"
     volumes:
       - ./BLOG:/src  # bind mount lokalnog koda u /src
+    environment:
+      MongoDatabaseSettings__ConnectionString: "mongodb://blog-db:27017"
+      MongoDatabaseSettings__DatabaseName: "BlogDB"
+    depends_on:
+      - blog-db
+
+  blog-db:
+    image: mongo:6
+    container_name: blog-db
+    restart: always
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: BlogDB
+    volumes:
+      - blog-data:/data/db
 
 volumes:
+  blog-data:
+  auth_data:
   pgdata:
