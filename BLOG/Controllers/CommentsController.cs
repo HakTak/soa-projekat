@@ -1,4 +1,4 @@
-using BLOG.Models;
+using BLOG.Model;
 using BLOG.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;

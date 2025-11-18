@@ -1,4 +1,4 @@
-using BLOG.Models;
+using BLOG.Model;
 using BLOG.Repositories;
 using System.Collections.Generic;
 using System.Threading.Tasks;
