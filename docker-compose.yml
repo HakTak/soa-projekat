@@ -53,6 +53,23 @@ services:
       - "5251:5251"
     volumes:
       - ./BLOG:/src  # bind mount lokalnog koda u /src
-      
+    environment:
+      MongoDatabaseSettings__ConnectionString: "mongodb://blog-db:27017"
+      MongoDatabaseSettings__DatabaseName: "BlogDB"
+    depends_on:
+      - blog-db
+
+  blog-db:
+    image: mongo:6
+    container_name: blog-db
+    restart: always
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_DATABASE: BlogDB
+    volumes:
+      - blog-data:/data/db
+
 volumes:
+  blog-data:
   auth_data:
