@@ -2,8 +2,8 @@
   <div class="nav-inner">
     <!-- left group -->
     <ul class="nav-group nav-group--left">
-      <li><a routerLink="/home" class="nav-link" aria-current="page">Home</a></li>
-      <li><a routerLink="/blog" class="nav-link">Blog</a></li>
+      <li><a routerLink="/" (click)="onHomeClick()" class="nav-link">Home</a></li>
+      <li><a routerLink="/blog" (click)="onBlogClick()" class="nav-link">Blog</a></li>
       <li><a routerLink="/tours" class="nav-link">Tours</a></li>
       <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
     </ul>
