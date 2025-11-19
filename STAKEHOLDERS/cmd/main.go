@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net"
 	stdhttp "net/http"
 	"os"
 
@@ -13,6 +14,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	pb "stakeholders/common/genproto"
+	grpcserver "stakeholders/internal/grpc"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -39,6 +46,24 @@ func main() {
 	repo := repository.NewGormProfileRepo(db)
 	svc := service.NewProfileService(repo)
 	h := http.NewHandler(svc)
+
+	go func() {
+		grpcAddr := ":50051"
+		lis, err := net.Listen("tcp", grpcAddr)
+		if err != nil {
+			log.Fatalf("failed to listen grpc: %v", err)
+		}
+
+		grpcSrv := grpc.NewServer()
+		pb.RegisterStakeholdersServer(grpcSrv, grpcserver.NewServer(svc))
+
+		reflection.Register(grpcSrv)
+
+		log.Printf("gRPC listening on %s", grpcAddr)
+		if err := grpcSrv.Serve(lis); err != nil {
+			log.Fatalf("grpc serve: %v", err)
+		}
+	}()
 
 	r := chi.NewRouter()
 	r.Use(http.AuthMiddleware)

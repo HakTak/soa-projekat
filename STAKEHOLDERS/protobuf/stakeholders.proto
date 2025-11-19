@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package stakeholders.v1;
+
+option go_package = "stakeholders/proto;proto";
+
+
+service stakeholders {
+    rpc CreateProfile(CreateProfileRequest) returns (CreateProfileResponse) {}
+    
+    rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {}
+}
+
+enum Role {
+    ROLE_UNKNOWN = 0; 
+    ROLE_GUIDE   = 1;
+     ROLE_TOURIST = 2;
+    ROLE_ADMIN   = 3;
+}
+
+message CreateProfileRequest {
+    string user_id = 1;
+    Role role = 2;
+}
+
+message CreateProfileResponse {
+    string id = 1;
+    bool already_existed = 2;
+}
+
+message GetProfileRequest {
+    string user_id = 1;
+}
+
+message GetProfileResponse {
+    string id = 1;
+    string user_id = 2;
+    string first_name = 3;
+    string last_name = 4;
+    Role role = 5;
+    string profile_picture = 6;
+    string biography = 7;
+    string motto = 8;
+    bool is_blocked = 9;
+}

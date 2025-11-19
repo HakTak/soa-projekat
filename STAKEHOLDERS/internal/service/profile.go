@@ -41,7 +41,7 @@ func (s *profileService) BlockUser(ctx context.Context, userID string, adminUser
 
 // CreateProfile implements ProfileService.
 func (s *profileService) CreateProfile(ctx context.Context, p *model.Profile) (*model.Profile, error) {
-	if p.UserID == "" || p.FirstName == "" || p.LastName == "" || p.Role == "" {
+	if p.UserID == "" || p.Role == "" {
 		return nil, ErrMissingProfileData
 	}
 
