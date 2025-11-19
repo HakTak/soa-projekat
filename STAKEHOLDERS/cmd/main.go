@@ -54,7 +54,7 @@ func main() {
 func seedProfiles(db *gorm.DB) {
 	profiles := []model.Profile{
 		{
-			UserID:         "123e4567-e89b-12d3-a456-426614174001",
+			UserID:         "d6daf005-891f-4ae2-8a89-55ed4770a532",
 			FirstName:      "Alice",
 			LastName:       "Smith",
 			ProfilePicture: "",
@@ -64,7 +64,7 @@ func seedProfiles(db *gorm.DB) {
 			IsBlocked:      false,
 		},
 		{
-			UserID:         "123e4567-e89b-12d3-a456-426614174002",
+			UserID:         "831c17e1-9be9-4bc8-a2d5-555a36ceac46",
 			FirstName:      "Bob",
 			LastName:       "Brown",
 			ProfilePicture: "",
