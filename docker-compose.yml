@@ -2,9 +2,9 @@
 version: "3.9"
 services:
   # Postgres DB used by stakeholders (and can be used by others)
-  postgres:
+  stakeholders-db:
     image: postgres:15
-    container_name: stakeholders_postgres
+    container_name: stakeholders-db
     environment:
       POSTGRES_DB: stakeholders
       POSTGRES_USER: stakeholders
@@ -60,11 +60,13 @@ services:
     build: ./STAKEHOLDERS
     container_name: stakeholders
     environment:
-      DATABASE_URL: host=postgres user=stakeholders password=secretpassword dbname=stakeholders port=5432 sslmode=disable
+      DATABASE_URL: host=stakeholders-db user=stakeholders password=secretpassword dbname=stakeholders port=5432 sslmode=disable
     depends_on:
-      - postgres
+      stakeholders-db:
+        condition: service_healthy
     ports:
       - "8081:8081"
+      - "50051:50051"
     volumes:
       - ./STAKEHOLDERS:/src  # bind mount lokalnog koda u /src
 
