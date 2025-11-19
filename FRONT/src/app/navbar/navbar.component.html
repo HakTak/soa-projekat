@@ -1,0 +1,17 @@
+<nav class="site-nav" role="navigation" aria-label="Main navigation">
+  <div class="nav-inner">
+    <!-- left group -->
+    <ul class="nav-group nav-group--left">
+      <li><a routerLink="/" (click)="onHomeClick()" class="nav-link">Home</a></li>
+      <li><a routerLink="/blog" (click)="onBlogClick()" class="nav-link">Blog</a></li>
+      <li><a routerLink="/tours" class="nav-link">Tours</a></li>
+      <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
+    </ul>
+
+    <!-- right group -->
+    <ul class="nav-group nav-group--right">
+      <li><a routerLink="/login" class="btn btn--ghost">Login</a></li>
+      <li><a routerLink="/register" class="btn btn--primary">Register</a></li>
+    </ul>
+  </div>
+</nav>

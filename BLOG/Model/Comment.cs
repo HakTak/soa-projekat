@@ -2,7 +2,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 
-namespace BLOG.Models
+namespace BLOG.Model
 {
     public class Comment
     {

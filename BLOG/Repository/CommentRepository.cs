@@ -1,4 +1,4 @@
-using BLOG.Models;
+using BLOG.Model;
 using MongoDB.Driver;
 using BLOG.Database;
 using System;

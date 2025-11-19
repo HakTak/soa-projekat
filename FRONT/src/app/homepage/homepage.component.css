@@ -1,0 +1,73 @@
+/* Hero section styles */
+.hero {
+  height: calc(100vh - var(--nav-height)); /* full viewport minus navbar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: var(--color-text);
+  padding: 0 20px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  overflow: hidden;
+  margin-top: 13%;
+}
+
+/* Container for text */
+.hero-content {
+  max-width: 700px;
+  animation: fadeInUp 1.5s ease-out both;
+}
+
+/* Main title */
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-accent);
+  line-height: 1.2;
+  background: linear-gradient(90deg, #0b76ef, #541818);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGlow 3s ease-in-out infinite alternate;
+}
+
+/* Subtitle */
+.hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+/* Fade in + slide up animation */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Subtle glowing text effect for title */
+@keyframes textGlow {
+  0% {
+    text-shadow: 0 0 4px rgba(11,118,239,0.5);
+  }
+  100% {
+    text-shadow: 0 0 12px rgba(11,118,239,0.9);
+  }
+}
+
+/* Responsive tweaks */
+@media (max-width: 720px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+}
