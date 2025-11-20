@@ -1,1 +1,44 @@
-<p>tour-create works!</p>
+<div class="layout">
+  
+  <div class="map-area" [class.map-disabled]="editing">
+    <div id="map" class="map-container"></div>
+  </div>
+
+  <div class="sidebar" *ngIf="keyPointMode">
+    <h3>Keypoint Details</h3>
+
+    <label>Title</label>
+    <input type="text"  [(ngModel)]="currentKeypoint.title" [disabled]="!currentMarker">
+
+    <label>Preview image:</label>
+    <input type="file" #fileInput (change)="onFileSelected($event)" [disabled]="!currentMarker" accept="image/*">
+
+    <label>Description</label>
+    <textarea rows="6" [(ngModel)]="currentKeypoint.description" [disabled]="!currentMarker"></textarea>
+
+    <button (click)="nextMarker()" [disabled]="!currentMarker">Next</button>
+    <button (click)="discardMarker()" [disabled]="!currentMarker">Discard</button>
+    <button (click)="finish()" [disabled]="keypoints.length < 2">Finish</button>
+  </div>
+   <div class="sidebar" *ngIf="!keyPointMode">
+    <h3>Tour Details</h3>
+
+    <label>Name</label>
+    <input type="text"  [(ngModel)]="currentTour.title" placeholder="Enter tour name">
+
+    <label>Description</label>
+    <textarea rows="4" [(ngModel)]="currentTour.description" placeholder="Describe your tour"></textarea>
+
+    <label>Difficulty</label>
+    <select [(ngModel)]="currentTour.difficulty">
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+
+    <label>Tags</label>
+    <input type="text" [(ngModel)]="currentTour.tags" placeholder="Comma-separated tags">
+
+    <button (click)="saveTour()">Save Tour</button>
+  </div>
+</div>
