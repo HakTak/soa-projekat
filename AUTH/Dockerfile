@@ -1,24 +1,31 @@
-# Stage 1: build
+# Stage 1: Build
 FROM golang:1.25.4-alpine AS builder
+
+# Postavljamo root projekta unutar kontejnera
 WORKDIR /app
 
-# Kopiramo module fajlove i skidamo dependencies
-COPY go.mod go.sum ./
+# 1. Kopiramo COMMON folder
+COPY COMMON ./COMMON
+
+# 2. Kopiramo go.mod i go.sum od AUTH servisa u njegov podfolder
+COPY AUTH/go.mod AUTH/go.sum ./AUTH/
+
+# 3. Ulazimo u AUTH folder pre downloada
+WORKDIR /app/AUTH
+
+# Downloadujemo zavisnosti (sada radi jer replace gadja ../COMMON)
 RUN go mod download
 
-# Kopiramo ostatak koda
-COPY . .
+# 4. Kopiramo ostatak koda iz AUTH foldera
+COPY AUTH .
 
-# Build komanda za auth
+# Build
 RUN go build -o auth cmd/main.go
 
-# Stage 2: runtime
+# Stage 2: Runtime
 FROM alpine:latest
 WORKDIR /app
-COPY --from=builder /app/auth .
+COPY --from=builder /app/AUTH/auth .
 
-# Port na kojem servis radi
 EXPOSE 8082
-
-# Komanda koja se izvršava kad container startuje
 CMD ["./auth"]
