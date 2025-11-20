@@ -1,17 +1,30 @@
-# Stage 1: build
+# Stage 1: Build
 FROM golang:1.25.4-alpine AS builder
+
 WORKDIR /app
 
-COPY go.mod ./
+# 1. Kopiramo COMMON
+COPY COMMON ./COMMON
+
+# 2. Kopiramo go.mod i go.sum u STAKEHOLDERS folder
+COPY STAKEHOLDERS/go.mod STAKEHOLDERS/go.sum ./STAKEHOLDERS/
+
+# 3. Ulazimo u STAKEHOLDERS folder
+WORKDIR /app/STAKEHOLDERS
+
+# Download
 RUN go mod download
 
-COPY . .
+# 4. Kopiramo ostatak koda
+COPY STAKEHOLDERS .
+
+# Build
 RUN go build -o stakeholders cmd/main.go
 
-# Stage 2: run
+# Stage 2: Runtime
 FROM alpine:latest
 WORKDIR /app
-COPY --from=builder /app/stakeholders .
+COPY --from=builder /app/STAKEHOLDERS/stakeholders .
 
 EXPOSE 8081
 CMD ["./stakeholders"]

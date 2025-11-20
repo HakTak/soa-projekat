@@ -1,0 +1,3 @@
+module PROJEKAT/COMMON
+
+go 1.25.4

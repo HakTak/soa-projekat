@@ -1,11 +1,19 @@
 package handlers
 
 import (
-	"auth/internal/models"
-	"auth/internal/services"
+	"context"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strings"
+
+	proto "PROJEKAT/COMMON/stakeholders/proto"
+	"auth/internal/models"
+	"auth/internal/services"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type UserHandler struct {
@@ -18,15 +26,11 @@ func NewUserHandler(s *services.UserService, j *services.JWTService) *UserHandle
 }
 
 func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-
 	// 1. PROVERA — DA LI JE KORISNIK VEĆ ULOGOVAN
 	authHeader := r.Header.Get("Authorization")
 	if strings.HasPrefix(authHeader, "Bearer ") {
-
-		// izvuci token
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
 		token, err := h.jwtService.ValidateToken(tokenStr)
-
 		if err == nil && token.Valid {
 			http.Error(w, "You are already logged in — cannot register a new account", http.StatusForbidden)
 			return
@@ -61,8 +65,47 @@ func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	user.Password = "*********" // ne šaljemo password
 
+	h.SetProfile(*user) // kreiraj profil u stakeholders servisu
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
+}
+
+// mapUserRole konvertuje string iz baze u protobuf enum
+func mapUserRole(r models.Role) proto.Role {
+	switch r {
+	case models.RoleGuide:
+		return proto.Role_ROLE_GUIDE
+	case models.RoleTourist:
+		return proto.Role_ROLE_TOURIST
+	case models.RoleAdmin:
+		return proto.Role_ROLE_ADMIN
+	default:
+		return proto.Role_ROLE_UNKNOWN
+	}
+}
+
+func (h *UserHandler) SetProfile(user models.User) {
+	conn, err := grpc.Dial("stakeholders:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer conn.Close()
+
+	client := proto.NewStakeholdersClient(conn)
+
+	req := &proto.CreateProfileRequest{
+		UserId: user.Id.String(), // generisano iz protobuf -> UserId
+		Role:   mapUserRole(user.Role),
+	}
+
+	resp, err := client.CreateProfile(context.Background(), req)
+	if err != nil {
+		fmt.Println("Error creating profile:", err)
+		return
+	}
+
+	fmt.Printf("Profile created: id=%s, already_existed=%v\n", resp.Id, resp.AlreadyExisted)
 }
 
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -106,11 +149,6 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-
-	// // ukloni password iz liste
-	// for i := range users {
-	// 	users[i].Password = ""
-	// }
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(users)
