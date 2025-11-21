@@ -97,8 +97,40 @@ services:
       MONGO_INITDB_DATABASE: BlogDB
     volumes:
       - blog-data:/data/db
+    
+  tour:
+    build:
+      context: .
+      dockerfile: TOUR/Dockerfile
+    container_name: tour
+    ports:
+      - "8083:8083"
+    environment:
+      DB_HOST: tour-db
+      DB_USER: tour
+      DB_PASSWORD: tourpassword
+      DB_NAME: tour
+      DB_PORT: 5432
+    depends_on:
+      - tour-db
+    volumes:
+      - ./TOUR:/src
+
+  tour-db:
+    image: postgres:16
+    container_name: tour-db
+    restart: always
+    environment:
+      POSTGRES_DB: tour
+      POSTGRES_USER: tour
+      POSTGRES_PASSWORD: tourpassword
+    ports:
+      - "5434:5432"   # External 5434 → internal 5432
+    volumes:
+      - tour_data:/var/lib/postgresql/data
 
 volumes:
   blog-data:
   auth_data:
   pgdata:
+  tour_data:
