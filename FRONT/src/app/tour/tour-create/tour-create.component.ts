@@ -180,6 +180,15 @@ public currentTour: Tour = {
     this.files = [];
     this.redrawPath();
     this.keyPointMode = true;
+    this.currentTour = {
+      title: '',
+      description: '',
+      difficulty: '',
+      status: 'Draft',
+      tags: '',
+      price: 0,
+      keypoints: []
+    }
     // Here you would typically send formData to your backend via HTTP
   }
 }
