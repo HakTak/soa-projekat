@@ -42,6 +42,7 @@ func main() {
 	r.Get("/tour/{id}", handler.GetTour)
 	r.Get("/tours", handler.GetAllTours)
 	r.Delete("/tour/{id}", handler.DeleteTour)
+	r.Patch("/tour/update", handler.UpdateTour)
 
 	port := os.Getenv("PORT")
 	if port == "" {

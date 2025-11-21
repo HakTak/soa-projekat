@@ -33,3 +33,8 @@ func (r *TourRepository) GetAllTours() ([]model.Tour, error) {
 func (r *TourRepository) DeleteTour(id uint) error {
 	return r.db.Delete(&model.Tour{}, id).Error
 }
+
+func (r *TourRepository) UpdateTour(t *model.Tour) error {
+	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).
+		Updates(t).Error
+}
