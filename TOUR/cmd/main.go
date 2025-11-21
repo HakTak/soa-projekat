@@ -7,19 +7,24 @@ import (
 	"time"
 
 	"tour/internal/database"
-	handlers "tour/internal/handler"
+	"tour/internal/handler"
 	"tour/internal/repository"
 	"tour/internal/service"
 )
 
 func main() {
 	// 1️⃣ Konekcija na bazu
-	db := database.Connect() // tu u Connect() treba da bude gorm.Open sa DSN-om
+	db := database.Connect()
 
-	// 2️⃣ Repo + Service + Handler
+	// 2️⃣ Repo + Service + Handler za Tour
 	tourRepo := repository.NewGormTourRepo(db)
 	tourService := service.NewTourService(tourRepo)
-	tourHandler := handlers.NewTourHandler(tourService)
+	tourHandler := handler.NewTourHandler(tourService)
+
+	// 2️⃣ Repo + Service + Handler za Comment
+	commentRepo := repository.NewCommentRepository(db)
+	commentService := service.NewCommentService(commentRepo, tourRepo)
+	commentHandler := handler.NewCommentHandler(commentService)
 
 	// 3️⃣ Health check ruta
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -27,13 +32,14 @@ func main() {
 	})
 
 	// 4️⃣ Tour rute
-	//http.HandleFunc("/tours", tourHandler.GetAll)         // GET sve ture
-	http.HandleFunc("/tours/create", tourHandler.Create)                  // POST nova tura
-	http.HandleFunc("/tours/getByAuthorID", tourHandler.GetAllByAuthorID) // GET jedna tura po ID
-	//http.HandleFunc("/tours/update/", tourHandler.Update) // PUT update ture
-	//http.HandleFunc("/tours/delete/", tourHandler.Delete) // DELETE tura
+	http.HandleFunc("/tours/create", tourHandler.Create)
+	http.HandleFunc("/tours/getByAuthorID", tourHandler.GetAllByAuthorID)
 
-	// 5️⃣ Pokretanje servera
+	// 5️⃣ Comment rute
+	http.HandleFunc("/comments/create", commentHandler.Create)           // POST nova recenzija
+	http.HandleFunc("/comments/getByTourID", commentHandler.GetComments) // GET recenzije za jednu turu
+
+	// 6️⃣ Pokretanje servera
 	srv := &http.Server{
 		Addr:         ":8081",
 		ReadTimeout:  5 * time.Second,

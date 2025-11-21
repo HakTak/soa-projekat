@@ -32,6 +32,10 @@ func Connect() *gorm.DB {
 		log.Fatal(" AutoMigrate failed:", err)
 	}
 
+	if err := db.AutoMigrate(&model.Comment{}); err != nil {
+		log.Fatal(" AutoMigrate failed:", err)
+	}
+
 	DB = db
 	log.Println(" Connected to PostgreSQL & migrated Tour model")
 	return db
