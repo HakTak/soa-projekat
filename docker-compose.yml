@@ -1,5 +1,5 @@
-
 version: "3.9"
+
 services:
   # Postgres DB used by stakeholders (and can be used by others)
   stakeholders-db:
@@ -12,7 +12,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"   # optional: exposes DB to host
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U stakeholders"]
       interval: 10s
@@ -28,6 +28,7 @@ services:
       - stakeholders
       - blog
       - auth
+      - tour
 
   auth:
     build: ./AUTH
@@ -68,7 +69,7 @@ services:
       - "8081:8081"
       - "50051:50051"
     volumes:
-      - ./STAKEHOLDERS:/src  # bind mount lokalnog koda u /src
+      - ./STAKEHOLDERS:/src
 
   blog:
     build: ./BLOG
@@ -76,7 +77,7 @@ services:
     ports:
       - "5251:5251"
     volumes:
-      - ./BLOG:/src  # bind mount lokalnog koda u /src
+      - ./BLOG:/src
     environment:
       MongoDatabaseSettings__ConnectionString: "mongodb://blog-db:27017"
       MongoDatabaseSettings__DatabaseName: "BlogDB"
@@ -94,7 +95,46 @@ services:
     volumes:
       - blog-data:/data/db
 
+  # ---------------------------------------------------------
+  #                      TOUR MICROSERVICE
+  # ---------------------------------------------------------
+  tour:
+    build: ./TOUR
+    container_name: tour
+    ports:
+      - "8094:8094"
+    environment:
+      DB_HOST: tour-db
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: tour
+      DB_PORT: 5432
+    depends_on:
+      tour-db:
+        condition: service_healthy
+    volumes:
+      - ./TOUR:/src
+
+  tour-db:
+    image: postgres:15
+    container_name: tour-db
+    restart: always
+    environment:
+      POSTGRES_DB: tour
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - tour_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tour"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   blog-data:
   auth_data:
   pgdata:
+  tour_data:

@@ -41,12 +41,12 @@ func main() {
 
 	// 6️⃣ Pokretanje servera
 	srv := &http.Server{
-		Addr:         ":8081",
+		Addr:         ":8094",
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
-	fmt.Println("Tour service running on port 8081...")
+	fmt.Println("Tour service running on port 8094...")
 	log.Fatal(srv.ListenAndServe())
 }
