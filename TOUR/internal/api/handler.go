@@ -25,6 +25,9 @@ func (h *TourHandler) CreateTour(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	t.Price = 0
+	t.Status = "DRAFT"
+
 	if err := h.service.CreateTour(&t); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -79,4 +82,73 @@ func (h *TourHandler) UpdateTour(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(t)
+}
+
+func (h *TourHandler) GetToursByUser(w http.ResponseWriter, r *http.Request) {
+	userIdStr := chi.URLParam(r, "userId")
+	userId, err := strconv.ParseUint(userIdStr, 10, 64) // ne znam sto se parisra ali ajde
+
+	if err != nil {
+		http.Error(w, "invalid user ID", http.StatusBadRequest)
+		return
+	}
+	tours, err := h.service.GetToursByUser(uint(userId))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(tours)
+}
+
+//****** Review handlers ******//
+
+func (h *TourHandler) CreateReview(w http.ResponseWriter, r *http.Request) {
+	var rev model.Review
+	if err := json.NewDecoder(r.Body).Decode(&rev); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if err := h.service.CreateReview(&rev); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(rev)
+}
+
+func (h *TourHandler) GetReviewsByTour(w http.ResponseWriter, r *http.Request) {
+	tourID := chi.URLParam(r, "tourId")
+
+	reviews, err := h.service.GetReviewsByTour(tourID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(reviews)
+}
+
+func (h *TourHandler) DeleteReview(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	if err := h.service.DeleteReview(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"message": "Review deleted successfully"})
+
+}
+
+func (h *TourHandler) GetAllReviews(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var reviews []model.Review
+	reviews, err = h.service.GetAllReviews()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(reviews)
 }

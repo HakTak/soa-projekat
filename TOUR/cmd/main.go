@@ -29,11 +29,12 @@ func main() {
 	}
 
 	// Auto migrate tables
-	db.AutoMigrate(&model.Tour{}, &model.Keypoint{})
+	db.AutoMigrate(&model.Tour{}, &model.Keypoint{}, &model.Review{})
 
 	// Repository -> Service -> Handler
 	repo := repository.NewTourRepository(db)
-	svc := service.NewTourService(repo)
+	reviewRepo := repository.CreateReviewRepository(db)
+	svc := service.NewTourService(repo, reviewRepo)
 	handler := api.NewTourHandler(svc)
 
 	r := chi.NewRouter()
@@ -41,8 +42,14 @@ func main() {
 	r.Post("/tour", handler.CreateTour)
 	r.Get("/tour/{id}", handler.GetTour)
 	r.Get("/tours", handler.GetAllTours)
+	r.Get("/tours/myTours/{userId}", handler.GetToursByUser)
 	r.Delete("/tour/{id}", handler.DeleteTour)
 	r.Patch("/tour/update", handler.UpdateTour)
+
+	r.Post("/review/create", handler.CreateReview)
+	r.Get("/review/tour/{tourId}", handler.GetReviewsByTour)
+	r.Get("/review/getAll", handler.GetAllReviews)
+	r.Delete("/review/delete/{id}", handler.DeleteReview)
 
 	port := os.Getenv("PORT")
 	if port == "" {
