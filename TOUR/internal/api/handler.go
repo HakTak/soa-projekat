@@ -59,10 +59,13 @@ func (h *TourHandler) GetAllTours(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TourHandler) DeleteTour(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, _ := strconv.ParseUint(idStr, 10, 64)
+	/*
+		idStr := chi.URLParam(r, "id")
+		id, _ := strconv.ParseUint(idStr, 10, 64)*/
 
-	if err := h.service.DeleteTour(uint(id)); err != nil {
+	id := chi.URLParam(r, "id")
+
+	if err := h.service.DeleteTour(id); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

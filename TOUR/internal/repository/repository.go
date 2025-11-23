@@ -30,8 +30,8 @@ func (r *TourRepository) GetAllTours() ([]model.Tour, error) {
 	return tours, err
 }
 
-func (r *TourRepository) DeleteTour(id uint) error {
-	return r.db.Delete(&model.Tour{}, id).Error
+func (r *TourRepository) DeleteTour(id string) error {
+	return r.db.Delete(&model.Tour{}, "id = ?", id).Error
 }
 
 func (r *TourRepository) UpdateTour(t *model.Tour) error {

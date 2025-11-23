@@ -20,6 +20,7 @@ export class TourCreateComponent {
   public currentMarker?: L.Marker;        // the marker being edited
   public files: File[] = [];
   public currentKeypoint: Keypoint = {
+  tourId: '',
   title: '',
   description: '',
   latitude: 0,
@@ -63,6 +64,7 @@ public currentTour: Tour = {
     const marker = L.marker([lat, lng]).addTo(this.map);
 
     const keypoint: Keypoint = { 
+      tourId: '',
       latitude: lat, 
       longitude: lng, 
       title: '', 
@@ -92,6 +94,7 @@ public currentTour: Tour = {
   public nextMarker(): void {
     this.currentMarker = undefined;
     this.currentKeypoint = {
+      tourId: '',
       title: '',
       description: '',
       latitude: 0,
@@ -117,6 +120,7 @@ public currentTour: Tour = {
 
     this.currentMarker = undefined;
     this.currentKeypoint = {
+      tourId: '',
       title: '',
       description: '',
       latitude: 0,

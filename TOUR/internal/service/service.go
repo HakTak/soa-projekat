@@ -26,7 +26,7 @@ func (s *TourService) GetAllTours() ([]model.Tour, error) {
 	return s.repo.GetAllTours()
 }
 
-func (s *TourService) DeleteTour(id uint) error {
+func (s *TourService) DeleteTour(id string) error {
 	return s.repo.DeleteTour(id)
 }
 
