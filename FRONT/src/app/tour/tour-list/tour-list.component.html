@@ -1,0 +1,33 @@
+<div class="container">
+  <div class="tour-grid">
+    
+    <!-- Petlja kroz ture -->
+    <div *ngFor="let tour of tours" class="tour-card" (click)="onCardClick(tour.id)">
+      
+      <!-- Gornji deo: Naslov levo, Status desno -->
+      <div class="card-header">
+        <h3 class="tour-title">{{ tour.title }}</h3>
+        <span class="status-badge">{{ tour.status }}</span>
+      </div>
+
+      <!-- Srednji deo: Kljucne tacke -->
+      <div class="card-body">
+        <div class="keypoint-info">
+          <span class="label">Start:</span> 
+          <span class="value">{{ getFirstKeypointName(tour) }}</span>
+        </div>
+        <div class="keypoint-info">
+          <span class="label">End:</span> 
+          <span class="value">{{ getLastKeypointName(tour) }}</span>
+        </div>
+      </div>
+
+      <!-- Donji deo: Ocena centrirana -->
+      <div class="card-footer">
+        <span class="rating">Ocena: 5.0 ⭐</span>
+      </div>
+
+    </div>
+
+  </div>
+</div>

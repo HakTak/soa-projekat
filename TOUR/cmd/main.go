@@ -39,6 +39,38 @@ func main() {
 
 	r := chi.NewRouter()
 
+	// ---------------------------------------------------------
+	// CORS MIDDLEWARE - POCETAK
+	// Ovo omogucava Angular aplikaciji (localhost:4200) da komunicira sa ovim servisom
+	// ---------------------------------------------------------
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// Dozvoli zahteve sa Angular porta
+			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
+
+			// Dozvoli metode koje koristis u rutama (ukljucujuci PATCH i DELETE)
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+
+			// Dozvoli standardne hedere
+			w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-CSRF-Token")
+
+			// Dozvoli kredencijale ako budu potrebni
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+			// Ako browser salje "OPTIONS" zahtev (preflight check), odmah vrati OK
+			// i ne salji zahtev dalje ka handlerima
+			if r.Method == "OPTIONS" {
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	})
+	// ---------------------------------------------------------
+	// CORS MIDDLEWARE - KRAJ
+	// ---------------------------------------------------------
+
 	r.Post("/tour", handler.CreateTour)
 	r.Get("/tour/{id}", handler.GetTour)
 	r.Get("/tours", handler.GetAllTours)

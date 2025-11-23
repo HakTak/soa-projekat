@@ -50,6 +50,16 @@ func (h *TourHandler) GetTour(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TourHandler) GetAllTours(w http.ResponseWriter, r *http.Request) {
+	// Dozvoli pristup sa Angulara (localhost:4200) ili stavi "*" za sve
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	// Ako browser salje "preflight" OPTIONS zahtev, odmah vrati OK
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
 	tours, err := h.service.GetAllTours()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

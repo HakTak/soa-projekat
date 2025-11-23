@@ -1,0 +1,125 @@
+/* Koristimo iste promenljive kao u Navbaru radi konzistentnosti */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #222;
+  --color-accent: #0b76ef;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --card-border: #b9d5f4;
+}
+
+.container {
+  max-width: 1180px; /* Ista sirina kao nav-inner */
+  margin: 40px auto; /* Malo razmaka od navbara */
+  padding: 0 20px;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+}
+
+/* Grid sistem za 3 kartice u redu */
+.tour-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Fiksno 3 kolone */
+  gap: 24px; /* Razmak izmedju kartica */
+  padding-bottom: 40px;
+}
+
+/* Izgled same kartice */
+.tour-card {
+  background: #fff;
+  border: 1px solid var(--card-border, #b9d5f4);
+  border-radius: 8px; /* --radius */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-height: 200px; /* Da sve kartice imaju neku minimalnu visinu */
+  position: relative;
+}
+
+/* Hover efekat - kartica se malo podigne */
+.tour-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(11, 118, 239, 0.15);
+  border-color: #0b76ef;
+}
+
+/* --- HEADER (Naslov i Status) --- */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.tour-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+  padding-right: 10px;
+  line-height: 1.3;
+}
+
+/* Uokviren status u gornjem desnom uglu */
+.status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border: 1px solid #b9d5f4;
+  border-radius: 4px;
+  background-color: rgba(11, 118, 239, 0.05);
+  color: #0b76ef;
+  white-space: nowrap;
+}
+
+/* --- BODY (Kljucne tacke) --- */
+.card-body {
+  flex-grow: 1; /* Gura footer na dno */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.keypoint-info {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.keypoint-info .label {
+  font-weight: 600;
+  color: #0b76ef; /* Accent boja za labelu */
+  margin-right: 5px;
+}
+
+/* --- FOOTER (Ocena) --- */
+.card-footer {
+  text-align: center;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.rating {
+  font-weight: bold;
+  color: #f59e0b; /* Zuta boja za zvezdice/ocenu */
+  font-size: 1rem;
+}
+
+/* --- RESPONSIVENESS --- */
+/* Na manjim ekranima (tableti) prebaci na 2 u redu */
+@media (max-width: 900px) {
+  .tour-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Na mobilnim telefonima prebaci na 1 u redu */
+@media (max-width: 600px) {
+  .tour-grid {
+    grid-template-columns: 1fr;
+  }
+}
