@@ -109,6 +109,28 @@
   font-size: 1rem;
 }
 
+.card-footer {
+  text-align: center;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  /* Fiksiramo visinu footera da kartice ne skacu dok se ocene ucitavaju */
+  min-height: 40px; 
+}
+
+.rating {
+  font-weight: bold;
+  color: #f59e0b; /* Zuta boja */
+  font-size: 1rem;
+}
+
+/* Stil za ture koje nemaju ocenu */
+.rating-empty {
+  color: #9ca3af; /* Siva boja (muted) */
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+
 /* --- RESPONSIVENESS --- */
 /* Na manjim ekranima (tableti) prebaci na 2 u redu */
 @media (max-width: 900px) {
@@ -123,3 +145,4 @@
     grid-template-columns: 1fr;
   }
 }
+

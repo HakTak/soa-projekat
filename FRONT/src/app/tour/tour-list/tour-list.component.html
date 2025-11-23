@@ -1,16 +1,15 @@
 <div class="container">
   <div class="tour-grid">
     
-    <!-- Petlja kroz ture -->
     <div *ngFor="let tour of tours" class="tour-card" (click)="onCardClick(tour.id)">
       
-      <!-- Gornji deo: Naslov levo, Status desno -->
+      <!-- HEADER -->
       <div class="card-header">
         <h3 class="tour-title">{{ tour.title }}</h3>
         <span class="status-badge">{{ tour.status }}</span>
       </div>
 
-      <!-- Srednji deo: Kljucne tacke -->
+      <!-- BODY -->
       <div class="card-body">
         <div class="keypoint-info">
           <span class="label">Start:</span> 
@@ -22,9 +21,19 @@
         </div>
       </div>
 
-      <!-- Donji deo: Ocena centrirana -->
+      <!-- FOOTER SA DINAMICKOM OCENOM -->
       <div class="card-footer">
-        <span class="rating">Ocena: 5.0 ⭐</span>
+        
+        <!-- Prikazi ako postoji ocena i veca je od 0 -->
+        <span class="rating" *ngIf="tourRatings[tour.id!] && tourRatings[tour.id!] > 0">
+          Rating: {{ tourRatings[tour.id!] | number:'1.1-1' }} ⭐
+        </span>
+
+        <!-- Prikazi ako je ocena 0 ili undefined (jos se ucitava ili nema ocena) -->
+        <span class="rating-empty" *ngIf="!tourRatings[tour.id!] || tourRatings[tour.id!] === 0">
+          Not yet rated
+        </span>
+
       </div>
 
     </div>
