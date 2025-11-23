@@ -6,11 +6,12 @@ import (
 )
 
 type TourService struct {
-	repo *repository.TourRepository
+	repo       *repository.TourRepository
+	reviewRepo *repository.ReviewRepository
 }
 
-func NewTourService(repo *repository.TourRepository) *TourService {
-	return &TourService{repo: repo}
+func NewTourService(repo *repository.TourRepository, reviewRepo *repository.ReviewRepository) *TourService {
+	return &TourService{repo: repo, reviewRepo: reviewRepo}
 }
 
 func (s *TourService) CreateTour(t *model.Tour) error {
@@ -31,4 +32,21 @@ func (s *TourService) DeleteTour(id uint) error {
 
 func (s *TourService) UpdateTour(t *model.Tour) error {
 	return s.repo.UpdateTour(t)
+}
+
+func (s *TourService) GetToursByUser(userId uint) ([]model.Tour, error) {
+	return s.repo.GetToursByUser(userId)
+}
+
+// ****** Review service methods ******//
+func (s *TourService) CreateReview(rev *model.Review) error {
+	return s.reviewRepo.CreateReview(rev)
+}
+
+func (s *TourService) GetReviewsByTour(tourID string) ([]model.Review, error) {
+	return s.reviewRepo.GetReviewsByTour(tourID)
+}
+
+func (s *TourService) DeleteReview(id string) error {
+	return s.reviewRepo.DeleteReview(id)
 }

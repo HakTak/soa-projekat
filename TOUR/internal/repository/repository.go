@@ -38,3 +38,9 @@ func (r *TourRepository) UpdateTour(t *model.Tour) error {
 	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).
 		Updates(t).Error
 }
+
+func (r *TourRepository) GetToursByUser(userId uint) ([]model.Tour, error) {
+	var tours []model.Tour
+	err := r.db.Preload("Keypoints").Where("user_id = ?", userId).Find(&tours).Error
+	return tours, err
+}
