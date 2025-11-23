@@ -1,0 +1,39 @@
+<div class="post-wrapper">
+  <div class="post-container">
+
+    <!-- LEFT PANEL -->
+    <div class="left-side">
+      <div class="card-box">
+        <h2>Create Blog Post</h2>
+
+        <h3>Title</h3>
+        <input [(ngModel)]="currentBlog.title" type="text" placeholder="Enter title...">
+
+        <h3>Content</h3>
+        <div class="editor-box">
+          <textarea [(ngModel)]="currentBlog.content" placeholder="Write your content here..."></textarea>
+        </div>
+      </div>
+
+      <!-- Buttons under the content container -->
+      <div class="bottom-bar">
+        <button class="discard-btn" (click)="resetForm()">Reset</button>
+        <button class="publish-btn"(click)="publishBlog()">Publish</button>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-side">
+      <div class="card-box">
+        <h3>Featured Image(s)</h3>
+        <input (change)="onFileSelected($event)" type="file" multiple accept="image/*">
+      </div>
+
+      <div class="card-box">
+        <h3>Tags</h3>
+          <input [(ngModel)]="currentBlog.tags" type="text" placeholder="Add a tag...">
+      </div>
+    </div>
+
+  </div>
+</div>

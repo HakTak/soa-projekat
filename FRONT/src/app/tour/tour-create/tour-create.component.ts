@@ -21,6 +21,7 @@ export class TourCreateComponent {
   public files: File[] = [];
   public currentKeypoint: Keypoint = {
   title: '',
+  tourId: '',
   description: '',
   latitude: 0,
   longitude: 0,
@@ -64,6 +65,7 @@ public currentTour: Tour = {
 
     const keypoint: Keypoint = { 
       latitude: lat, 
+      tourId: '',
       longitude: lng, 
       title: '', 
       description: '', 
@@ -94,6 +96,7 @@ public currentTour: Tour = {
     this.currentKeypoint = {
       title: '',
       description: '',
+      tourId: '',
       latitude: 0,
       longitude: 0,
       imageUrl: ''
@@ -118,6 +121,7 @@ public currentTour: Tour = {
     this.currentMarker = undefined;
     this.currentKeypoint = {
       title: '',
+      tourId: '',
       description: '',
       latitude: 0,
       longitude: 0,
