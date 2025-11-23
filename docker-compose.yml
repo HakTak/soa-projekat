@@ -135,8 +135,44 @@ services:
       timeout: 3s
       retries: 5
 
+  follower:
+    build: 
+      context: .
+      dockerfile: FOLLOWER/Dockerfile
+    container_name: follower
+    ports:
+      - 8084:8084
+      - 9090:9090
+    environment:
+      - PORT=8084
+      - NEO4J_URI=bolt://follower-db:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=secretpassword
+    depends_on:
+      follower-db:
+        condition: service_healthy
+    volumes:
+      - ./FOLLOWER:/src
+
+  follower-db:
+    image: neo4j:5.26
+    container_name: follower-db
+    ports:
+      - "7474:7474" #HTTP Browser
+      - "7687:7687" #Bolt protocol
+    environment:
+      - NEO4J_AUTH=neo4j/secretpassword
+    volumes:
+      - follower_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   blog-data:
   auth_data:
   pgdata:
   tour_data:
+  follower_data:
