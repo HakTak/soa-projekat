@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "PROJEKAT/COMMON/auth/proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto"; 
+
+service AuthService {
+    
+    // 1. LOGIN
+    rpc Login(LoginRequest) returns (LoginResponse) {
+        option (google.api.http) = {
+            post: "/api/auth/login"
+            body: "*"
+        };
+    }
+
+    // 2. REGISTER
+    rpc Register(RegisterRequest) returns (RegisterResponse) {
+        option (google.api.http) = {
+            post: "/api/auth/register"
+            body: "*"
+        };
+    }
+
+    // 3. ADMIN USERS (Samo za admine)
+    rpc GetUsersForAdmin(google.protobuf.Empty) returns (GetAllUsersResponse) {
+        option (google.api.http) = {
+            get: "/api/admin/users"
+        };
+    }
+}
+
+// --- PORUKE ---
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    string token = 1;
+}
+
+message RegisterRequest {
+    string username = 1;
+    string password = 2;
+    string email = 3;
+    string role = 4; // "GUIDE", "TOURIST"
+    // Dodaj ime/prezime ako treba za profil, ali za Auth tabelu ovo je dovoljno
+}
+
+message RegisterResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+}
+
+message UserResponse {
+    string id = 1;
+    string username = 2;
+    string email = 3;
+    string role = 4;
+    bool blocked = 5;
+}
+
+message GetAllUsersResponse {
+    repeated UserResponse users = 1;
+}

@@ -16,7 +16,7 @@ WORKDIR /app/STAKEHOLDERS
 RUN go mod download
 
 # 4. Kopiramo ostatak koda
-COPY STAKEHOLDERS .
+COPY STAKEHOLDERS/ .
 
 # Build
 RUN go build -o stakeholders cmd/main.go

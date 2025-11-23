@@ -2,165 +2,142 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"log"
-	"net/http"
-	"strings"
 
-	proto "PROJEKAT/COMMON/stakeholders/proto"
+	pbAuth "PROJEKAT/COMMON/auth/proto"
+	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
+
+	// IMPORTUJEMO UTILS
+	"PROJEKAT/COMMON/utils"
+
 	"auth/internal/models"
 	"auth/internal/services"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type UserHandler struct {
-	userService *services.UserService
-	jwtService  *services.JWTService
+	pbAuth.UnimplementedAuthServiceServer
+	userService        *services.UserService
+	jwtService         *services.JWTService
+	stakeholdersClient pbStakeholders.StakeholdersClient // <-- NOVO: Klijent je ovde
 }
 
-func NewUserHandler(s *services.UserService, j *services.JWTService) *UserHandler {
-	return &UserHandler{s, j}
-}
-
-func (h *UserHandler) Register(w http.ResponseWriter, r *http.Request) {
-	// 1. PROVERA — DA LI JE KORISNIK VEĆ ULOGOVAN
-	authHeader := r.Header.Get("Authorization")
-	if strings.HasPrefix(authHeader, "Bearer ") {
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		token, err := h.jwtService.ValidateToken(tokenStr)
-		if err == nil && token.Valid {
-			http.Error(w, "You are already logged in — cannot register a new account", http.StatusForbidden)
-			return
-		}
-	}
-
-	// 2. PARSE BODY
-	var userRegister models.UserRegisterDTO
-	err := json.NewDecoder(r.Body).Decode(&userRegister)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	// 3. VALIDACIJA ROLE — DOZVOLJENO SAMO GUIDE ILI TOURIST
-	if userRegister.Role == models.RoleAdmin {
-		http.Error(w, "You cannot register as ADMIN", http.StatusForbidden)
-		return
-	}
-
-	if userRegister.Role != models.RoleGuide && userRegister.Role != models.RoleTourist {
-		http.Error(w, "Invalid role — allowed: GUIDE or TOURIST", http.StatusBadRequest)
-		return
-	}
-
-	// 4. POZIV SERVISA
-	user, err := h.userService.Register(userRegister)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	user.Password = "*********" // ne šaljemo password
-
-	h.SetProfile(*user) // kreiraj profil u stakeholders servisu
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
-}
-
-// mapUserRole konvertuje string iz baze u protobuf enum
-func mapUserRole(r models.Role) proto.Role {
-	switch r {
-	case models.RoleGuide:
-		return proto.Role_ROLE_GUIDE
-	case models.RoleTourist:
-		return proto.Role_ROLE_TOURIST
-	case models.RoleAdmin:
-		return proto.Role_ROLE_ADMIN
-	default:
-		return proto.Role_ROLE_UNKNOWN
+// Primamo klijenta u konstruktoru
+func NewUserHandler(s *services.UserService, j *services.JWTService, sc pbStakeholders.StakeholdersClient) *UserHandler {
+	return &UserHandler{
+		userService:        s,
+		jwtService:         j,
+		stakeholdersClient: sc,
 	}
 }
 
-func (h *UserHandler) SetProfile(user models.User) {
-	conn, err := grpc.Dial("stakeholders:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+// REGISTER
+func (h *UserHandler) Register(ctx context.Context, req *pbAuth.RegisterRequest) (*pbAuth.RegisterResponse, error) {
+	reqRole := models.Role(req.Role)
+
+	if reqRole == models.RoleAdmin {
+		return nil, status.Error(codes.PermissionDenied, "Cannot register as ADMIN")
+	}
+	if reqRole != models.RoleGuide && reqRole != models.RoleTourist {
+		return nil, status.Error(codes.InvalidArgument, "Role must be GUIDE or TOURIST")
+	}
+
+	dto := models.UserRegisterDTO{
+		Username: req.Username,
+		Password: req.Password,
+		Email:    req.Email,
+		Role:     reqRole,
+	}
+
+	user, err := h.userService.Register(dto)
 	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-
-	client := proto.NewStakeholdersClient(conn)
-
-	req := &proto.CreateProfileRequest{
-		UserId: user.Id.String(), // generisano iz protobuf -> UserId
-		Role:   mapUserRole(user.Role),
+		return nil, status.Errorf(codes.Internal, "Registration failed: %v", err)
 	}
 
-	resp, err := client.CreateProfile(context.Background(), req)
-	if err != nil {
-		fmt.Println("Error creating profile:", err)
-		return
-	}
+	// Sada samo pozivamo metodu, nema konektovanja
+	h.createStakeholderProfile(ctx, *user)
 
-	fmt.Printf("Profile created: id=%s, already_existed=%v\n", resp.Id, resp.AlreadyExisted)
+	return &pbAuth.RegisterResponse{
+		Id:       user.Id.String(),
+		Username: user.Username,
+		Email:    user.Email,
+	}, nil
 }
 
-func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var loginReq models.LoginRequestDTO
-	err := json.NewDecoder(r.Body).Decode(&loginReq)
+// LOGIN
+func (h *UserHandler) Login(ctx context.Context, req *pbAuth.LoginRequest) (*pbAuth.LoginResponse, error) {
+	user, err := h.userService.Login(req.Username, req.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	user, err := h.userService.Login(loginReq.Username, loginReq.Password)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+		return nil, status.Error(codes.Unauthenticated, "Invalid credentials")
 	}
 
 	token, err := h.jwtService.GenerateToken(user.Id.String(), string(user.Role))
 	if err != nil {
-		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
-		return
+		return nil, status.Error(codes.Internal, "Token generation failed")
 	}
 
-	resp := models.LoginResponseDTO{
-		Token: token,
-		User: models.UserNoPassDTO{
-			Id:       user.Id.String(),
-			Username: user.Username,
-			Email:    user.Email,
-			Role:     user.Role,
-			Blocked:  user.Blocked,
-		},
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	return &pbAuth.LoginResponse{Token: token}, nil
 }
 
-func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
-	users, err := h.userService.GetAll()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+// ADMIN ONLY
+func (h *UserHandler) GetUsersForAdmin(ctx context.Context, _ *emptypb.Empty) (*pbAuth.GetAllUsersResponse, error) {
+
+	// 1. KORISTIMO NOVU UTILS FUNKCIJU
+	// Ovo proverava da li korisnik u kontekstu ima ulogu "ADMIN"
+	if err := utils.Authorize(ctx, "ADMIN"); err != nil {
+		return nil, err
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
+	// 2. Ako prodje, nastavljamo logiku
+	users, err := h.userService.GetUsersForAdmin()
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to fetch users")
+	}
+	return h.mapUsersToProto(users), nil
 }
 
-func (h *UserHandler) GetUsersForAdmin(w http.ResponseWriter, r *http.Request) {
-	nonAdminUsers, err := h.userService.GetUsersForAdmin()
-	if err != nil {
-		http.Error(w, err.Error(), 500)
-		return
+// --- POMOCNE FUNKCIJE ---
+
+func (h *UserHandler) mapUsersToProto(users []models.UserNoPassDTO) *pbAuth.GetAllUsersResponse {
+	// Pazi: ovde sam vratio []models.User jer to vraca tvoj servis,
+	// ako si menjao DTO, prilagodi ovo.
+	var protoUsers []*pbAuth.UserResponse
+	for _, u := range users {
+		protoUsers = append(protoUsers, &pbAuth.UserResponse{
+			Id:       u.Id,
+			Username: u.Username,
+			Email:    u.Email,
+			Role:     string(u.Role),
+			Blocked:  u.Blocked,
+		})
+	}
+	return &pbAuth.GetAllUsersResponse{Users: protoUsers}
+}
+
+// REFAKTORISANO: Koristi postojeceg klijenta
+func (h *UserHandler) createStakeholderProfile(ctx context.Context, user models.User) {
+	var protoRole pbStakeholders.Role
+	switch user.Role {
+	case models.RoleGuide:
+		protoRole = pbStakeholders.Role_ROLE_GUIDE
+	case models.RoleTourist:
+		protoRole = pbStakeholders.Role_ROLE_TOURIST
+	default:
+		protoRole = pbStakeholders.Role_ROLE_UNKNOWN
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(nonAdminUsers)
+	// Koristimo h.stakeholdersClient koji je vec povezan
+	_, err := h.stakeholdersClient.CreateProfile(ctx, &pbStakeholders.CreateProfileRequest{
+		UserId: user.Id.String(),
+		Role:   protoRole,
+	})
+
+	if err != nil {
+		fmt.Printf("⚠️ Warning: Profile creation failed: %v\n", err)
+	} else {
+		fmt.Println("✅ Profile created in Stakeholders service")
+	}
 }
