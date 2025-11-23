@@ -109,13 +109,46 @@ func (h *TourHandler) CreateReview(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	if err := h.service.CreateReview(&rev); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	json.NewEncoder(w).Encode(rev)
 }
 
 func (h *TourHandler) GetReviewsByTour(w http.ResponseWriter, r *http.Request) {
+	tourID := chi.URLParam(r, "tourId")
 
+	reviews, err := h.service.GetReviewsByTour(tourID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(reviews)
 }
 
 func (h *TourHandler) DeleteReview(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
 
+	if err := h.service.DeleteReview(id); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"message": "Review deleted successfully"})
+
+}
+
+func (h *TourHandler) GetAllReviews(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var reviews []model.Review
+	reviews, err = h.service.GetAllReviews()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(reviews)
 }

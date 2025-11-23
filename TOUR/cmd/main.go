@@ -48,7 +48,8 @@ func main() {
 
 	r.Post("/review/create", handler.CreateReview)
 	r.Get("/review/tour/{tourId}", handler.GetReviewsByTour)
-	r.Delete("/review/delete", handler.DeleteReview)
+	r.Get("/review/getAll", handler.GetAllReviews)
+	r.Delete("/review/delete/{id}", handler.DeleteReview)
 
 	port := os.Getenv("PORT")
 	if port == "" {

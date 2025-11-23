@@ -27,3 +27,9 @@ func (r *ReviewRepository) GetReviewsByTour(tourID string) ([]model.Review, erro
 func (r *ReviewRepository) DeleteReview(id string) error {
 	return r.db.Delete(&model.Review{}, "id = ?", id).Error
 }
+
+func (r *ReviewRepository) GetAllReviews() ([]model.Review, error) {
+	var reviews []model.Review
+	err := r.db.Find(&reviews).Error
+	return reviews, err
+}

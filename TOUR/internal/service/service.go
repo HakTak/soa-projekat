@@ -50,3 +50,7 @@ func (s *TourService) GetReviewsByTour(tourID string) ([]model.Review, error) {
 func (s *TourService) DeleteReview(id string) error {
 	return s.reviewRepo.DeleteReview(id)
 }
+
+func (s *TourService) GetAllReviews() ([]model.Review, error) {
+	return s.reviewRepo.GetAllReviews()
+}
