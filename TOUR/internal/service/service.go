@@ -18,7 +18,7 @@ func (s *TourService) CreateTour(t *model.Tour) error {
 	return s.repo.CreateTour(t)
 }
 
-func (s *TourService) GetTour(id uint) (*model.Tour, error) {
+func (s *TourService) GetTour(id string) (*model.Tour, error) {
 	return s.repo.GetTour(id)
 }
 

@@ -1,0 +1,149 @@
+<div class="page-container" *ngIf="tour; else loading">
+  
+  <button class="btn-back" (click)="goBack()">← Back to Tours</button>
+
+  <header class="tour-header">
+    <h1>{{ tour.title }}</h1>
+  </header>
+
+  <section class="details-container">
+    <div class="details-info">
+      <div class="info-group">
+        <span class="badge status-badge">{{ tour.status }}</span>
+        <span class="badge difficulty-badge">{{ tour.difficulty }}</span>
+        <span class="price-tag">{{ tour.price }} €</span>
+      </div>
+      <div class="description-box">
+        <h3>Description</h3>
+        <p>{{ tour.description }}</p>
+      </div>
+      <div class="tags-box" *ngIf="tour.tags">
+        <h3>Tags</h3>
+        <p class="tags-text">#{{ tour.tags }}</p>
+      </div>
+      <div class="keypoints-box">
+        <h3>Keypoints</h3>
+        <ul class="keypoint-list">
+          <li *ngFor="let kp of tour.keypoints">
+            <span class="kp-title">{{ kp.title }}</span>
+            <p class="kp-desc">{{ kp.description }}</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="details-image-wrapper">
+      <img *ngIf="tourImage" [src]="tourImage" alt="Tour scene" class="tour-image">
+      <div *ngIf="!tourImage" class="no-image-placeholder">
+        <span>No image available</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- REVIEWS SECTION -->
+  <section class="reviews-section">
+    
+    <!-- HEADER SEKCIJE SA DUGMETOM -->
+    <div class="reviews-section-header">
+      <h2 class="section-title">Reviews</h2>
+      <!-- Dugme za otvaranje modala -->
+      <button class="btn btn-primary btn-add-review" (click)="openReviewModal()">
+        + Add Review
+      </button>
+    </div>
+
+    <div class="reviews-grid">
+      <div class="review-card" *ngFor="let review of reviews">
+        <div class="review-header">
+          <span class="review-user">
+            <i class="user-icon">👤</i> 
+            {{ review.username || 'User' }}
+          </span>
+          <span class="review-date">
+            {{ review.createdAt ? (review.createdAt | date:'mediumDate') : 'Unknown date' }}
+          </span>
+        </div>
+        <div class="review-body">
+          <p>"{{ review.comment }}"</p>
+        </div>
+        <div class="review-footer">
+          <span class="review-rating">{{ review.rating }} / 5 ⭐</span>
+        </div>
+      </div>
+      <div *ngIf="reviews.length === 0" class="no-reviews">
+        <p>No reviews yet for this tour. Be the first to write one!</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<ng-template #loading>
+  <div class="loading-msg">Loading tour details...</div>
+</ng-template>
+
+<!-- ================= MODAL FORMA ================= -->
+<div class="modal-overlay" *ngIf="isModalOpen">
+  <div class="modal-content">
+    
+    <div class="modal-header">
+      <h2>Write a Review</h2>
+      <span class="close-icon" (click)="closeReviewModal()">&times;</span>
+    </div>
+
+    <div class="modal-body">
+      <form (ngSubmit)="submitReview()" #reviewForm="ngForm">
+        
+        <!-- Read-only Tour Name -->
+        <div class="form-group">
+          <label>Tour Name</label>
+          <input type="text" [value]="tour?.title" disabled class="form-control disabled-input">
+        </div>
+
+        <!-- Read-only Username -->
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" [(ngModel)]="newReview.user_name" name="username" disabled class="form-control disabled-input">
+        </div>
+
+        <!-- Rating Selection -->
+        <div class="form-group">
+          <label>Rating (1-5)</label>
+          <select [(ngModel)]="newReview.rating" name="rating" class="form-control" required>
+            <option [value]="1">1 - Poor</option>
+            <option [value]="2">2 - Fair</option>
+            <option [value]="3">3 - Good</option>
+            <option [value]="4">4 - Very Good</option>
+            <option [value]="5">5 - Excellent</option>
+          </select>
+        </div>
+
+        <!-- Date Picker (Visited At) -->
+        <div class="form-group">
+          <label>Visited Date</label>
+          <input type="date" [(ngModel)]="newReview.visited_at" name="visited_at" class="form-control" required>
+        </div>
+
+        <!-- Photo URL (Optional) -->
+        <div class="form-group">
+          <label>Photo URL (Optional)</label>
+          <input type="text" [(ngModel)]="newReview.image_url" name="image_url" placeholder="http://..." class="form-control">
+        </div>
+
+        <!-- Comment -->
+        <div class="form-group">
+          <label>Comment</label>
+          <textarea [(ngModel)]="newReview.comment" name="comment" rows="4" class="form-control" placeholder="Share your experience..." required></textarea>
+        </div>
+
+        <!-- Buttons -->
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeReviewModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="!reviewForm.form.valid">Save</button>
+        </div>
+
+      </form>
+    </div>
+
+  </div>
+</div>

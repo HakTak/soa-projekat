@@ -18,9 +18,9 @@ func (r *TourRepository) CreateTour(t *model.Tour) error {
 	return r.db.Create(t).Error
 }
 
-func (r *TourRepository) GetTour(id uint) (*model.Tour, error) {
+func (r *TourRepository) GetTour(id string) (*model.Tour, error) {
 	var tour model.Tour
-	err := r.db.Preload("Keypoints").First(&tour, id).Error
+	err := r.db.Preload("Keypoints").First(&tour, "id = ?", id).Error
 	return &tour, err
 }
 

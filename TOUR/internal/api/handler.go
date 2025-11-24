@@ -37,10 +37,14 @@ func (h *TourHandler) CreateTour(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TourHandler) GetTour(w http.ResponseWriter, r *http.Request) {
-	idStr := chi.URLParam(r, "id")
-	id, _ := strconv.ParseUint(idStr, 10, 64)
+	id := chi.URLParam(r, "id")
 
-	tour, err := h.service.GetTour(uint(id))
+	if id == "" {
+		http.Error(w, "missing id", http.StatusBadRequest)
+		return
+	}
+
+	tour, err := h.service.GetTour(id)
 	if err != nil {
 		http.Error(w, "tour not found", http.StatusNotFound)
 		return
@@ -131,6 +135,18 @@ func (h *TourHandler) CreateReview(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TourHandler) GetReviewsByTour(w http.ResponseWriter, r *http.Request) {
+
+	// Dozvoli pristup sa Angulara (localhost:4200) ili stavi "*" za sve
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	// Ako browser salje "preflight" OPTIONS zahtev, odmah vrati OK
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	tourID := chi.URLParam(r, "tourId")
 
 	reviews, err := h.service.GetReviewsByTour(tourID)
