@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from "./navbar/navbar.component";
 import { HomepageComponent } from './homepage/homepage.component';
 import { BlogComponent } from './blog/blog.component';
+import { TourListComponent } from './tour/tour-list/tour-list.component';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +12,8 @@ import { BlogComponent } from './blog/blog.component';
     RouterOutlet,
     NavbarComponent,
     HomepageComponent,
-    BlogComponent
+    BlogComponent,
+    TourListComponent
 
   ],
   templateUrl: './app.component.html',

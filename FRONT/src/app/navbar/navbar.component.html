@@ -4,7 +4,25 @@
     <ul class="nav-group nav-group--left">
       <li><a routerLink="/" (click)="onHomeClick()" class="nav-link">Home</a></li>
       <li><a routerLink="/blog" (click)="onBlogClick()" class="nav-link">Blog</a></li>
-      <li><a routerLink="/tours" class="nav-link">Tours</a></li>
+      
+      <!-- TOURS DROPDOWN -->
+      <!-- Dodat mouseenter i mouseleave za hover efekat -->
+      <li class="nav-item dropdown" 
+          (mouseenter)="dropdownOpen = true" 
+          (mouseleave)="dropdownOpen = false">
+        
+        <a class="nav-link" style="cursor: pointer;" (click)="toggleDropdown($event)">
+          Tours
+        </a>
+
+        <!-- Dropdown meni -->
+        <div class="dropdown-menu" [class.show]="dropdownOpen">
+          <!-- Klikom na ove linkove poziva se closeDropdown() da se meni sakrije -->
+          <a class="dropdown-item" routerLink="/tours" (click)="closeDropdown()">Create Tour</a>
+          <a class="dropdown-item" routerLink="/tour-list" (click)="closeDropdown()">All Tours</a>
+        </div>
+      </li>
+
       <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
     </ul>
 
