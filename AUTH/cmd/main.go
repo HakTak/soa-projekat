@@ -7,11 +7,11 @@ import (
 
 	"auth/internal/database"
 	"auth/internal/handlers"
-	"auth/internal/middleware"
 	"auth/internal/repositories"
 	"auth/internal/services"
 
 	pbAuth "PROJEKAT/COMMON/auth/proto"
+	commonMiddleware "PROJEKAT/COMMON/middleware"
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
 
 	"google.golang.org/grpc"
@@ -34,12 +34,11 @@ func main() {
 	defer stakeholdersConn.Close()
 
 	// Pravimo klijenta
-	stakeholdersClient := pbStakeholders.NewStakeholdersClient(stakeholdersConn)
+	stakeholdersClient := pbStakeholders.NewStakeholdersServiceClient(stakeholdersConn)
 	// -----------------------------------------------
 
 	// Prosledjujemo klijenta u handler
 	userHandler := handlers.NewUserHandler(userService, jwtService, stakeholdersClient)
-	authMiddleware := middleware.NewGrpcAuthMiddleware(jwtService)
 
 	listener, err := net.Listen("tcp", ":8082")
 	if err != nil {
@@ -47,7 +46,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(authMiddleware.UnaryServerInterceptor()),
+		grpc.UnaryInterceptor(commonMiddleware.MetadataExtractorInterceptor),
 	)
 
 	pbAuth.RegisterAuthServiceServer(grpcServer, userHandler)

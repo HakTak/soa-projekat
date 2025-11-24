@@ -1,20 +1,58 @@
 syntax = "proto3";
 
-package stakeholders.v1;
+package stakeholders;
 
-option go_package = "stakeholders/proto;proto";
+option go_package = "PROJEKAT/COMMON/stakeholders/proto";
 
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
 
-service stakeholders {
+service StakeholdersService {
+    
+    // 1. INTERNA METODA (Koristi je Auth servis)
     rpc CreateProfile(CreateProfileRequest) returns (CreateProfileResponse) {}
     
-    rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {}
+    // 2. GET PROFILE (Javna/Zaštićena)
+    // GET /api/stakeholders/profiles/{user_id}
+    rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {
+        option (google.api.http) = {
+            get: "/api/stakeholders/profiles/{user_id}"
+        };
+    }
+
+    // 3. GET MY PROFILE (Za ulogovanog korisnika)
+    // GET /api/stakeholders/profiles/me
+    rpc GetMyProfile(google.protobuf.Empty) returns (GetProfileResponse) {
+        option (google.api.http) = {
+            get: "/api/stakeholders/profiles/me"
+        };
+    }
+
+    // 4. UPDATE MY PROFILE
+    // PUT /api/stakeholders/profiles/me
+    rpc UpdateMyProfile(UpdateProfileRequest) returns (GetProfileResponse) {
+        option (google.api.http) = {
+            put: "/api/stakeholders/profiles/me"
+            body: "*"
+        };
+    }
+
+    // 5. BLOCK USER (Admin only)
+    // POST /api/stakeholders/profiles/{user_id}/block
+    rpc BlockUser(BlockUserRequest) returns (google.protobuf.Empty) {
+        option (google.api.http) = {
+            post: "/api/stakeholders/profiles/{user_id}/block"
+            body: "*" // Iako je body prazan, mora da stoji * za POST
+        };
+    }
 }
+
+// --- PORUKE ---
 
 enum Role {
     ROLE_UNKNOWN = 0; 
     ROLE_GUIDE   = 1;
-     ROLE_TOURIST = 2;
+    ROLE_TOURIST = 2;
     ROLE_ADMIN   = 3;
 }
 
@@ -42,4 +80,17 @@ message GetProfileResponse {
     string biography = 7;
     string motto = 8;
     bool is_blocked = 9;
+}
+
+message UpdateProfileRequest {
+    string first_name = 1;
+    string last_name = 2;
+    string profile_picture = 3;
+    string biography = 4;
+    string motto = 5;
+    // Role se ne menja ovde
+}
+
+message BlockUserRequest {
+    string user_id = 1;
 }

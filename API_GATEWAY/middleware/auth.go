@@ -1,11 +1,11 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
-	"google.golang.org/grpc/metadata"
 )
 
 var jwtSecret = []byte("my_super_duper_secret_mega_gg_key_123")
@@ -38,10 +38,35 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// 4. Prosledjivanje kroz Metadata
-		md := metadata.Pairs("authorization", authHeader)
-		ctx := metadata.NewOutgoingContext(r.Context(), md)
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			http.Error(w, "Unauthorized: Invalid claims", http.StatusUnauthorized)
+			return
+		}
 
-		next.ServeHTTP(w, r.WithContext(ctx))
+		// --- DODAJ OVO ZA DEBUG ---
+		fmt.Printf(">>> DEBUG TOKEN CLAIMS: %+v\n", claims)
+		// ---------
+
+		// 4. PAKOVANJE PODATAKA U METADATA
+		// Ovde uzimamo podatke iz tokena i pakujemo ih za gRPC servise
+		// Koristimo 'sub' za ID, 'role', 'email', 'username' (sta god imas u tokenu)
+
+		userID, _ := claims["id"].(string) // Prilagodi kljuc tvom tokenu
+		role, _ := claims["role"].(string)
+		username, _ := claims["username"].(string)
+		email, _ := claims["email"].(string)
+
+		// 5. SLANJE PODATAKA PUTEM HEADER-a (STANDARD ZA GRPC-GATEWAY)
+		// Biblioteka ce ovo automatski pretvoriti u Metadata: "user-id", "user-role"...
+		r.Header.Set("Grpc-Metadata-User-Id", userID)
+		r.Header.Set("Grpc-Metadata-User-Role", role)
+		r.Header.Set("Grpc-Metadata-User-Username", username)
+		r.Header.Set("Grpc-Metadata-User-Email", email)
+
+		// Takodje prosledjujemo originalni Authorization header
+		r.Header.Set("Grpc-Metadata-Authorization", authHeader)
+
+		next.ServeHTTP(w, r)
 	})
 }

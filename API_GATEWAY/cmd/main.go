@@ -8,6 +8,7 @@ import (
 
 	"PROJEKAT/API_GATEWAY/middleware"
 	pbAuth "PROJEKAT/COMMON/auth/proto"
+	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -29,11 +30,11 @@ func main() {
 		log.Fatalf("Failed to register Auth: %v", err)
 	}
 
-	// // Registracija STAKEHOLDERS servisa
-	// err = pbStakeholders.RegisterStakeholdersServiceHandlerFromEndpoint(ctx, gwmux, "stakeholders:8081", opts)
-	// if err != nil {
-	// 	log.Fatalf("Failed to register Stakeholders: %v", err)
-	// }
+	// Registracija STAKEHOLDERS servisa
+	err = pbStakeholders.RegisterStakeholdersServiceHandlerFromEndpoint(ctx, gwmux, "stakeholders:50051", opts)
+	if err != nil {
+		log.Fatalf("Failed to register Stakeholders: %v", err)
+	}
 
 	// 2. GLAVNI RUTER (Standardni HTTP)
 	// Ovo koristimo da bi mogli lako da dodamo Swagger ili Health checkove u buducnosti

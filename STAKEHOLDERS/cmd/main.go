@@ -1,6 +1,66 @@
 package main
 
 import (
+	"fmt"
+	"log"
+	"net"
+	"os"
+
+	"stakeholders/internal/handlers"
+	"stakeholders/internal/model"
+	"stakeholders/internal/repository"
+	"stakeholders/internal/service"
+
+	commonMiddleware "PROJEKAT/COMMON/middleware" // <--- IMPORTUJEMO ZAJEDNICKI
+	pb "PROJEKAT/COMMON/stakeholders/proto"
+
+	"google.golang.org/grpc"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+func main() {
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		dsn = "host=localhost user=stakeholders password=secret dbname=stakeholders port=5432 sslmode=disable"
+	}
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("db connect: %v", err)
+	}
+
+	db.AutoMigrate(&model.Profile{})
+	// seedProfiles(db) // pozovi ako treba
+
+	repo := repository.NewGormProfileRepo(db)
+	svc := service.NewProfileService(repo)
+
+	// NEMA vise http handlera, pravimo gRPC handler
+	profileHandler := handlers.NewProfileHandler(svc)
+
+	listener, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("listen: %v", err)
+	}
+
+	// Ubacujemo zajednicki interceptor
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(commonMiddleware.MetadataExtractorInterceptor),
+	)
+
+	pb.RegisterStakeholdersServiceServer(grpcServer, profileHandler)
+
+	fmt.Println("Stakeholders gRPC Service running on port 50051...")
+	if err := grpcServer.Serve(listener); err != nil {
+		log.Fatalf("serve: %v", err)
+	}
+}
+
+/*
+package main
+
+import (
 	"log"
 	"net"
 	stdhttp "net/http"
@@ -117,3 +177,4 @@ func seedProfiles(db *gorm.DB) {
 
 	log.Println("Seeded profiles successfully")
 }
+*/

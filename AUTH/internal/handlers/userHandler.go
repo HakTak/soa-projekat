@@ -22,11 +22,11 @@ type UserHandler struct {
 	pbAuth.UnimplementedAuthServiceServer
 	userService        *services.UserService
 	jwtService         *services.JWTService
-	stakeholdersClient pbStakeholders.StakeholdersClient // <-- NOVO: Klijent je ovde
+	stakeholdersClient pbStakeholders.StakeholdersServiceClient // <-- NOVO: Klijent je ovde
 }
 
 // Primamo klijenta u konstruktoru
-func NewUserHandler(s *services.UserService, j *services.JWTService, sc pbStakeholders.StakeholdersClient) *UserHandler {
+func NewUserHandler(s *services.UserService, j *services.JWTService, sc pbStakeholders.StakeholdersServiceClient) *UserHandler {
 	return &UserHandler{
 		userService:        s,
 		jwtService:         j,
@@ -74,7 +74,11 @@ func (h *UserHandler) Login(ctx context.Context, req *pbAuth.LoginRequest) (*pbA
 		return nil, status.Error(codes.Unauthenticated, "Invalid credentials")
 	}
 
-	token, err := h.jwtService.GenerateToken(user.Id.String(), string(user.Role))
+	token, err := h.jwtService.GenerateToken(
+		user.Id.String(),
+		string(user.Role),
+		user.Username,
+		user.Email)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Token generation failed")
 	}
@@ -136,8 +140,8 @@ func (h *UserHandler) createStakeholderProfile(ctx context.Context, user models.
 	})
 
 	if err != nil {
-		fmt.Printf("⚠️ Warning: Profile creation failed: %v\n", err)
+		fmt.Printf("Warning: Profile creation failed: %v\n", err)
 	} else {
-		fmt.Println("✅ Profile created in Stakeholders service")
+		fmt.Println("Profile created in Stakeholders service")
 	}
 }
