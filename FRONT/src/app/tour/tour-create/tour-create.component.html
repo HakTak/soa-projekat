@@ -1,44 +1,123 @@
-<div class="layout">
+<div class="page-container">
   
-  <div class="map-area" [class.map-disabled]="editing">
-    <div id="map" class="map-container"></div>
+  <header class="create-header">
+    <h1>Create New Tour</h1>
+    <p>Plot your route on the map and define tour details.</p>
+  </header>
+
+  <div class="layout">
+    
+    <!-- MAP AREA -->
+    <div class="map-wrapper">
+      <div class="map-area" [class.map-disabled]="editing && !keyPointMode">
+        <div id="map" class="map-container"></div>
+      </div>
+      <div class="map-instructions" *ngIf="keyPointMode">
+        <small>💡 Click on the map to add a Keypoint. Click on a marker to edit it.</small>
+      </div>
+    </div>
+
+    <!-- SIDEBAR: KEYPOINT MODE -->
+    <div class="sidebar" *ngIf="keyPointMode">
+      <div class="sidebar-header">
+        <h3>📍 Keypoint Details</h3>
+        <span class="step-indicator">Step 1/2</span>
+      </div>
+
+      <div class="form-group">
+        <label>Title</label>
+        <input type="text" [(ngModel)]="currentKeypoint.title" [disabled]="!currentMarker" class="form-control" placeholder="e.g., Kalemegdan Fortress">
+      </div>
+
+      <div class="form-group">
+        <label>Image</label>
+        <div class="file-upload">
+            <input type="file" #fileInput (change)="onFileSelected($event)" [disabled]="!currentMarker" accept="image/*">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea rows="5" [(ngModel)]="currentKeypoint.description" [disabled]="!currentMarker" class="form-control" placeholder="What can serveiers see here?"></textarea>
+      </div>
+
+      <div class="action-buttons">
+        <!-- Discard dugme -->
+        <button class="btn btn-secondary" (click)="discardMarker()" [disabled]="!currentMarker">Discard Point</button>
+        
+        <!-- Save dugme (Promenjeno ime funkcije u savePoint) -->
+        <button class="btn btn-primary" (click)="savePoint()" [disabled]="!currentMarker">Save Point</button>
+      </div>
+
+      <hr class="divider">
+
+      <button class="btn btn-success full-width" (click)="finishKeypoints()" [disabled]="keypoints.length < 2">
+        Next Step: Tour Details →
+      </button>
+    </div>
+
+    <!-- SIDEBAR: TOUR DETAILS MODE -->
+    <div class="sidebar" *ngIf="!keyPointMode">
+      <div class="sidebar-header">
+        <h3>📝 Tour Info</h3>
+        <span class="step-indicator">Step 2/2</span>
+      </div>
+
+      <div class="form-group">
+        <label>Tour Name</label>
+        <input type="text" [(ngModel)]="currentTour.title" class="form-control" placeholder="Enter tour name">
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea rows="4" [(ngModel)]="currentTour.description" class="form-control" placeholder="Describe the entire journey"></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+            <label>Difficulty</label>
+            <select [(ngModel)]="currentTour.difficulty" class="form-control">
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+            </select>
+        </div>
+        <div class="form-group half">
+            <label>Price (€)</label>
+            <input type="number" [(ngModel)]="currentTour.price" class="form-control" min="0">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Tags</label>
+        <input type="text" [(ngModel)]="currentTour.tags" class="form-control" placeholder="cycling, river, history">
+      </div>
+
+      <div class="action-buttons vertical">
+        <button class="btn btn-primary full-width" (click)="saveTour()">✅ Finish & Publish Tour</button>
+        <button class="btn btn-secondary full-width" (click)="backToKeypoints()">← Back to Map</button>
+      </div>
+    </div>
+
   </div>
+</div>
 
-  <div class="sidebar" *ngIf="keyPointMode">
-    <h3>Keypoint Details</h3>
-
-    <label>Title</label>
-    <input type="text"  [(ngModel)]="currentKeypoint.title" [disabled]="!currentMarker">
-
-    <label>Preview image:</label>
-    <input type="file" #fileInput (change)="onFileSelected($event)" [disabled]="!currentMarker" accept="image/*">
-
-    <label>Description</label>
-    <textarea rows="6" [(ngModel)]="currentKeypoint.description" [disabled]="!currentMarker"></textarea>
-
-    <button (click)="nextMarker()" [disabled]="!currentMarker">Next</button>
-    <button (click)="discardMarker()" [disabled]="!currentMarker">Discard</button>
-    <button (click)="finish()" [disabled]="keypoints.length < 2">Finish</button>
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" *ngIf="showSuccessModal">
+  <div class="modal-content success">
+    <div class="icon-circle success-icon">✓</div>
+    <h2>Success!</h2>
+    <p>Your tour "<strong>{{currentTour.title}}</strong>" has been successfully created.</p>
+    <button class="btn btn-primary" (click)="closeSuccessModal()">Go to All Tours</button>
   </div>
-   <div class="sidebar" *ngIf="!keyPointMode">
-    <h3>Tour Details</h3>
+</div>
 
-    <label>Name</label>
-    <input type="text"  [(ngModel)]="currentTour.title" placeholder="Enter tour name">
-
-    <label>Description</label>
-    <textarea rows="4" [(ngModel)]="currentTour.description" placeholder="Describe your tour"></textarea>
-
-    <label>Difficulty</label>
-    <select [(ngModel)]="currentTour.difficulty">
-      <option value="easy">Easy</option>
-      <option value="medium">Medium</option>
-      <option value="hard">Hard</option>
-    </select>
-
-    <label>Tags</label>
-    <input type="text" [(ngModel)]="currentTour.tags" placeholder="Comma-separated tags">
-
-    <button (click)="saveTour()">Save Tour</button>
+<!-- ERROR MODAL -->
+<div class="modal-overlay" *ngIf="showErrorModal">
+  <div class="modal-content error">
+    <div class="icon-circle error-icon">✕</div>
+    <h2>Ooops!</h2>
+    <p>Something went wrong while saving the tour.</p>
+    <button class="btn btn-secondary" (click)="closeErrorModal()">Try Again</button>
   </div>
 </div>
