@@ -18,12 +18,15 @@ func NewJWTService(secret, issuer string) *JWTService {
 	}
 }
 
-func (j *JWTService) GenerateToken(userId string, role string) (string, error) {
+// IZMENA: Dodali smo username i email kao argumente
+func (j *JWTService) GenerateToken(userId, role, username, email string) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userId,
-		"role":    role,
-		"iss":     j.issuer,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"id":       userId,
+		"role":     role,
+		"username": username, // NOVO
+		"email":    email,    // NOVO
+		"iss":      j.issuer,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

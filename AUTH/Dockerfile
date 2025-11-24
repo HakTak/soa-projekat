@@ -17,7 +17,7 @@ WORKDIR /app/AUTH
 RUN go mod download
 
 # 4. Kopiramo ostatak koda iz AUTH foldera
-COPY AUTH .
+COPY AUTH/ .
 
 # Build
 RUN go build -o auth cmd/main.go

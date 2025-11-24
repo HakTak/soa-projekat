@@ -1,7 +1,5 @@
-
-version: "3.9"
 services:
-  # Postgres DB used by stakeholders (and can be used by others)
+  # --- BAZA ZA STAKEHOLDERS ---
   stakeholders-db:
     image: postgres:15
     container_name: stakeholders-db
@@ -12,15 +10,18 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
-      - "5432:5432"   # optional: exposes DB to host
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U stakeholders"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  # --- API GATEWAY ---
   gateway:
-    build: ./API_GATEWAY
+    build: 
+      context: .
+      dockerfile: API_GATEWAY/Dockerfile
     container_name: gateway
     ports:
       - "8080:8080"
@@ -29,6 +30,7 @@ services:
       - blog
       - auth
 
+  # --- AUTH SERVIS ---
   auth:
     build: 
       context: .
@@ -43,8 +45,10 @@ services:
       DB_NAME: auth
       DB_PORT: 5432
     depends_on:
-      - auth-db
+      auth-db:
+        condition: service_healthy # <--- OVO JE KLJUCNA IZMENA (Ceka da baza pozeleni)
 
+  # --- BAZA ZA AUTH ---
   auth-db:
     image: postgres:16
     container_name: auth-db
@@ -57,7 +61,14 @@ services:
       - "5433:5432"
     volumes:
       - auth_data:/var/lib/postgresql/data
+    # --- OVO JE DODATO ---
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
+  # --- STAKEHOLDERS SERVIS ---
   stakeholders:
     build: 
       context: .
@@ -71,22 +82,22 @@ services:
     ports:
       - "8081:8081"
       - "50051:50051"
-    volumes:
-      - ./STAKEHOLDERS:/src  # bind mount lokalnog koda u /src
-
+    
+  # --- BLOG SERVIS ---
   blog:
     build: ./BLOG
     container_name: blog
     ports:
       - "5251:5251"
     volumes:
-      - ./BLOG:/src  # bind mount lokalnog koda u /src
+      - ./BLOG:/src
     environment:
       MongoDatabaseSettings__ConnectionString: "mongodb://blog-db:27017"
       MongoDatabaseSettings__DatabaseName: "BlogDB"
     depends_on:
       - blog-db
 
+  # --- BAZA ZA BLOG ---
   blog-db:
     image: mongo:6
     container_name: blog-db

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.31.1
-// source: proto/stakeholders.proto
+// source: stakeholders/proto/stakeholders.proto
 
 package proto
 
@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,141 +20,273 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Stakeholders_CreateProfile_FullMethodName = "/stakeholders.v1.stakeholders/CreateProfile"
-	Stakeholders_GetProfile_FullMethodName    = "/stakeholders.v1.stakeholders/GetProfile"
+	StakeholdersService_CreateProfile_FullMethodName   = "/stakeholders.StakeholdersService/CreateProfile"
+	StakeholdersService_GetProfile_FullMethodName      = "/stakeholders.StakeholdersService/GetProfile"
+	StakeholdersService_GetMyProfile_FullMethodName    = "/stakeholders.StakeholdersService/GetMyProfile"
+	StakeholdersService_UpdateMyProfile_FullMethodName = "/stakeholders.StakeholdersService/UpdateMyProfile"
+	StakeholdersService_BlockUser_FullMethodName       = "/stakeholders.StakeholdersService/BlockUser"
 )
 
-// StakeholdersClient is the client API for Stakeholders service.
+// StakeholdersServiceClient is the client API for StakeholdersService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type StakeholdersClient interface {
+type StakeholdersServiceClient interface {
+	// 1. INTERNA METODA (Koristi je Auth servis)
 	CreateProfile(ctx context.Context, in *CreateProfileRequest, opts ...grpc.CallOption) (*CreateProfileResponse, error)
+	// 2. GET PROFILE (Javna/Zaštićena)
+	// GET /api/stakeholders/profiles/{user_id}
 	GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
+	// 3. GET MY PROFILE (Za ulogovanog korisnika)
+	// GET /api/stakeholders/profiles/me
+	GetMyProfile(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetProfileResponse, error)
+	// 4. UPDATE MY PROFILE
+	// PUT /api/stakeholders/profiles/me
+	UpdateMyProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error)
+	// 5. BLOCK USER (Admin only)
+	// POST /api/stakeholders/profiles/{user_id}/block
+	BlockUser(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
-type stakeholdersClient struct {
+type stakeholdersServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewStakeholdersClient(cc grpc.ClientConnInterface) StakeholdersClient {
-	return &stakeholdersClient{cc}
+func NewStakeholdersServiceClient(cc grpc.ClientConnInterface) StakeholdersServiceClient {
+	return &stakeholdersServiceClient{cc}
 }
 
-func (c *stakeholdersClient) CreateProfile(ctx context.Context, in *CreateProfileRequest, opts ...grpc.CallOption) (*CreateProfileResponse, error) {
+func (c *stakeholdersServiceClient) CreateProfile(ctx context.Context, in *CreateProfileRequest, opts ...grpc.CallOption) (*CreateProfileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(CreateProfileResponse)
-	err := c.cc.Invoke(ctx, Stakeholders_CreateProfile_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, StakeholdersService_CreateProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *stakeholdersClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
+func (c *stakeholdersServiceClient) GetProfile(ctx context.Context, in *GetProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetProfileResponse)
-	err := c.cc.Invoke(ctx, Stakeholders_GetProfile_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, StakeholdersService_GetProfile_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// StakeholdersServer is the server API for Stakeholders service.
-// All implementations must embed UnimplementedStakeholdersServer
-// for forward compatibility.
-type StakeholdersServer interface {
-	CreateProfile(context.Context, *CreateProfileRequest) (*CreateProfileResponse, error)
-	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
-	mustEmbedUnimplementedStakeholdersServer()
+func (c *stakeholdersServiceClient) GetMyProfile(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetProfileResponse)
+	err := c.cc.Invoke(ctx, StakeholdersService_GetMyProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
-// UnimplementedStakeholdersServer must be embedded to have
+func (c *stakeholdersServiceClient) UpdateMyProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*GetProfileResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetProfileResponse)
+	err := c.cc.Invoke(ctx, StakeholdersService_UpdateMyProfile_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stakeholdersServiceClient) BlockUser(ctx context.Context, in *BlockUserRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, StakeholdersService_BlockUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// StakeholdersServiceServer is the server API for StakeholdersService service.
+// All implementations must embed UnimplementedStakeholdersServiceServer
+// for forward compatibility.
+type StakeholdersServiceServer interface {
+	// 1. INTERNA METODA (Koristi je Auth servis)
+	CreateProfile(context.Context, *CreateProfileRequest) (*CreateProfileResponse, error)
+	// 2. GET PROFILE (Javna/Zaštićena)
+	// GET /api/stakeholders/profiles/{user_id}
+	GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error)
+	// 3. GET MY PROFILE (Za ulogovanog korisnika)
+	// GET /api/stakeholders/profiles/me
+	GetMyProfile(context.Context, *emptypb.Empty) (*GetProfileResponse, error)
+	// 4. UPDATE MY PROFILE
+	// PUT /api/stakeholders/profiles/me
+	UpdateMyProfile(context.Context, *UpdateProfileRequest) (*GetProfileResponse, error)
+	// 5. BLOCK USER (Admin only)
+	// POST /api/stakeholders/profiles/{user_id}/block
+	BlockUser(context.Context, *BlockUserRequest) (*emptypb.Empty, error)
+	mustEmbedUnimplementedStakeholdersServiceServer()
+}
+
+// UnimplementedStakeholdersServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedStakeholdersServer struct{}
+type UnimplementedStakeholdersServiceServer struct{}
 
-func (UnimplementedStakeholdersServer) CreateProfile(context.Context, *CreateProfileRequest) (*CreateProfileResponse, error) {
+func (UnimplementedStakeholdersServiceServer) CreateProfile(context.Context, *CreateProfileRequest) (*CreateProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProfile not implemented")
 }
-func (UnimplementedStakeholdersServer) GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error) {
+func (UnimplementedStakeholdersServiceServer) GetProfile(context.Context, *GetProfileRequest) (*GetProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetProfile not implemented")
 }
-func (UnimplementedStakeholdersServer) mustEmbedUnimplementedStakeholdersServer() {}
-func (UnimplementedStakeholdersServer) testEmbeddedByValue()                      {}
+func (UnimplementedStakeholdersServiceServer) GetMyProfile(context.Context, *emptypb.Empty) (*GetProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyProfile not implemented")
+}
+func (UnimplementedStakeholdersServiceServer) UpdateMyProfile(context.Context, *UpdateProfileRequest) (*GetProfileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateMyProfile not implemented")
+}
+func (UnimplementedStakeholdersServiceServer) BlockUser(context.Context, *BlockUserRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BlockUser not implemented")
+}
+func (UnimplementedStakeholdersServiceServer) mustEmbedUnimplementedStakeholdersServiceServer() {}
+func (UnimplementedStakeholdersServiceServer) testEmbeddedByValue()                             {}
 
-// UnsafeStakeholdersServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to StakeholdersServer will
+// UnsafeStakeholdersServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to StakeholdersServiceServer will
 // result in compilation errors.
-type UnsafeStakeholdersServer interface {
-	mustEmbedUnimplementedStakeholdersServer()
+type UnsafeStakeholdersServiceServer interface {
+	mustEmbedUnimplementedStakeholdersServiceServer()
 }
 
-func RegisterStakeholdersServer(s grpc.ServiceRegistrar, srv StakeholdersServer) {
-	// If the following call pancis, it indicates UnimplementedStakeholdersServer was
+func RegisterStakeholdersServiceServer(s grpc.ServiceRegistrar, srv StakeholdersServiceServer) {
+	// If the following call pancis, it indicates UnimplementedStakeholdersServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&Stakeholders_ServiceDesc, srv)
+	s.RegisterService(&StakeholdersService_ServiceDesc, srv)
 }
 
-func _Stakeholders_CreateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StakeholdersService_CreateProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StakeholdersServer).CreateProfile(ctx, in)
+		return srv.(StakeholdersServiceServer).CreateProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Stakeholders_CreateProfile_FullMethodName,
+		FullMethod: StakeholdersService_CreateProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StakeholdersServer).CreateProfile(ctx, req.(*CreateProfileRequest))
+		return srv.(StakeholdersServiceServer).CreateProfile(ctx, req.(*CreateProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Stakeholders_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _StakeholdersService_GetProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetProfileRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(StakeholdersServer).GetProfile(ctx, in)
+		return srv.(StakeholdersServiceServer).GetProfile(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Stakeholders_GetProfile_FullMethodName,
+		FullMethod: StakeholdersService_GetProfile_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StakeholdersServer).GetProfile(ctx, req.(*GetProfileRequest))
+		return srv.(StakeholdersServiceServer).GetProfile(ctx, req.(*GetProfileRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Stakeholders_ServiceDesc is the grpc.ServiceDesc for Stakeholders service.
+func _StakeholdersService_GetMyProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakeholdersServiceServer).GetMyProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StakeholdersService_GetMyProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakeholdersServiceServer).GetMyProfile(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StakeholdersService_UpdateMyProfile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateProfileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakeholdersServiceServer).UpdateMyProfile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StakeholdersService_UpdateMyProfile_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakeholdersServiceServer).UpdateMyProfile(ctx, req.(*UpdateProfileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StakeholdersService_BlockUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BlockUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakeholdersServiceServer).BlockUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StakeholdersService_BlockUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakeholdersServiceServer).BlockUser(ctx, req.(*BlockUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// StakeholdersService_ServiceDesc is the grpc.ServiceDesc for StakeholdersService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Stakeholders_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "stakeholders.v1.stakeholders",
-	HandlerType: (*StakeholdersServer)(nil),
+var StakeholdersService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "stakeholders.StakeholdersService",
+	HandlerType: (*StakeholdersServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "CreateProfile",
-			Handler:    _Stakeholders_CreateProfile_Handler,
+			Handler:    _StakeholdersService_CreateProfile_Handler,
 		},
 		{
 			MethodName: "GetProfile",
-			Handler:    _Stakeholders_GetProfile_Handler,
+			Handler:    _StakeholdersService_GetProfile_Handler,
+		},
+		{
+			MethodName: "GetMyProfile",
+			Handler:    _StakeholdersService_GetMyProfile_Handler,
+		},
+		{
+			MethodName: "UpdateMyProfile",
+			Handler:    _StakeholdersService_UpdateMyProfile_Handler,
+		},
+		{
+			MethodName: "BlockUser",
+			Handler:    _StakeholdersService_BlockUser_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "proto/stakeholders.proto",
+	Metadata: "stakeholders/proto/stakeholders.proto",
 }
