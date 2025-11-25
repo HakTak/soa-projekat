@@ -4,8 +4,47 @@ import { CommonModule } from "@angular/common";
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import { Tour } from '../model/tour';
-import { Keypoint } from '../model/keypoint';
+
+// --- MODELS ---
+
+export interface Keypoint {
+  id?: string;
+  tourId: string;
+  title: string;
+  latitude: number;
+  longitude: number;
+  description: string;
+  imageUrl: string;
+}
+
+export enum RouteMode {
+  Walking = 'WALKING',
+  Cycling = 'CYCLING',
+  Driving = 'DRIVING'
+}
+
+export interface RouteOption {
+  mode: RouteMode;
+  duration: number; // Nanosekunde za backend
+}
+
+export interface RouteOptionInput {
+  mode: RouteMode;
+  hours: number;
+  minutes: number;
+}
+
+export interface Tour {
+  title: string;
+  description: string;
+  difficulty: string;
+  tags: string; // Ovo ostaje string za backend
+  status: string;
+  price: number;
+  distance: number; 
+  keypoints: Keypoint[];
+  route_options: RouteOption[]; 
+}
 
 @Component({
   selector: 'app-tour-create',
@@ -16,6 +55,7 @@ import { Keypoint } from '../model/keypoint';
 })
 export class TourCreateComponent implements AfterViewInit {
   
+  // Map logic
   public map!: L.Map;
   public pathLine?: L.Polyline;
   public markers: L.Marker[] = [];
@@ -23,11 +63,13 @@ export class TourCreateComponent implements AfterViewInit {
   public currentMarker?: L.Marker;
   public files: File[] = [];
 
+  // State logic
   public editing: boolean = false;
-  public keyPointMode: boolean = true;
+  public currentStep: number = 1; 
   
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
+  // Data holders
   public currentKeypoint: Keypoint = {
     tourId: '',
     title: '',
@@ -44,9 +86,38 @@ export class TourCreateComponent implements AfterViewInit {
     status: 'Draft',
     tags: '',
     price: 0,
-    keypoints: []
+    distance: 0,
+    keypoints: [],
+    route_options: []
   };
 
+  // --- TAGS LOGIC (NOVO) ---
+  public availableTags: string[] = [
+    'Nature', 
+    'History', 
+    'Culture', 
+    'Food & Drink', 
+    'Adventure', 
+    'Relaxation', 
+    'Urban', 
+    'Nightlife',
+    'Museums',
+    'Riverside'
+  ];
+  
+  // Ovde cuvamo sta je korisnik kliknuo pre nego sto pretvorimo u string
+  public selectedTags: string[] = [];
+
+  // Route Option logic
+  public availableModes = [RouteMode.Walking, RouteMode.Cycling, RouteMode.Driving];
+  public currentRouteOptionInput: RouteOptionInput = {
+    mode: RouteMode.Walking,
+    hours: 0,
+    minutes: 0
+  };
+  public addedRouteOptions: RouteOptionInput[] = [];
+
+  // Modals
   public showSuccessModal = false;
   public showErrorModal = false;
 
@@ -67,12 +138,13 @@ export class TourCreateComponent implements AfterViewInit {
     }).addTo(this.map);
 
     this.map.on('click', (e: L.LeafletMouseEvent) => {
-      // Dozvoli dodavanje samo ako NE editujemo trenutno tacku
-      if (!this.editing && this.keyPointMode) {
+      if (!this.editing && this.currentStep === 1) {
         this.addMarker(e.latlng.lat, e.latlng.lng);
       }
     });
   }
+
+  // --- STEP 1 LOGIC (Keypoints) ---
 
   private addMarker(lat: number, lng: number): void {
     const marker = L.marker([lat, lng]).addTo(this.map);
@@ -93,25 +165,22 @@ export class TourCreateComponent implements AfterViewInit {
     this.redrawPath();
 
     marker.on('click', () => {
-      if (this.keyPointMode) {
+      if (this.currentStep === 1) {
         this.selectMarker(marker, keypoint);
       }
     });
 
-    // Odmah ulazimo u edit mod za novu tacku
     this.selectMarker(marker, keypoint);
   }
 
   private selectMarker(marker: L.Marker, keypoint: Keypoint): void {
     this.currentMarker = marker;
-    this.currentKeypoint = keypoint; // Referenca na objekat u nizu
-    this.editing = true; // Blokiramo mapu dok se ovo ne zavrsi
+    this.currentKeypoint = keypoint; 
+    this.editing = true; 
   }
 
-  // --- NOVA FUNKCIJA: Samo resetuje formu, bez validacije ---
   private resetForm(): void {
     this.currentMarker = undefined;
-    // Resetujemo currentKeypoint na novi prazan objekat da ne bi ostala referenca
     this.currentKeypoint = {
       tourId: '',
       title: '',
@@ -120,21 +189,18 @@ export class TourCreateComponent implements AfterViewInit {
       longitude: 0,
       imageUrl: ''
     };
-    this.editing = false; // Odblokiramo mapu
+    this.editing = false; 
     if(this.fileInput) this.fileInput.nativeElement.value = '';
   }
 
-  // Klik na "Save Point"
   public savePoint(): void {
     if(!this.currentKeypoint.title) {
         alert("Please enter a title for this keypoint.");
         return;
     }
-    // Ako je validno, samo resetujemo formu (podaci su vec u nizu keypoints jer koristimo referencu)
     this.resetForm();
   }
 
-  // Klik na "Discard Point"
   public discardMarker(): void {
     if (!this.currentMarker) return;
 
@@ -149,27 +215,7 @@ export class TourCreateComponent implements AfterViewInit {
     }
 
     this.redrawPath();
-    this.resetForm(); // Resetujemo bez pitanja za Title
-  }
-
-  public finishKeypoints(): void {
-    if(this.keypoints.length < 2) {
-        alert("You need at least 2 keypoints to create a tour.");
-        return;
-    }
-    // Ako je ostala neka tacka nezavrsena (edit mode), sacuvaj je ili odbaci
-    if (this.editing) {
-       alert("Please save or discard the current point before finishing.");
-       return;
-    }
-
-    this.keyPointMode = false;
-    this.editing = false;
-  }
-
-  public backToKeypoints(): void {
-    this.keyPointMode = true;
-    this.editing = false;
+    this.resetForm(); 
   }
 
   private redrawPath(): void {
@@ -209,12 +255,112 @@ export class TourCreateComponent implements AfterViewInit {
     }
   }
 
+  // --- NAVIGATION LOGIC ---
+
+  public goToStep2(): void {
+    if(this.keypoints.length < 2) {
+        alert("You need at least 2 keypoints to create a tour.");
+        return;
+    }
+    if (this.editing) {
+       alert("Please save or discard the current point before finishing.");
+       return;
+    }
+    this.calculateTourDistance();
+    this.currentStep = 2;
+    this.editing = false;
+  }
+
+  public backToStep1(): void {
+    this.currentStep = 1;
+  }
+
+  public goToStep3(): void {
+    if (this.addedRouteOptions.length === 0) {
+        alert("Please add at least one route option (e.g., Walking).");
+        return;
+    }
+    this.currentStep = 3;
+  }
+
+  public backToStep2(): void {
+    this.currentStep = 2;
+  }
+
+  // --- STEP 2 LOGIC (Distance & RouteOptions) ---
+
+  private calculateTourDistance(): void {
+    let totalDistanceMeters = 0;
+    for (let i = 0; i < this.keypoints.length - 1; i++) {
+      const point1 = L.latLng(this.keypoints[i].latitude, this.keypoints[i].longitude);
+      const point2 = L.latLng(this.keypoints[i+1].latitude, this.keypoints[i+1].longitude);
+      totalDistanceMeters += point1.distanceTo(point2);
+    }
+    this.currentTour.distance = parseFloat((totalDistanceMeters / 1000).toFixed(2));
+  }
+
+  public addRouteOption(): void {
+    const input = this.currentRouteOptionInput;
+    if (input.hours === 0 && input.minutes === 0) {
+        alert("Duration cannot be zero.");
+        return;
+    }
+    const exists = this.addedRouteOptions.find(o => o.mode === input.mode);
+    if (exists) {
+        alert(`Option for ${input.mode} already exists. Please remove it first if you want to change it.`);
+        return;
+    }
+    this.addedRouteOptions.push({ ...input });
+    this.currentRouteOptionInput = { mode: RouteMode.Walking, hours: 0, minutes: 0 };
+  }
+
+  public removeRouteOption(index: number): void {
+    this.addedRouteOptions.splice(index, 1);
+  }
+
+  public formatDuration(opt: RouteOptionInput): string {
+    const h = opt.hours > 0 ? `${opt.hours}h ` : '';
+    const m = opt.minutes > 0 ? `${opt.minutes}min` : '';
+    return (h + m).trim();
+  }
+
+  // --- TAGS LOGIC (METODE) ---
+  
+  public toggleTag(tag: string): void {
+    if (this.selectedTags.includes(tag)) {
+      // Ako je vec selektovan, izbaci ga
+      this.selectedTags = this.selectedTags.filter(t => t !== tag);
+    } else {
+      // Ako nije, dodaj ga
+      this.selectedTags.push(tag);
+    }
+  }
+
+  // --- STEP 3 LOGIC (Final & Save) ---
+
   public saveTour(): void {
     this.currentTour.keypoints = this.keypoints;
     this.currentTour.status = "Published"; 
 
+    // Konverzija Tagova: Niz stringova -> Jedan string odvojen zarezima
+    this.currentTour.tags = this.selectedTags.join(', ');
+
+    // Konverzija Vremena
+    this.currentTour.route_options = this.addedRouteOptions.map(opt => {
+        const totalMinutes = (opt.hours * 60) + opt.minutes;
+        const durationNanoseconds = totalMinutes * 60 * 1_000_000_000; 
+        return {
+            mode: opt.mode,
+            duration: durationNanoseconds
+        };
+    });
+
     if(!this.currentTour.title || !this.currentTour.description || this.currentTour.price <= 0) {
         alert("Please fill in all Tour Details fields correctly.");
+        return;
+    }
+    if(this.selectedTags.length === 0) {
+        alert("Please select at least one tag.");
         return;
     }
 
@@ -231,7 +377,7 @@ export class TourCreateComponent implements AfterViewInit {
 
   public closeSuccessModal() {
     this.showSuccessModal = false;
-    this.router.navigate(['/tours']); 
+    this.router.navigate(['/tour-list']); 
   }
 
   public closeErrorModal() {

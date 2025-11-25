@@ -1,7 +1,8 @@
 :root {
   --color-bg: #ffffff;
   --color-text: #222;
-  --color-accent: #0b76ef;
+  --color-accent: #0b76ef; /* Glavna plava */
+  --color-accent-hover: #005bb5;
   --color-success: #10b981;
   --color-danger: #ef4444;
   --radius: 8px;
@@ -54,7 +55,7 @@
   box-shadow: var(--shadow);
   height: 600px;
   position: relative;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s, filter 0.3s;
 }
 
 .map-container {
@@ -64,7 +65,8 @@
 
 .map-disabled {
   pointer-events: none;
-  opacity: 0.7;
+  opacity: 0.6;
+  filter: grayscale(80%);
 }
 
 .map-instructions {
@@ -83,6 +85,15 @@
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
+}
+
+.step-container {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .sidebar-header {
@@ -151,7 +162,122 @@ textarea.form-control {
   resize: vertical;
 }
 
-/* --- BUTTONS (ISPRAVLJENO) --- */
+/* --- TAGS STYLING (NOVO) --- */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tag-chip {
+  padding: 8px 14px;
+  background-color: #f1f5f9;
+  color: #475569;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+  user-select: none; /* Da se ne selektuje tekst kad se brzo klikce */
+}
+
+.tag-chip:hover {
+  background-color: #6686b1;
+  transform: translateY(-1px);
+}
+
+/* Stil kada je tag selektovan */
+.tag-chip.selected {
+  background-color: var(--color-accent); /* Plava */
+  color: #6686b1;
+  border-color: var(--color-accent-hover);
+  box-shadow: 0 2px 4px rgba(11, 118, 239, 0.3);
+}
+
+/* --- STEP 2 SPECIFIC --- */
+.info-box {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.distance-display {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-accent);
+  line-height: 1.2;
+}
+
+.distance-display .unit {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.small-text {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: -10px;
+  margin-bottom: 15px;
+}
+
+.added-options-list {
+  margin-top: 20px;
+  border-top: 1px dashed #ddd;
+  padding-top: 10px;
+}
+
+.option-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 10px 12px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.opt-info strong {
+  display: block;
+  color: #334155;
+}
+.opt-info span {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.btn-icon-remove {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.btn-icon-remove:hover {
+  background: #ef4444;
+  color: white;
+}
+
+.mt-large {
+  margin-top: 30px;
+}
+
+/* --- BUTTONS --- */
 .action-buttons {
   display: flex;
   gap: 10px;
@@ -167,16 +293,14 @@ textarea.form-control {
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  border: 1px solid transparent; /* Da ivice budu uredne */
+  border: 1px solid transparent; 
   transition: all 0.2s ease;
   font-size: 0.95rem;
 }
 
-/* Stil za ONEMOGUCENA dugmad (kad su disabled) */
-/* Sada ce biti svetlo siva umesto bela, pa ce se videti */
 .btn:disabled {
-  background-color: #e5e7eb !important; /* Siva pozadina */
-  color: #9ca3af !important; /* Tamnija siva slova */
+  background-color: #e5e7eb !important;
+  color: #9ca3af !important;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
@@ -186,9 +310,8 @@ textarea.form-control {
   transform: scale(0.98);
 }
 
-/* Plavo dugme (Save Point) */
 .btn-primary {
-  background-color: #0b76ef !important; /* Forsiramo plavu */
+  background-color: #0b76ef !important;
   color: white !important;
 }
 .btn-primary:hover:not(:disabled) {
@@ -196,9 +319,8 @@ textarea.form-control {
   transform: translateY(-1px);
 }
 
-/* Sivo dugme (Discard / Back) */
 .btn-secondary {
-  background-color: #f3f4f6 !important; /* Forsiramo svetlo sivu */
+  background-color: #f3f4f6 !important;
   color: #374151 !important;
   border: 1px solid #d1d5db !important;
 }
@@ -207,9 +329,8 @@ textarea.form-control {
   color: #111 !important;
 }
 
-/* Zeleno dugme (Next Step / Finish) */
 .btn-success {
-  background-color: #10b981 !important; /* Forsiramo zelenu */
+  background-color: #10b981 !important;
   color: white !important;
 }
 .btn-success:hover:not(:disabled) {

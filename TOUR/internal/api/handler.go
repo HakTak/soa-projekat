@@ -25,7 +25,6 @@ func (h *TourHandler) CreateTour(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	t.Price = 0
 	t.Status = "DRAFT"
 
 	if err := h.service.CreateTour(&t); err != nil {

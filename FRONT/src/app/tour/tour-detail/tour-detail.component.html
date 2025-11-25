@@ -2,8 +2,15 @@
   
   <button class="btn-back" (click)="goBack()">← Back to Tours</button>
 
+  <!-- IZMENJEN HEADER: Flex kontejner za naslov i dugme -->
   <header class="tour-header">
-    <h1>{{ tour.title }}</h1>
+    <div class="header-content">
+      <h1>{{ tour.title }}</h1>
+      <!-- Dugme za brisanje -->
+      <button class="btn btn-danger" (click)="deleteTour()">
+        Delete Tour 🗑️
+      </button>
+    </div>
   </header>
 
   <section class="details-container">
@@ -33,7 +40,7 @@
     </div>
 
     <div class="details-image-wrapper">
-      <img *ngIf="tourImage" [src]="tourImage" alt="Tour scene" class="tour-image">
+      <img *ngIf="tourImage" [src]="'assets/' + tourImage" alt="Tour scene" class="tour-image">
       <div *ngIf="!tourImage" class="no-image-placeholder">
         <span>No image available</span>
       </div>
@@ -42,11 +49,8 @@
 
   <!-- REVIEWS SECTION -->
   <section class="reviews-section">
-    
-    <!-- HEADER SEKCIJE SA DUGMETOM -->
     <div class="reviews-section-header">
       <h2 class="section-title">Reviews</h2>
-      <!-- Dugme za otvaranje modala -->
       <button class="btn btn-primary btn-add-review" (click)="openReviewModal()">
         + Add Review
       </button>
@@ -85,28 +89,20 @@
 <!-- ================= MODAL FORMA ================= -->
 <div class="modal-overlay" *ngIf="isModalOpen">
   <div class="modal-content">
-    
     <div class="modal-header">
       <h2>Write a Review</h2>
       <span class="close-icon" (click)="closeReviewModal()">&times;</span>
     </div>
-
     <div class="modal-body">
       <form (ngSubmit)="submitReview()" #reviewForm="ngForm">
-        
-        <!-- Read-only Tour Name -->
         <div class="form-group">
           <label>Tour Name</label>
           <input type="text" [value]="tour?.title" disabled class="form-control disabled-input">
         </div>
-
-        <!-- Read-only Username -->
         <div class="form-group">
           <label>Username</label>
           <input type="text" [(ngModel)]="newReview.user_name" name="username" disabled class="form-control disabled-input">
         </div>
-
-        <!-- Rating Selection -->
         <div class="form-group">
           <label>Rating (1-5)</label>
           <select [(ngModel)]="newReview.rating" name="rating" class="form-control" required>
@@ -117,33 +113,32 @@
             <option [value]="5">5 - Excellent</option>
           </select>
         </div>
-
-        <!-- Date Picker (Visited At) -->
         <div class="form-group">
           <label>Visited Date</label>
           <input type="date" [(ngModel)]="newReview.visited_at" name="visited_at" class="form-control" required>
         </div>
-
-        <!-- Photo URL (Optional) -->
         <div class="form-group">
           <label>Photo URL (Optional)</label>
           <input type="text" [(ngModel)]="newReview.image_url" name="image_url" placeholder="http://..." class="form-control">
         </div>
-
-        <!-- Comment -->
         <div class="form-group">
           <label>Comment</label>
           <textarea [(ngModel)]="newReview.comment" name="comment" rows="4" class="form-control" placeholder="Share your experience..." required></textarea>
         </div>
-
-        <!-- Buttons -->
         <div class="modal-actions">
           <button type="button" class="btn btn-secondary" (click)="closeReviewModal()">Cancel</button>
           <button type="submit" class="btn btn-primary" [disabled]="!reviewForm.form.valid">Save</button>
         </div>
-
       </form>
     </div>
-
   </div>
+</div>
+
+<!-- ================= POPUP NOTIFIKACIJA ================= -->
+<div class="toast-notification" 
+     [ngClass]="{'show': showNotification, 'success': notificationType === 'success', 'error': notificationType === 'error'}">
+  <span class="toast-icon">
+    {{ notificationType === 'success' ? '✅' : '❌' }}
+  </span>
+  <span class="toast-message">{{ notificationMessage }}</span>
 </div>

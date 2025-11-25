@@ -29,7 +29,7 @@ func main() {
 	}
 
 	// Auto migrate tables
-	db.AutoMigrate(&model.Tour{}, &model.Keypoint{}, &model.Review{})
+	db.AutoMigrate(&model.Tour{}, &model.Keypoint{}, &model.Review{}, &model.RouteOption{})
 
 	// Repository -> Service -> Handler
 	repo := repository.NewTourRepository(db)
