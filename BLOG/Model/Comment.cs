@@ -17,10 +17,10 @@ namespace BLOG.Model
         public string? AuthorName { get; set; } 
 
         [BsonElement("AuthorId")]
-        public string AuthorId { get; set; } //ID autora komentara
+        public string AuthorId { get; set; } = string.Empty; //ID autora komentara
 
         [BsonElement("Text")]
-        public string Text { get; set; }
+        public string Text { get; set; } = string.Empty;
 
         [BsonElement("CreatedAt")]
         public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
