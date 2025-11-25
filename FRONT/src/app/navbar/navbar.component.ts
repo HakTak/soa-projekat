@@ -1,52 +1,56 @@
-import { Component, HostListener } from '@angular/core';
-import { RouterLink } from "@angular/router";
-import { Router } from '@angular/router';
+import { Component, HostListener, OnInit } from '@angular/core';
+import { RouterLink, Router } from "@angular/router";
+import { CommonModule } from '@angular/common';
+import { AuthService } from '../infrastructure/auth.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CommonModule],
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.css']
 })
+export class NavbarComponent implements OnInit {
 
-export class NavbarComponent {
   dropdownOpen = false;
+  isLoggedIn = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) { }
 
-  // Ova metoda sluzi za klik na samo "Tours" dugme
+  ngOnInit(): void {
+    // OVDE JE BILA GRESKA 2: Dodali smo '(state: boolean)'
+    this.authService.userState$.subscribe((state: boolean) => {
+      this.isLoggedIn = state;
+    });
+  }
+
+  onLogout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+
+  // --- Ostale metode ostaju iste ---
+
   toggleDropdown(event: Event) {
     event.preventDefault();
     event.stopPropagation();
     this.dropdownOpen = !this.dropdownOpen;
   }
 
-  // Ova metoda sluzi za eksplicitno zatvaranje (npr. kada se klikne na Create Tour)
   closeDropdown() {
     this.dropdownOpen = false;
   }
 
-  // Zatvaranje kada se klikne bilo gde drugde na stranici
   @HostListener('document:click')
   onDocumentClick() {
     this.dropdownOpen = false;
   }
 
-  toggleNavbar() {
-    // Ako se koristi za hamburger meni u buducnosti
-    throw new Error('Method not implemented.');
-  }
-
-  isOpen: any;
-
   onHomeClick() {
-    console.log("home clicked!");
     this.router.navigate(['/']);
   }
 
   onBlogClick() {
-    console.log("blog clicked!");
     this.router.navigate(['/blog']);
   }
 }

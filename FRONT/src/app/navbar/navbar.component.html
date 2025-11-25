@@ -1,23 +1,16 @@
 <nav class="site-nav" role="navigation" aria-label="Main navigation">
   <div class="nav-inner">
-    <!-- left group -->
+    <!-- LEVA GRUPA (Ostala ista) -->
     <ul class="nav-group nav-group--left">
       <li><a routerLink="/" (click)="onHomeClick()" class="nav-link">Home</a></li>
       <li><a routerLink="/blog" (click)="onBlogClick()" class="nav-link">Blog</a></li>
-      
+
       <!-- TOURS DROPDOWN -->
-      <!-- Dodat mouseenter i mouseleave za hover efekat -->
-      <li class="nav-item dropdown" 
-          (mouseenter)="dropdownOpen = true" 
-          (mouseleave)="dropdownOpen = false">
-        
+      <li class="nav-item dropdown" (mouseenter)="dropdownOpen = true" (mouseleave)="dropdownOpen = false">
         <a class="nav-link" style="cursor: pointer;" (click)="toggleDropdown($event)">
           Tours
         </a>
-
-        <!-- Dropdown meni -->
         <div class="dropdown-menu" [class.show]="dropdownOpen">
-          <!-- Klikom na ove linkove poziva se closeDropdown() da se meni sakrije -->
           <a class="dropdown-item" routerLink="/tours" (click)="closeDropdown()">Create Tour</a>
           <a class="dropdown-item" routerLink="/tour-list" (click)="closeDropdown()">All Tours</a>
         </div>
@@ -26,10 +19,21 @@
       <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
     </ul>
 
-    <!-- right group -->
+    <!-- DESNA GRUPA (Ovde je promena) -->
     <ul class="nav-group nav-group--right">
-      <li><a routerLink="/login" class="btn btn--ghost">Login</a></li>
-      <li><a routerLink="/register" class="btn btn--primary">Register</a></li>
+
+      <!-- AKO NIJE ULOGOVAN: Prikazi Login i Register -->
+      <ng-container *ngIf="!isLoggedIn">
+        <li><a routerLink="/login" class="btn btn--ghost">Login</a></li>
+        <li><a routerLink="/register" class="btn btn--primary">Register</a></li>
+      </ng-container>
+
+      <!-- AKO JE ULOGOVAN: Prikazi Profile i Logout -->
+      <ng-container *ngIf="isLoggedIn">
+        <li><a routerLink="/profile" class="btn btn--ghost">Profile</a></li>
+        <li><button (click)="onLogout()" class="btn btn--primary">Logout</button></li>
+      </ng-container>
+
     </ul>
   </div>
 </nav>

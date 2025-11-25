@@ -67,11 +67,14 @@ func main() {
 	// Sve rute saljemo na gRPC Gateway
 	rootMux.Handle("/", gwmux)
 
-	// 3. MIDDLEWARE
-	handler := middleware.AuthMiddleware(rootMux)
+	// 3. AUTH MIDDLEWARE
+	authHandler := middleware.AuthMiddleware(rootMux)
+
+	//4. CORS MIDDLEWARE
+	finalHandler := middleware.CorsMiddleware(authHandler)
 
 	fmt.Println("API Gateway running on port 8080...")
-	if err := http.ListenAndServe(":8080", handler); err != nil {
+	if err := http.ListenAndServe(":8080", finalHandler); err != nil {
 		log.Fatal(err)
 	}
 }
