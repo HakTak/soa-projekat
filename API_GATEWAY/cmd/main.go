@@ -8,6 +8,7 @@ import (
 
 	"PROJEKAT/API_GATEWAY/middleware"
 	pbAuth "PROJEKAT/COMMON/auth/proto"
+	pbBlog "PROJEKAT/COMMON/blog/proto"
 	pbFollower "PROJEKAT/COMMON/follower/proto"
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
 
@@ -51,6 +52,12 @@ func main() {
 	err = pbFollower.RegisterFollowerServiceHandlerFromEndpoint(ctx, gwmux, "follower:9090", opts)
 	if err != nil {
 		log.Fatalf("Faild to register Follower: %v", err)
+	}
+
+	// Registracija Blog servisa
+	err = pbBlog.RegisterBlogServiceHandlerFromEndpoint(ctx, gwmux, "blog:9091", opts)
+	if err != nil {
+		log.Fatalf("Failed to register Blog: %v", err)
 	}
 
 	// 2. GLAVNI RUTER (Standardni HTTP)

@@ -86,13 +86,20 @@ services:
     
   # --- BLOG SERVIS ---
   blog:
-    build: ./BLOG
+    build: 
+      context: .
+      dockerfile: BLOG/Dockerfile
     container_name: blog
     ports:
       - "5251:5251"
+      - "9091:9091"
     volumes:
       - ./BLOG:/src
     environment:
+      ASPNETCORE_URLS: "http://+:5251;http://+:9091"
+      Kestrel__Endpoints__Grpc__Url: "http://*:9091"
+      Kestrel__Endpoints__Grpc__Protocols: "Http2"
+      
       MongoDatabaseSettings__ConnectionString: "mongodb://blog-db:27017"
       MongoDatabaseSettings__DatabaseName: "BlogDB"
     depends_on:

@@ -1,21 +1,27 @@
-# STAGE 1 — BUILD
+# Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY ["BLOG.csproj", "./"]
-RUN dotnet restore "BLOG.csproj"
+# 1. Copy csproj
+COPY ["BLOG/BLOG.csproj", "BLOG/"]
 
-COPY . .
-RUN dotnet publish "BLOG.csproj" -c Release -o /app/publish
+# 2. Restore (Downloads Nuget packages)
+RUN dotnet restore "BLOG/BLOG.csproj"
 
-# STAGE 2 — RUNTIME
+# 3. Copy Source Code
+COPY ["BLOG/", "BLOG/"]
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# 4. Copy COMMON (So the ../COMMON path in csproj works)
+COPY ["COMMON/", "COMMON/"]
+
+# 5. Build
+WORKDIR "/src/BLOG"
+RUN dotnet publish "BLOG.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-
-COPY --from=build /app/publish .
-
-ENV ASPNETCORE_URLS=http://+:5251
 EXPOSE 5251
-
+EXPOSE 9091
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "BLOG.dll"]
