@@ -1,4 +1,4 @@
-using BLOG.Controllers;
+
 using BLOG.Model;
 
 namespace BLOG.Repositories
@@ -9,10 +9,10 @@ namespace BLOG.Repositories
         Task<Post> GetPostByIdAsync(string id);
 
         Task<PostLike> GetPostLikeByUserIdAsync(string userId, string postId);
-        Task CreatePostAsync(Post Post);
+        Task<Post> CreatePostAsync(Post Post);
         Task CreatePostLikeAsync(PostLike postLike);
         Task DeletePostLikeAsync(string id);
-        Task UpdatePostAsync(Post Post);
+        Task<Post> UpdatePostAsync(Post Post);
         Task DeletePostAsync(string id);
     }
 }

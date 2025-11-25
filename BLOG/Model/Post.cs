@@ -20,10 +20,18 @@ namespace BLOG.Model
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("ImagePaths")]
-        public string[]? ImagePaths {get; set;} = null!;
+        public List<string> ImagePaths {get; set;} = null!;
 
         [BsonElement("LikeCount")]
         public int LikeCount {get; set;}
+
+        public Post(PostDTO postDTO)
+        {
+            Title = postDTO.Title;
+            Description = postDTO.Description;
+            CreatedAt = postDTO.CreatedAt;
+            LikeCount = postDTO.LikeCount;
+        }
 
     }
 }

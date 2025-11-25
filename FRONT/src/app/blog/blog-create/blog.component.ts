@@ -1,37 +1,32 @@
 import { Component } from '@angular/core';
 import { Blog } from '../model/blog';
 import { FormsModule } from '@angular/forms';
+import { BlogService } from '../services/blogService/blog.service';
+import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-blog',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './blog.component.html',
   styleUrl: './blog.component.css'
 })
 export class BlogComponent {
-  public currentBlog: Blog = {
-    id: '',
-    title: '',
-    content: '',
-    createdAt: '' as unknown as Date,
-    tags: '',
-    imageUrls: [],
-    comments: []
-    }
-    currentFiles: File[] = [];
+  public blogForm: FormGroup;
+  public currentFiles: File[];
+  
+  constructor(private blogService: BlogService) {
+    this.blogForm = new FormGroup({
+      title: new FormControl('', Validators.required),
+      content: new FormControl('', Validators.required),
+      tags: new FormControl('')
+    }); 
+    this.currentFiles = [];
+  }
 
     resetForm() {
-    this.currentBlog = {
-      id: '',
-      title: '',
-      tags: '',
-      content: '',
-      createdAt: new Date(),
-      imageUrls: [],
-      comments: []
-    };
-    this.currentFiles = [];
+      this.blogForm.reset();
+      this.currentFiles = [];
   }
 
   onFileSelected(event: any) {
@@ -43,12 +38,40 @@ export class BlogComponent {
     this.currentFiles.push(...filesArray);
   }
 
+  parseTags() {
+    let value = this.blogForm.value.tags
+    value = value.replace(/ +/g, ","); 
+    value = value.replace(/,+/g, ","); 
+    this.blogForm.patchValue({ tags: value });
+}
+
   publishBlog() {
     const formData = new FormData();
-    this.currentBlog.createdAt = new Date();
-    console.log('Publishing blog:', this.currentBlog);
-    formData.append('blog', JSON.stringify(this.currentBlog));
-    formData.append('images', JSON.stringify(this.currentFiles));
+    const currentBlog: Blog = {
+      id: '',
+      title: this.blogForm.value.title,
+      authorName: 'Current User',
+      imageUrls: [],
+      comments: [],
+      likeCount: 0,
+      content: this.blogForm.value.content,
+      tags: this.blogForm.value.tags.replace(/^,+/, "").replace(/,+$/, ""),
+      createdAt: new Date()
+    }
+    formData.append('blog', JSON.stringify(currentBlog));
+    this.currentFiles.forEach((_,index) => {
+      if (this.currentFiles[index]) {
+          formData.append('images', this.currentFiles[index], `image_${index}.jpg`);
+      }
+    });
+    this.blogService.createPost(formData).subscribe({
+      next: (response: Blog) => {
+        console.log('Blog post created successfully:', response);
+      },
+      error: (error) => {
+        console.error('Error creating blog:', error);
+      }
+    });
     this.resetForm();
   }
 }

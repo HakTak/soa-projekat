@@ -34,8 +34,24 @@ namespace BLOG.Controllers
         } 
 
         [HttpPost("create")]
-        public async Task<ActionResult<Post>> CreatePost([FromBody] Post post)
+        public async Task<ActionResult<Post>> CreatePost([FromForm] PostDTO postDTO)
         {
+            var post = new Post(postDTO);
+            var uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads"); 
+            List<string> imageUrls = new List<string>();
+            foreach (var file in postDTO.images)
+            {
+                var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                var filePath = Path.Combine(uploadPath, fileName);
+
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    file.CopyTo(stream);
+                }
+
+                imageUrls.Add($"http:localhost:5251/wwwwroot/uploads/{fileName}"); // URL to serve
+            }
+            post.ImagePaths = imageUrls;
             await _postSerivce.CreatePostAsync(post);
             return Ok(post);
         }

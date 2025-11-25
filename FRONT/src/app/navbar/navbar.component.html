@@ -3,7 +3,14 @@
     <!-- left group -->
     <ul class="nav-group nav-group--left">
       <li><a routerLink="/" (click)="onHomeClick()" class="nav-link">Home</a></li>
-      <li><a routerLink="/blog" (click)="onBlogClick()" class="nav-link">Blog</a></li>
+      <!-- BLOG DROPDOWN -->
+      <li class="dropdown">
+        <a class="nav-link">Blog ▾</a>
+        <ul class="dropdown-menu">
+          <li><a routerLink="/blogs" class="nav-link">Blogs</a></li>
+          <li><a routerLink="/blog/create"  class="nav-link">Create Blog</a></li>
+        </ul>
+      </li>
       <li><a routerLink="/tours" class="nav-link">Tours</a></li>
       <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
     </ul>

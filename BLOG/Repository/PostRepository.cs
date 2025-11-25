@@ -26,11 +26,11 @@ namespace BLOG.Repositories
         {
             return await _posts.Find(b => b.Id == id).FirstOrDefaultAsync();
         }
-        public async Task CreatePostAsync(Post post)
+        public async Task<Post> CreatePostAsync(Post post)
         {
             await _posts.InsertOneAsync(post);
+            return post;
         }
-
         public async Task CreatePostLikeAsync(PostLike postLike)
         {
             await _postLikes.InsertOneAsync(postLike);
@@ -45,9 +45,10 @@ namespace BLOG.Repositories
             await _posts.DeleteOneAsync(b => b.Id == id);
         }
 
-        public async Task UpdatePostAsync(Post post)
+        public async Task<Post> UpdatePostAsync(Post post)
         {
             await _posts.ReplaceOneAsync(b => b.Id == post.Id, post);
+            return post;
         }
 
         public async Task<PostLike> GetPostLikeByUserIdAsync(string userId, string postId)
