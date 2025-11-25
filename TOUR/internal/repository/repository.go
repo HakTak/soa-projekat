@@ -18,23 +18,29 @@ func (r *TourRepository) CreateTour(t *model.Tour) error {
 	return r.db.Create(t).Error
 }
 
-func (r *TourRepository) GetTour(id uint) (*model.Tour, error) {
+func (r *TourRepository) GetTour(id string) (*model.Tour, error) {
 	var tour model.Tour
-	err := r.db.Preload("Keypoints").First(&tour, id).Error
+	err := r.db.Preload("Keypoints").Preload("RouteOptions").First(&tour, "id = ?", id).Error
 	return &tour, err
 }
 
 func (r *TourRepository) GetAllTours() ([]model.Tour, error) {
 	var tours []model.Tour
-	err := r.db.Preload("Keypoints").Find(&tours).Error
+	err := r.db.Preload("Keypoints").Preload("RouteOptions").Find(&tours).Error
 	return tours, err
 }
 
-func (r *TourRepository) DeleteTour(id uint) error {
-	return r.db.Delete(&model.Tour{}, id).Error
+func (r *TourRepository) DeleteTour(id string) error {
+	return r.db.Delete(&model.Tour{}, "id = ?", id).Error
 }
 
 func (r *TourRepository) UpdateTour(t *model.Tour) error {
 	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).
 		Updates(t).Error
+}
+
+func (r *TourRepository) GetToursByUser(userId uint) ([]model.Tour, error) {
+	var tours []model.Tour
+	err := r.db.Preload("Keypoints").Preload("RouteOptions").Where("user_id = ?", userId).Find(&tours).Error
+	return tours, err
 }

@@ -47,10 +47,6 @@ func (s *UserService) Login(username, password string) (*models.User, error) {
 	return user, nil
 }
 
-func (s *UserService) GetAll() ([]models.User, error) {
-	return s.repo.GetAll()
-}
-
 func (s *UserService) GetUsersForAdmin() ([]models.UserNoPassDTO, error) {
 	return s.repo.GetUsersForAdmin()
 }

@@ -107,13 +107,12 @@ export class BlogsComponent {
         console.error('toggleLike error:', err);
       }
     })
-    blog.comments.push(comment);
   }
 
   likeBlog(blog: Blog) {
-    blog.likeCount++;
     this.blogService.toggleLike(blog.id, 'currentUserId').subscribe({
-      next: (res) => {
+      next: (res: Blog) => {
+        this.selectedBlog.likeCount = res.likeCount;
         console.log('toggleLike response:', res);
       },
       error: (err) => {
@@ -135,12 +134,13 @@ export class BlogsComponent {
   saveComment(comment: Comment) {
     if (!this.editingContent.trim()) return;
 
-    comment.content = this.editingContent;
-    comment.updatedAt = new Date();
-
     // Call API to update
     this.commentService.updateComment(comment).subscribe({
-      next: (res) => console.log('Comment updated', res),
+      next: (res) => {
+        comment.content = this.editingContent;
+        comment.updatedAt = new Date();
+        console.log('Comment updated', res)
+      },
       error: (err) => console.error('Update error', err)
     });
 
