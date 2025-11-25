@@ -20,13 +20,13 @@ func (r *TourRepository) CreateTour(t *model.Tour) error {
 
 func (r *TourRepository) GetTour(id string) (*model.Tour, error) {
 	var tour model.Tour
-	err := r.db.Preload("Keypoints").First(&tour, "id = ?", id).Error
+	err := r.db.Preload("Keypoints").Preload("RouteOptions").First(&tour, "id = ?", id).Error
 	return &tour, err
 }
 
 func (r *TourRepository) GetAllTours() ([]model.Tour, error) {
 	var tours []model.Tour
-	err := r.db.Preload("Keypoints").Find(&tours).Error
+	err := r.db.Preload("Keypoints").Preload("RouteOptions").Find(&tours).Error
 	return tours, err
 }
 
@@ -41,6 +41,6 @@ func (r *TourRepository) UpdateTour(t *model.Tour) error {
 
 func (r *TourRepository) GetToursByUser(userId uint) ([]model.Tour, error) {
 	var tours []model.Tour
-	err := r.db.Preload("Keypoints").Where("user_id = ?", userId).Find(&tours).Error
+	err := r.db.Preload("Keypoints").Preload("RouteOptions").Where("user_id = ?", userId).Find(&tours).Error
 	return tours, err
 }
