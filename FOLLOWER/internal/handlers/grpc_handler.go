@@ -3,13 +3,12 @@ package handlers
 import (
 	"context"
 
-	// ✅ Import imports
+	// ✅ Import the generated code from COMMON
 	"FOLLOWER/internal/service"
 	pb "PROJEKAT/COMMON/follower/proto"
-	"PROJEKAT/COMMON/utils" // <--- Import shared utils
+	"PROJEKAT/COMMON/utils"
 
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -23,63 +22,26 @@ func NewFollowerHandler(svc service.FollowService) *FollowerHandler {
 	return &FollowerHandler{svc: svc}
 }
 
-// =================================================================
-// SAFE HELPER: Retrieves claims from Context or Metadata (Fallback)
-// =================================================================
-func (h *FollowerHandler) getClaimsSafe(ctx context.Context) (map[string]interface{}, error) {
-	// 1. Try getting claims from the shared utility
+// Helper to get UserID from API Gateway Metadata
+func getUserID(ctx context.Context) (string, error) {
 	claims := utils.ClaimsFromContext(ctx)
-
-	// If utils returned a map, ensure it has the ID
-	if claims != nil {
-		if _, ok := claims["id"].(string); ok {
-			return claims, nil
-		}
+	if claims == nil {
+		return "", status.Error(codes.Unauthenticated, "Authentication required")
 	}
 
-	// 2. FALLBACK: Read directly from gRPC Metadata
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return nil, status.Error(codes.Unauthenticated, "No metadata provided")
+	id := claims["id"].(string)
+	if len(id) == 0 {
+		return "", status.Error(codes.Unauthenticated, "user id not found in context")
 	}
-
-	newClaims := make(map[string]interface{})
-
-	// Gateway sends "x-user-id" (canonical) or "user-id"
-	// We check both variants to be safe
-	if ids := md.Get("x-user-id"); len(ids) > 0 {
-		newClaims["id"] = ids[0]
-	} else if ids := md.Get("user-id"); len(ids) > 0 {
-		newClaims["id"] = ids[0]
-	}
-
-	// Gateway sends "x-user-role"
-	if roles := md.Get("x-user-role"); len(roles) > 0 {
-		newClaims["role"] = roles[0]
-	} else if roles := md.Get("user-role"); len(roles) > 0 {
-		newClaims["role"] = roles[0]
-	}
-
-	// Final check: Do we have an ID?
-	if _, ok := newClaims["id"]; !ok {
-		return nil, status.Error(codes.Unauthenticated, "User ID not found in request")
-	}
-
-	return newClaims, nil
+	return id, nil
 }
-
-// =================================================================
-// HANDLERS
-// =================================================================
 
 // 1. Follow
 func (h *FollowerHandler) Follow(ctx context.Context, req *pb.FollowRequest) (*pb.FollowResponse, error) {
-	// ✅ Use Safe Claims Extraction
-	claims, err := h.getClaimsSafe(ctx)
+	followerID, err := getUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	followerID := claims["id"].(string) // Safe because getClaimsSafe verified it
 
 	if followerID == req.TargetId {
 		return nil, status.Error(codes.InvalidArgument, "cannot follow yourself")
@@ -94,12 +56,10 @@ func (h *FollowerHandler) Follow(ctx context.Context, req *pb.FollowRequest) (*p
 
 // 2. Unfollow
 func (h *FollowerHandler) Unfollow(ctx context.Context, req *pb.UnfollowRequest) (*pb.UnfollowResponse, error) {
-	// ✅ Use Safe Claims Extraction
-	claims, err := h.getClaimsSafe(ctx)
+	followerID, err := getUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	followerID := claims["id"].(string)
 
 	if err := h.svc.UnfollowUser(ctx, followerID, req.TargetId); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
@@ -110,12 +70,10 @@ func (h *FollowerHandler) Unfollow(ctx context.Context, req *pb.UnfollowRequest)
 
 // 3. Recommendations
 func (h *FollowerHandler) GetRecommendations(ctx context.Context, _ *emptypb.Empty) (*pb.RecommendationsResponse, error) {
-	// ✅ Use Safe Claims Extraction
-	claims, err := h.getClaimsSafe(ctx)
+	userID, err := getUserID(ctx)
 	if err != nil {
 		return nil, err
 	}
-	userID := claims["id"].(string)
 
 	recs, err := h.svc.GetRecommendations(ctx, userID)
 	if err != nil {
@@ -135,9 +93,7 @@ func (h *FollowerHandler) GetRecommendations(ctx context.Context, _ *emptypb.Emp
 
 // 4. Stats
 func (h *FollowerHandler) GetStats(ctx context.Context, req *pb.StatsRequest) (*pb.StatsResponse, error) {
-	// Note: We use req.UserId from URL here (viewing someone else's stats)
-	// If you wanted to restrict this to only allow viewing your own stats,
-	// you would call h.getClaimsSafe(ctx) here too.
+	// Note: req.UserId comes from the URL /{user_id}/stats
 	stats, err := h.svc.GetUserStats(ctx, req.UserId)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

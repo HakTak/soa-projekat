@@ -103,7 +103,60 @@ func (h *UserHandler) GetUsersForAdmin(ctx context.Context, _ *emptypb.Empty) (*
 	return h.mapUsersToProto(users), nil
 }
 
+func (h *UserHandler) GetById(ctx context.Context, req *pbAuth.UserRequest) (*pbAuth.UserResponse, error) {
+	if err := utils.Authorize(ctx, "ADMIN", "TOURIST", "GUIDE"); err != nil {
+		return nil, err
+	}
+
+	user, err := h.userService.GetById(req.Id)
+
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "User unable to be found")
+	}
+
+	return h.mapUserToProto(user), nil
+}
+
+func (h *UserHandler) GetMe(ctx context.Context, _ *emptypb.Empty) (*pbAuth.UserResponse, error) {
+	claims := utils.ClaimsFromContext(ctx)
+	if claims == nil {
+		return nil, status.Error(codes.Unauthenticated, "Authentication required")
+	}
+
+	myID := claims["id"].(string)
+
+	user, err := h.userService.GetById(myID)
+
+	if err != nil {
+		return nil, status.Error(codes.Unauthenticated, "User unable to be found, user is me")
+	}
+
+	return h.mapUserToProto(user), nil
+}
+
+func (h *UserHandler) BlockUser(ctx context.Context, req *pbAuth.UserRequest) (*pbAuth.UserResponse, error) {
+	if err := utils.Authorize(ctx, "ADMIN"); err != nil {
+		return nil, err
+	}
+
+	user, err := h.userService.BlockUser(req.Id)
+	if err != nil {
+		return nil, status.Error(codes.Internal, "Failed to block or find user")
+	}
+	return h.mapUserToProto(user), nil
+}
+
 // --- POMOCNE FUNKCIJE ---
+
+func (h *UserHandler) mapUserToProto(u *models.UserNoPassDTO) *pbAuth.UserResponse {
+	return &pbAuth.UserResponse{
+		Id:       u.Id,
+		Username: u.Username,
+		Email:    u.Email,
+		Role:     string(u.Role),
+		Blocked:  u.Blocked,
+	}
+}
 
 func (h *UserHandler) mapUsersToProto(users []models.UserNoPassDTO) *pbAuth.GetAllUsersResponse {
 	// Pazi: ovde sam vratio []models.User jer to vraca tvoj servis,
