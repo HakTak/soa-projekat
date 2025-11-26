@@ -31,6 +31,27 @@ service AuthService {
             get: "/api/admin/users"
         };
     }
+
+    // 4. GET USER
+    rpc GetById(UserRequest) returns (UserResponse){
+        option (google.api.http) = {
+            get: "/api/auth/user/{id}"
+        };
+    }
+
+    // 5. GET Me as User
+    rpc GetMe(google.protobuf.Empty) returns (UserResponse){
+        option (google.api.http) = {
+            get: "/api/auth/user/me"
+        };
+    }
+
+    // 6. BLOCK USER (ONLY ADMIN)
+    rpc BlockUser(UserRequest) returns (UserResponse){
+        option (google.api.http) = {
+            put: "/api/admin/block/{id}"
+        };
+    }
 }
 
 // --- PORUKE ---
@@ -68,4 +89,8 @@ message UserResponse {
 
 message GetAllUsersResponse {
     repeated UserResponse users = 1;
+}
+
+message UserRequest{
+    string id = 1;
 }

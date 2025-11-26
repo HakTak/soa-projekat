@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
+// Interfejsi za Auth ostaju ovde
 export interface LoginRequest { username: string; password: string; }
 export interface AuthResponse { token: string; }
 export interface RegisterRequest { username: string; password: string; email: string; role: string; }
@@ -12,12 +13,8 @@ export interface RegisterRequest { username: string; password: string; email: st
 export class AuthService {
   private apiUrl = 'http://localhost:8080/api/auth';
 
-  // 1. Inicijalizacija (Privatno stanje)
   private userState = new BehaviorSubject<boolean>(!!localStorage.getItem('jwt'));
-
-  // 2. JAVNI Observable na koji se Navbar kaci
-  // Dodao sam 'public' da budemo sigurni da ga druge komponente vide
-  public userState$: Observable<boolean> = this.userState.asObservable();
+  public userState$ = this.userState.asObservable();
 
   constructor(private http: HttpClient) { }
 
@@ -27,7 +24,7 @@ export class AuthService {
         tap(response => {
           if (response.token) {
             localStorage.setItem('jwt', response.token);
-            this.userState.next(true); // Javljamo da je ulogovan
+            this.userState.next(true);
           }
         })
       );
@@ -39,14 +36,24 @@ export class AuthService {
 
   logout() {
     localStorage.removeItem('jwt');
-    this.userState.next(false); // Javljamo da je izlogovan
+    this.userState.next(false);
   }
+
+  // --- HELPERI KOJI TREBAJU DRUGIM SERVISIMA ---
 
   getToken(): string | null {
     return localStorage.getItem('jwt');
   }
 
-  isLoggedIn(): boolean {
-    return this.userState.value;
+  // Ovu proveru ostavljamo ovde jer zavisi od dekodiranja tokena
+  isAdmin(): boolean {
+    const token = this.getToken();
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role === 'ADMIN';
+    } catch (e) {
+      return false;
+    }
   }
 }
