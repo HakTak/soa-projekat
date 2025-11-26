@@ -1,1 +1,190 @@
-<p>profile works!</p>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <!-- Error Alert -->
+            @if (errorMessage) {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ errorMessage }}
+                <button type="button" class="btn-close" (click)="errorMessage = ''"></button>
+            </div>
+            }
+
+            <!-- Loading Spinner -->
+            @if (isLoading) {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            }
+
+            <!-- Profile Card -->
+            @if (!isLoading && profile) {
+            <div class="card shadow-sm">
+
+                <!-- Card Header -->
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                    <h4 class="mb-0 text-primary">User Profile</h4>
+                    <button class="btn btn-outline-primary btn-sm" (click)="toggleEdit()">
+                        <!-- Using Emoji or Icon for Edit/Cancel -->
+                        <span *ngIf="!isEditing">✏️ Edit Profile</span>
+                        <span *ngIf="isEditing">❌ Cancel</span>
+                    </button>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+
+                        <!-- ========================== -->
+                        <!-- LEFT COLUMN: AVATAR & ROLE -->
+                        <!-- ========================== -->
+                        <div class="col-md-4 text-center mb-4 mb-md-0 border-end">
+                            <div style="display: flex;">
+
+
+                                <div class="mb-3 position-relative d-inline-block">
+
+                                    <!-- IMAGE PREVIEW -->
+                                    <img [src]="profileForm.get('profilePicture')?.value || profile.profilePicture || 'assets/default-avatar.png'"
+                                        alt="Profile" class="rounded-circle img-thumbnail"
+                                        style="width: 150px; height: 150px; object-fit: cover;">
+
+                                    <!-- CAMERA BUTTON (Visible only in Edit Mode) -->
+                                    @if (isEditing) {
+                                    <button type="button"
+                                        class="btn btn-sm btn-dark position-absolute bottom-0 end-0 rounded-circle"
+                                        style="width: 40px; height: 40px; border: 2px solid white;"
+                                        (click)="fileInput.click()" title="Change Picture">
+                                        📷
+                                    </button>
+
+                                    <!-- HIDDEN FILE INPUT -->
+                                    <input #fileInput type="file" accept="image/*" (change)="onFileSelected($event)"
+                                        style="display: none;">
+                                    }
+                                </div>
+
+                                <h5 class="badge bg-secondary rounded-pill">{{ profile.role }}</h5>
+
+                                @if (stats) {
+                                <div class="d-flex justify-content-center gap-4 mt-3 mb-3 p-2 bg-light rounded-3 shadow-sm mx-auto"
+                                    style="max-width: 200px;">
+                                    <div class="text-center">
+                                        <h6 class="fw-bold mb-0 text-primary">{{ stats.followersCount }}</h6>
+                                        <small class="text-muted"
+                                            style="font-size: 0.75rem; text-transform: uppercase;">Followers</small>
+                                    </div>
+                                    <div class="vr opacity-25"></div> <!-- Vertical Divider -->
+                                    <div class="text-center">
+                                        <h6 class="fw-bold mb-0 text-primary">{{ stats.followingCount }}</h6>
+                                        <small class="text-muted"
+                                            style="font-size: 0.75rem; text-transform: uppercase;">Following</small>
+                                    </div>
+                                </div>
+                                }
+
+                            </div>
+
+                            @if (profile.isBlocked) {
+                            <div class="mt-2 text-danger fw-bold">BLOCKED</div>
+                            }
+                        </div>
+
+                        <!-- ========================== -->
+                        <!-- RIGHT COLUMN: FORM DETAILS -->
+                        <!-- ========================== -->
+                        <div class="col-md-8">
+                            <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+                                <div class="ps-md-3 pt-2">
+
+                                    <!-- ROW 1: First Name -->
+                                    <div class="row mb-3 align-items-center">
+                                        <div class="col-sm-3">
+                                            <label class="mb-0 fw-bold text-secondary small text-uppercase">First
+                                                Name</label>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            @if (isEditing) {
+                                            <input type="text" class="form-control" formControlName="firstName">
+                                            } @else {
+                                            <span class="fs-5 text-dark">{{ profile.firstName }}</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25">
+
+                                    <!-- ROW 2: Last Name -->
+                                    <div class="row mb-3 mt-3 align-items-center">
+                                        <div class="col-sm-3">
+                                            <label class="mb-0 fw-bold text-secondary small text-uppercase">Last
+                                                Name</label>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            @if (isEditing) {
+                                            <input type="text" class="form-control" formControlName="lastName">
+                                            } @else {
+                                            <span class="fs-5 text-dark">{{ profile.lastName }}</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25">
+
+                                    <!-- ROW 3: Biography -->
+                                    <div class="row mb-3 mt-3">
+                                        <div class="col-sm-3">
+                                            <!-- pt-2 aligns label with text top -->
+                                            <label
+                                                class="mb-0 fw-bold text-secondary small text-uppercase pt-2">Biography</label>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            @if (isEditing) {
+                                            <textarea class="form-control" formControlName="biography"
+                                                rows="4"></textarea>
+                                            } @else {
+                                            <p class="mb-0 text-muted">{{ profile.biography || 'No biography provided.'
+                                                }}</p>
+                                            }
+                                        </div>
+                                    </div>
+                                    <hr class="my-2 text-muted opacity-25">
+
+                                    <!-- ROW 4: Motto -->
+                                    <div class="row mb-3 mt-3 align-items-center">
+                                        <div class="col-sm-3">
+                                            <label
+                                                class="mb-0 fw-bold text-secondary small text-uppercase">Motto</label>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            @if (isEditing) {
+                                            <input type="text" class="form-control" formControlName="motto">
+                                            } @else {
+                                            <span class="fst-italic text-primary">"{{ profile.motto || '...' }}"</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <!-- SAVE BUTTON (Only in Edit Mode) -->
+                                    @if (isEditing) {
+                                    <div class="row mt-4">
+                                        <div class="col-sm-12">
+                                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm"
+                                                [disabled]="profileForm.invalid">
+                                                Save Changes
+                                            </button>
+                                        </div>
+                                    </div>
+                                    }
+
+                                </div>
+                            </form>
+                        </div>
+                        <!-- End Right Column -->
+
+                    </div> <!-- End Row -->
+                </div> <!-- End Card Body -->
+            </div>
+            }
+        </div>
+    </div>
+</div>
