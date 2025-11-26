@@ -8,6 +8,8 @@ import (
 	"tour-service/internal/model"
 	"tour-service/internal/service"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -27,7 +29,7 @@ func NewTourGRPCServer(svc *service.TourService) *TourGRPCServer {
 
 func (s *TourGRPCServer) CreateTour(ctx context.Context, req *pb.CreateTourRequest) (*pb.TourResponse, error) {
 	if err := utils.Authorize(ctx, "GUIDE"); err != nil {
-		return nil, err
+		return nil, status.Error(codes.PermissionDenied, "Access Denied")
 	}
 	t := &model.Tour{
 		UserName:    req.Tour.UserName,
@@ -67,6 +69,9 @@ func (s *TourGRPCServer) CreateTour(ctx context.Context, req *pb.CreateTourReque
 }
 
 func (s *TourGRPCServer) UpdateTour(ctx context.Context, req *pb.UpdateTourRequest) (*pb.TourResponse, error) {
+	if err := utils.Authorize(ctx, "GUIDE"); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "Access Denied")
+	}
 	t := &model.Tour{
 		ID:          req.Tour.Id,
 		UserName:    req.Tour.UserName,
@@ -132,6 +137,9 @@ func (s *TourGRPCServer) GetToursByUser(ctx context.Context, req *pb.GetToursByU
 }
 
 func (s *TourGRPCServer) DeleteTour(ctx context.Context, req *pb.DeleteTourRequest) (*pb.TourResponse, error) {
+	if err := utils.Authorize(ctx, "GUIDE"); err != nil {
+		return nil, status.Error(codes.PermissionDenied, "Access Denied")
+	}
 	t, err := s.svc.GetTour(req.Id)
 	if err != nil {
 		return nil, err
@@ -149,6 +157,10 @@ func (s *TourGRPCServer) DeleteTour(ctx context.Context, req *pb.DeleteTourReque
 // ========================
 
 func (s *TourGRPCServer) CreateReview(ctx context.Context, req *pb.CreateReviewRequest) (*pb.ReviewResponse, error) {
+	claims := utils.ClaimsFromContext(ctx)
+	if claims == nil {
+		return nil, status.Error(codes.Unauthenticated, "User is not authenticated")
+	}
 	r := &model.Review{
 		TourID:    req.Review.TourId,
 		UserName:  req.Review.UserName,
@@ -184,6 +196,10 @@ func (s *TourGRPCServer) GetAllReviews(ctx context.Context, _ *emptypb.Empty) (*
 }
 
 func (s *TourGRPCServer) DeleteReview(ctx context.Context, req *pb.DeleteReviewRequest) (*pb.ReviewResponse, error) {
+	claims := utils.ClaimsFromContext(ctx)
+	if claims == nil {
+		return nil, status.Error(codes.Unauthenticated, "User is not authenticated")
+	}
 	revList, err := s.svc.GetReviewsByTour(req.Id) // Implement GetReviewByID if needed
 	if err != nil || len(revList) == 0 {
 		return nil, err
