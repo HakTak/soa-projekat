@@ -3,6 +3,8 @@ import { Blog } from '../model/blog';
 import { FormsModule } from '@angular/forms';
 import { BlogService } from '../services/blogService/blog.service';
 import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { User} from '../../models/user.model';
+
 
 @Component({
   selector: 'app-blog',
@@ -14,6 +16,7 @@ import { FormGroup, FormControl, Validators, ReactiveFormsModule } from '@angula
 export class BlogComponent {
   public blogForm: FormGroup;
   public currentFiles: File[];
+  public user: User | null;
   
   constructor(private blogService: BlogService) {
     this.blogForm = new FormGroup({
@@ -22,9 +25,31 @@ export class BlogComponent {
       tags: new FormControl('')
     }); 
     this.currentFiles = [];
+    this.user = this.loadCurrentUser()
   }
 
-    resetForm() {
+  loadCurrentUser() {
+   const token = localStorage.getItem('jwt');
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+
+      const user: User = {
+        id: payload.id,
+        username: payload.username,
+        email: payload.email,
+        role: payload.role,
+        blocked: false
+      };
+        return user;
+    } catch (err) {
+      console.error("Invalid JWT:", err);
+      return null;
+    }
+  }
+
+  resetForm() {
       this.blogForm.reset();
       this.currentFiles = [];
   }
@@ -46,15 +71,16 @@ export class BlogComponent {
 }
 
   publishBlog() {
+    if (!this.user) { return ;}
     const formData = new FormData();
     const currentBlog: Blog = {
       id: '',
       title: this.blogForm.value.title,
-      authorName: 'Current User',
+      authorName:  this.user.username,
       imageUrls: [],
       comments: [],
       likeCount: 0,
-      content: this.blogForm.value.content,
+      text: this.blogForm.value.text,
       tags: this.blogForm.value.tags.replace(/^,+/, "").replace(/,+$/, ""),
       createdAt: new Date()
     }

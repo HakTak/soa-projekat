@@ -3,7 +3,7 @@ export interface Blog {
     id: string;
     title: string;
     authorName: string;
-    content: string;
+    text: string;
     tags: string; 
     createdAt: Date;
     imageUrls: string[];

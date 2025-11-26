@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Comment } from '../../model/comment';
 import { Observable } from 'rxjs';
 
@@ -26,5 +26,12 @@ export class CommentService {
 
   deleteComment(commentId: string): Observable<null> {
     return this.http.delete<null>(`${this.baseUrl}/delete/${commentId}`);
+  }
+
+  getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('jwt');;
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
   }
 }

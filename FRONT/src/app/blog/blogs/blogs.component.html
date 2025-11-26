@@ -7,12 +7,12 @@
              [style.zIndex]="blog.imageUrls.length - i">
       </div>
       <h2>{{ blog.title }}</h2>
-      <p>{{ blog.content }}</p>
+      <p>{{ blog.text }}</p>
       <div class="blog-footer">
         <span class="author">{{ blog.authorName }}</span>
         <span class="actions">
-          <span (click)="likeBlog(blog)">❤️ {{ blog.likeCount }}</span>
-          <span (click)="openComments(blog)">💬 {{ blog.comments.length }}</span>
+          <button (click)="likeBlog(blog)" [disabled]="!user">❤️ {{ blog.likeCount }}</button>
+          <button (click)="openComments(blog)" [disabled]="!user">💬 {{ blog.comments.length }}</button>
         </span>
       </div>
     </div>
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Actions -->
-      <div class="comment-actions" *ngIf="comment.authorName === 'You'">
+      <div class="comment-actions" *ngIf="comment.authorName === user?.username">
         <button (click)="startEdit(comment)">Edit</button>
         <button (click)="deleteComment(comment, selectedBlog)">Delete</button>
       </div>

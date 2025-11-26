@@ -31,7 +31,7 @@ export class AuthFeatureService {
   }
 
   // Helper za headere (koristi token iz Infra servisa)
-  private getAuthHeaders(): HttpHeaders {
+  getAuthHeaders(): HttpHeaders {
     const token = this.authService.getToken();
     return new HttpHeaders({
       'Authorization': `Bearer ${token}`

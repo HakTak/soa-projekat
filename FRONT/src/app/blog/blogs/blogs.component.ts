@@ -5,6 +5,8 @@ import { CommonModule} from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BlogService } from '../services/blogService/blog.service';
 import { CommentService } from '../services/commentService/comment.service';
+import { AuthService } from '../../infrastructure/auth.service';
+import { User} from '../../models/user.model';
 
 @Component({
   selector: 'app-blogs',
@@ -51,9 +53,10 @@ export class BlogsComponent {
   newComment = '';
   editingComment: string | null = null;
   editingText: string = '';
+  user: User | null;
   @ViewChild('feedContainer') feedContainer!: ElementRef;
 
-  constructor(private blogService: BlogService, private commentService: CommentService) {
+  constructor(private blogService: BlogService, private commentService: CommentService, private authService: AuthService) {
     this.blogService.getAllPosts().subscribe({
       next: (data: Blog[]) => {
         this.blogs = data;
@@ -63,7 +66,28 @@ export class BlogsComponent {
         console.error('Error fetching blogs:', err);
       }
     });
-      
+    this.user = this.loadCurrentUser(); 
+  }
+
+  loadCurrentUser() {
+   const token = localStorage.getItem('jwt');
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+
+      const user: User = {
+        id: payload.id,
+        username: payload.username,
+        email: payload.email,
+        role: payload.role,
+        blocked: false
+      };
+        return user;
+    } catch (err) {
+      console.error("Invalid JWT:", err);
+      return null;
+    }
   }
 
   ngAfterViewInit() {
@@ -88,11 +112,11 @@ export class BlogsComponent {
   }
 
   addComment(blog: Blog) {
-    if (!this.newComment.trim()) return;
+    if (!this.newComment.trim() || !this.user) return;
     const comment: Comment = {
       id: '',
       postId: blog.id,
-      authorName: 'You',
+      authorName: this.user.username,
       text: this.newComment.trim(),
       createdAt: new Date(),
       updatedAt: null

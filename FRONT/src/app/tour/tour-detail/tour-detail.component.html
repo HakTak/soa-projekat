@@ -6,7 +6,7 @@
   <header class="tour-header">
     <div class="header-content">
       <h1>{{ tour.title }}</h1>
-      <span>
+      <span *ngIf="user?.role === 'guide'">
         <button class="btn btn-primary" *ngIf="tour.status != 'published'" (click)="publishTour()">
           Publish Tour 🚀
         </button>
@@ -38,11 +38,15 @@
       </div>
       <div class="keypoints-box">
         <h3>Keypoints</h3>
-        <ul class="keypoint-list">
+        <ul class="keypoint-list" *ngIf="user?.role === 'guide'">
           <li *ngFor="let kp of tour.keypoints"> <!-- turista vidi samo jednu-->
             <span class="kp-title">{{ kp.title }}</span>
             <p class="kp-desc">{{ kp.description }}</p>
           </li>
+        </ul>
+        <ul class="keypoint-list" *ngIf="user?.role === 'tourist'">
+          <span class="kp-title">{{ tour.keypoints[0].title }}</span>
+          <p class="kp-desc">{{ tour.keypoints[0].description }}</p>
         </ul>
       </div>
     </div>
@@ -59,7 +63,7 @@
   <section class="reviews-section">
     <div class="reviews-section-header">
       <h2 class="section-title">Reviews</h2>
-      <button class="btn btn-primary btn-add-review" (click)="openReviewModal()">
+      <button class="btn btn-primary btn-add-review" (click)="openReviewModal()" *ngIf="user?.role === 'tourist'">
         + Add Review
       </button>
     </div>

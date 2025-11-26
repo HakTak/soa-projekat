@@ -18,6 +18,6 @@ export const routes: Routes = [
     { path: 'blog/create', component: BlogComponent },
     { path: 'blogs', component: BlogsComponent },
     { path: 'tour-list', component: TourListComponent},
-    { path: 'tours/:id', component: TourDetailComponent}
+    { path: 'tours/:id', component: TourDetailComponent},
     { path: 'admin/users', component: UserListComponent },
 ];
