@@ -12,6 +12,7 @@ import (
 	"stakeholders/internal/service"
 
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -97,31 +98,43 @@ func (h *ProfileHandler) GetProfile(ctx context.Context, req *pb.GetProfileReque
 }
 
 func (h *ProfileHandler) GetMyProfile(ctx context.Context, _ *emptypb.Empty) (*pb.GetProfileResponse, error) {
-	claims := utils.ClaimsFromContext(ctx)
-	if claims == nil {
-		return nil, status.Error(codes.Unauthenticated, "Authentication required")
+	claims, err := h.getClaimsSafe(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	// "me" znaci ID iz tokena
 	myID := claims["id"].(string)
 
+	// 2. Pozovi servis
 	p, err := h.svc.GetProfile(ctx, myID)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "Profile not found")
 	}
+
+	// 3. Proveri da li je nil (za svaki slucaj)
+	if p == nil {
+		return nil, status.Error(codes.NotFound, "Profile data is empty")
+	}
+
 	return mapProfileToProto(p), nil
 }
 
 func (h *ProfileHandler) UpdateMyProfile(ctx context.Context, req *pb.UpdateProfileRequest) (*pb.GetProfileResponse, error) {
-	claims := utils.ClaimsFromContext(ctx)
-	if claims == nil {
-		return nil, status.Error(codes.Unauthenticated, "Authentication required")
+	claims, err := h.getClaimsSafe(ctx)
+	if err != nil {
+		return nil, err
 	}
+
+	// 2. Safe cast (we know "id" exists because getClaimsSafe checked it)
 	myID := claims["id"].(string)
 
 	existing, err := h.svc.GetProfile(ctx, myID)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "Profile not found")
+	}
+
+	if existing == nil {
+		return nil, status.Error(codes.NotFound, "Profile data is empty")
 	}
 
 	// Mapiranje polja (Update logic)
@@ -169,6 +182,9 @@ func (h *ProfileHandler) BlockUser(ctx context.Context, req *pb.BlockUserRequest
 // ==========================================
 
 func mapProfileToProto(p *model.Profile) *pb.GetProfileResponse {
+	if p == nil {
+		return &pb.GetProfileResponse{} // Return empty object or handle differently
+	}
 	return &pb.GetProfileResponse{
 		Id:             p.ID,
 		UserId:         p.UserID,
@@ -206,4 +222,47 @@ func protoRoleToModel(r pb.Role) (model.Role, error) {
 	default:
 		return "", fmt.Errorf("unknown role: %v", r)
 	}
+}
+
+func (h *ProfileHandler) getClaimsSafe(ctx context.Context) (map[string]interface{}, error) {
+	// 1. Try getting claims from the shared utility
+	claims := utils.ClaimsFromContext(ctx)
+
+	// If utils returned a map, ensure it has the ID
+	if claims != nil {
+		if _, ok := claims["id"].(string); ok {
+			return claims, nil
+		}
+	}
+
+	// 2. FALLBACK: Read directly from gRPC Metadata
+	// (This handles cases where the Interceptor might have failed or key names mismatch)
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "No metadata provided")
+	}
+
+	// Create a temporary claims map
+	newClaims := make(map[string]interface{})
+
+	// Gateway sends "user-id" or "x-user-id"
+	if ids := md.Get("user-id"); len(ids) > 0 {
+		newClaims["id"] = ids[0]
+	} else if ids := md.Get("x-user-id"); len(ids) > 0 {
+		newClaims["id"] = ids[0]
+	}
+
+	// Gateway sends "user-role" or "x-user-role"
+	if roles := md.Get("user-role"); len(roles) > 0 {
+		newClaims["role"] = roles[0]
+	} else if roles := md.Get("x-user-role"); len(roles) > 0 {
+		newClaims["role"] = roles[0]
+	}
+
+	// Check if we found the ID
+	if _, ok := newClaims["id"]; !ok {
+		return nil, status.Error(codes.Unauthenticated, "User ID not found in request")
+	}
+
+	return newClaims, nil
 }
