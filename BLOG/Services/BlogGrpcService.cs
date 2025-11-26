@@ -49,7 +49,7 @@ namespace BLOG.GrpcServices
             {
                 Title = request.Title,
                 Description = request.Description,
-                ImagePaths = request.ImagePaths.ToArray(),
+                ImagePaths = request.ImagePaths.ToList(),
                 CreatedAt = DateTime.UtcNow,
                 LikeCount = 0
             };
@@ -103,8 +103,8 @@ namespace BLOG.GrpcServices
 
         public override async Task<CommentResponse> UpdateComment(UpdateCommentRequest request, ServerCallContext context)
         {
-            var comment = new Comment { Text = request.Text };
-            var success = await _commentService.UpdateCommentAsync(request.CommentId, comment);
+            var comment = new Comment { Id= request.CommentId ,Text = request.Text,  };
+            var success = await _commentService.UpdateCommentAsync(comment);
             
             if (!success) 
                 throw new RpcException(new Status(StatusCode.NotFound, "Comment not found"));
