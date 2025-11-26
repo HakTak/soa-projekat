@@ -1,0 +1,150 @@
+/* --- Global Container Tweaks --- */
+:host {
+    display: block;
+    background-color: #f8f9fa;
+    /* Light gray background for the whole page area */
+    min-height: 100vh;
+    padding-bottom: 2rem;
+}
+
+/* --- Card Styling --- */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+    /* Soft, modern shadow */
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+.card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 1.5rem 2rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+/* --- Avatar Section --- */
+.img-thumbnail {
+    border: 4px solid #ffffff;
+    /* White ring around image */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    /* Shadow behind image */
+    transition: transform 0.3s ease;
+    background-color: #fff;
+}
+
+.img-thumbnail:hover {
+    transform: scale(1.02);
+    /* Slight zoom on hover */
+}
+
+/* --- Camera/Upload Button --- */
+.btn-dark.rounded-circle {
+    width: 45px !important;
+    height: 45px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #ffffff;
+    background-color: #212529;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-dark.rounded-circle:hover {
+    background-color: #0d6efd;
+    /* Blue on hover */
+    transform: scale(1.1) rotate(5deg);
+}
+
+.btn-dark.rounded-circle i {
+    font-size: 1.2rem;
+}
+
+/* --- Typography --- */
+.form-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #adb5bd;
+    /* Muted gray for labels */
+    margin-bottom: 0.25rem;
+}
+
+p.fs-5,
+p.text-muted {
+    margin-bottom: 0;
+    color: #343a40;
+    font-weight: 500;
+}
+
+.badge {
+    padding: 0.6em 1.2em;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* --- Form Inputs (Edit Mode) --- */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    padding: 0.6rem 1rem;
+    transition: all 0.2s;
+    background-color: #f8f9fa;
+}
+
+.form-control:focus {
+    background-color: #fff;
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1);
+    /* Soft blue glow */
+}
+
+textarea.form-control {
+    resize: none;
+}
+
+/* --- Buttons --- */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.5rem 1.2rem;
+    transition: all 0.2s;
+}
+
+.btn-outline-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
+}
+
+/* --- Animation for Edit Mode --- */
+form {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .border-end {
+        border-right: none !important;
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 2rem;
+        margin-bottom: 2rem;
+    }
+}
