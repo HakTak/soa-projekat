@@ -6,9 +6,9 @@ import (
 	// ✅ Import the generated code from COMMON
 	"FOLLOWER/internal/service"
 	pb "PROJEKAT/COMMON/follower/proto"
+	"PROJEKAT/COMMON/utils"
 
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -24,16 +24,16 @@ func NewFollowerHandler(svc service.FollowService) *FollowerHandler {
 
 // Helper to get UserID from API Gateway Metadata
 func getUserID(ctx context.Context) (string, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return "", status.Error(codes.Unauthenticated, "no metadata provided")
+	claims := utils.ClaimsFromContext(ctx)
+	if claims == nil {
+		return "", status.Error(codes.Unauthenticated, "Authentication required")
 	}
-	// The Gateway passes the User ID in this header
-	ids := md.Get("x-user-id")
-	if len(ids) == 0 {
+
+	id := claims["id"].(string)
+	if len(id) == 0 {
 		return "", status.Error(codes.Unauthenticated, "user id not found in context")
 	}
-	return ids[0], nil
+	return id, nil
 }
 
 // 1. Follow

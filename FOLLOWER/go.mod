@@ -10,6 +10,7 @@ require (
 )
 
 require (
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.3 // indirect
 	golang.org/x/net v0.46.1-0.20251013234738-63d1a5100f82 // indirect
 	golang.org/x/sys v0.37.0 // indirect

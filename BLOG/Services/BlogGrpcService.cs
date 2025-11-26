@@ -21,7 +21,7 @@ namespace BLOG.GrpcServices
         // Helper to get UserID from Metadata (sent by Go Gateway)
         private string GetUserId(ServerCallContext context)
         {
-            var userEntry = context.RequestHeaders.FirstOrDefault(h => h.Key == "x-user-id");
+            var userEntry = context.RequestHeaders.FirstOrDefault(h => h.Key == "user-id");
             
             if (userEntry == null || string.IsNullOrEmpty(userEntry.Value))
             {

@@ -12,6 +12,7 @@ import (
 	"FOLLOWER/internal/service"
 
 	pb "PROJEKAT/COMMON/follower/proto"
+	commonMiddleware "PROJEKAT/COMMON/middleware"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -45,8 +46,9 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
-
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(commonMiddleware.MetadataExtractorInterceptor),
+	)
 	pb.RegisterFollowerServiceServer(grpcServer, followerHandler)
 
 	reflection.Register(grpcServer)

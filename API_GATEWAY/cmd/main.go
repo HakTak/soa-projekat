@@ -23,17 +23,17 @@ func main() {
 	defer cancel()
 
 	// 1. GRPC GATEWAY MUX
-	gwmux := runtime.NewServeMux(
-		runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
-			switch key {
-			case "Grpc-Metadata-User-Id":
-				return "x-user-id", true
-			case "Grpc-Metadata-User-Role":
-				return "x-user-role", true
-			}
-			return runtime.DefaultHeaderMatcher(key)
-		}),
-	)
+	gwmux := runtime.NewServeMux()
+	// 	runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
+	// 		switch key {
+	// 		case "Grpc-Metadata-User-Id":
+	// 			return "x-user-id", true
+	// 		case "Grpc-Metadata-User-Role":
+	// 			return "x-user-role", true
+	// 		}
+	// 		return runtime.DefaultHeaderMatcher(key)
+	// 	}),
+	// )
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	// Registracija AUTH servisa
