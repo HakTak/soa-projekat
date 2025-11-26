@@ -68,25 +68,11 @@ func (h *ProfileHandler) CreateProfile(ctx context.Context, req *pb.CreateProfil
 // ==========================================
 
 func (h *ProfileHandler) GetProfile(ctx context.Context, req *pb.GetProfileRequest) (*pb.GetProfileResponse, error) {
-	// Logika autorizacije:
-	// Korisnik moze da vidi profil ako je TO NJEGOV profil ILI ako je ADMIN.
 
 	claims := utils.ClaimsFromContext(ctx)
 
-	// Ako nema claims (npr. nije doslo preko Gateway-a ili nema tokena),
-	// mozda zelimo da dozvolimo javni pristup (ako je profil javan)?
-	// Ali po tvojoj logici, mora biti vlasnik ili admin.
-
 	if claims == nil {
 		return nil, status.Error(codes.Unauthenticated, "Authentication required")
-	}
-
-	requesterID := claims["id"].(string)
-	requesterRole := claims["role"].(string)
-
-	// Ako trazilac nije vlasnik I nije admin -> Forbidden
-	if requesterID != req.UserId && requesterRole != "ADMIN" {
-		return nil, status.Error(codes.PermissionDenied, "Access denied")
 	}
 
 	p, err := h.svc.GetProfile(ctx, req.UserId)

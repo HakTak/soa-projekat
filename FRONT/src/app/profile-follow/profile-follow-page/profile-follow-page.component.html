@@ -1,0 +1,39 @@
+<div class="profile-container" *ngIf="userProfile; else loading">
+
+    <!-- Zaglavlje profila -->
+    <div class="profile-header">
+        <img [src]="userProfile.profilePicture || 'assets/default-avatar.png'" class="avatar" alt="Profile">
+        <div class="info">
+            <h1>{{ userProfile.firstName }} {{ userProfile.lastName }}</h1>
+            <span class="role">{{ userProfile.role }}</span>
+            <p class="bio" *ngIf="userProfile.biography">{{ userProfile.biography }}</p>
+            <p class="motto" *ngIf="userProfile.motto">"{{ userProfile.motto }}"</p>
+        </div>
+    </div>
+
+    <!-- Statistika -->
+    <div class="stats-bar">
+        <div class="stat">
+            <strong>{{ userProfile.stats?.followersCount || 0 }}</strong>
+            <span>Followers</span>
+        </div>
+        <div class="stat">
+            <strong>{{ userProfile.stats?.followingCount || 0 }}</strong>
+            <span>Following</span>
+        </div>
+    </div>
+
+    <!-- Akcije (Dugme) -->
+    <!-- Prikazi samo ako nije moj profil (trebala bi bolja provera isOwnProfile u TS) -->
+    <div class="actions">
+        <button [class.btn-follow]="!userProfile.isFollowing" [class.btn-unfollow]="userProfile.isFollowing"
+            (click)="toggleFollow()">
+            {{ userProfile.isFollowing ? 'Unfollow' : 'Follow' }}
+        </button>
+    </div>
+
+</div>
+
+<ng-template #loading>
+    <div class="loading">Loading profile data...</div>
+</ng-template>
