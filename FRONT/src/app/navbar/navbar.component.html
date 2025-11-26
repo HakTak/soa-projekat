@@ -22,7 +22,17 @@
         </div>
       </li>
 
-      <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
+      <!-- <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li> -->
+
+      <!-- LOCATION SIMULATOR (Samo za Turiste) -->
+      <ng-container *ngIf="isLoggedIn && isTourist">
+        <li><a routerLink="/location-simulator" class="nav-link" style="color: #e67e22;">Location Simulator</a></li>
+      </ng-container>
+
+      <!-- RECOMMENDATIONS (Samo za ulogovane) -->
+      <ng-container *ngIf="isLoggedIn">
+        <li><a routerLink="/recommendations" class="nav-link">Recommended profiles</a></li>
+      </ng-container>
 
       <ng-container *ngIf="isLoggedIn && isAdmin">
         <li><a routerLink="/admin/users" class="nav-link admin-link">Users</a></li>

@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package shopping_cart;
+
+// Assuming your project structure has a common module
+option go_package = "PROJEKAT/COMMON/shopping-cart/proto";
+
+import "google/api/annotations.proto";
+
+service ShoppingCartService {
+
+    // GET /api/shopping-cart/{user_id}
+    // Retrieves the current cart for a user
+    rpc GetCart(GetCartRequest) returns (CartResponse) {
+        option (google.api.http) = {
+            get: "/api/shopping-cart/{user_id}"
+        };
+    }
+
+    // POST /api/shopping-cart/items
+    // Adds an item to the cart
+    rpc AddItem(AddItemRequest) returns (CartResponse) {
+        option (google.api.http) = {
+            post: "/api/shopping-cart/items"
+            body: "*"
+        };
+    }
+
+    // DELETE /api/shopping-cart/items/{user_id}/{tour_id}
+    // Removes an item from the cart
+    rpc RemoveItem(RemoveItemRequest) returns (CartResponse) {
+        option (google.api.http) = {
+            delete: "/api/shopping-cart/items/{user_id}/{tour_id}"
+        };
+    }
+
+    // POST /api/shopping-cart/checkout
+    // Performs checkout and returns tokens
+    rpc Checkout(CheckoutRequest) returns (CheckoutResponse) {
+        option (google.api.http) = {
+            post: "/api/shopping-cart/checkout"
+            body: "*"
+        };
+    }
+}
+
+// --- Messages ---
+
+message CartItem {
+    string tour_id = 1;
+    string tour_name = 2;
+    double price = 3;
+}
+
+message CartResponse {
+    string user_id = 1;
+    repeated CartItem items = 2;
+    double total_price = 3;
+}
+
+message GetCartRequest {
+    string user_id = 1;
+}
+
+message AddItemRequest {
+    string user_id = 1;
+    string tour_id = 2;
+}
+
+message RemoveItemRequest {
+    string user_id = 1;
+    string tour_id = 2;
+}
+
+message CheckoutRequest {
+    string user_id = 1;
+}
+
+message PurchaseToken {
+    string token_id = 1;
+    string tour_id = 2;
+    string user_id = 3;
+}
+
+message CheckoutResponse {
+    bool success = 1;
+    repeated PurchaseToken tokens = 2;
+}

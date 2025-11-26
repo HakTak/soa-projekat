@@ -1,0 +1,30 @@
+<div class="rec-container">
+    <h2>People You May Know</h2>
+
+    <div *ngIf="isLoading" class="loader">Loading...</div>
+
+    <div class="rec-grid" *ngIf="!isLoading">
+
+        <div *ngFor="let user of recommendations" class="rec-card" [routerLink]="['/profile', user.userId]">
+
+            <div class="card-img">
+                <img [src]="user.profilePicture || 'assets/default-avatar.png'" alt="User">
+            </div>
+
+            <div class="card-content">
+                <h3>{{ user.firstName }} {{ user.lastName }}</h3>
+                <span class="card-role">{{ user.role }}</span>
+
+                <div class="card-stats">
+                    <span>👥 {{ user.stats?.followersCount }} Followers</span>
+                    <span *ngIf="user.mutuals && user.mutuals > 0" class="mutuals">
+                        🔗 {{ user.mutuals }} Mutual connections
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        <div *ngIf="recommendations.length === 0">No recommendations available at the moment.</div>
+    </div>
+</div>

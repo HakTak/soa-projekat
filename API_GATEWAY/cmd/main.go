@@ -10,6 +10,7 @@ import (
 	pbAuth "PROJEKAT/COMMON/auth/proto"
 	pbBlog "PROJEKAT/COMMON/blog/proto"
 	pbFollower "PROJEKAT/COMMON/follower/proto"
+	pbShoppingCart "PROJEKAT/COMMON/shopping-cart/proto"
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
 	pbTour "PROJEKAT/COMMON/tour/proto"
 
@@ -64,6 +65,11 @@ func main() {
 	err = pbTour.RegisterTourServiceHandlerFromEndpoint(ctx, gwmux, "tour:8083", opts)
 	if err != nil {
 		log.Fatalf("Failed to register Tour service: %v", err)
+	}
+	// Registracija Shopping Cart servisa
+	err = pbShoppingCart.RegisterShoppingCartServiceHandlerFromEndpoint(ctx, gwmux, "shopping-cart:9092", opts)
+	if err != nil {
+		log.Fatalf("Failed to register Shopping cart: %v", err)
 	}
 
 	// 2. GLAVNI RUTER (Standardni HTTP)

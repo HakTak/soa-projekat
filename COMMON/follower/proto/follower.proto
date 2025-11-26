@@ -46,7 +46,13 @@ service FollowerService {
         };
     }
 
-    rpc IsFollowing (IsFollowingRequest) returns (IsFollowingResponse);
+    rpc IsFollowing (IsFollowingRequest) returns (IsFollowingResponse){
+        option (google.api.http) = {
+            post: "/api/social/is-following"
+            body: "*"
+        };
+    }
+    
 }
 
 message FollowRequest {

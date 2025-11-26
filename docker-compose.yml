@@ -30,6 +30,9 @@ services:
       - blog
       - auth
       - follower
+      - shopping-cart
+    environment:
+      - SHOPPING_CART_SERVICE_ADDRESS=shopping-cart:9092
 
   # --- AUTH SERVIS ---
   auth:
@@ -91,7 +94,6 @@ services:
       dockerfile: BLOG/Dockerfile
     container_name: blog
     ports:
-      - "5251:5251"
       - "9091:9091"
     volumes:
       - ./BLOG:/src
@@ -130,6 +132,7 @@ services:
       DB_PASSWORD: tourpassword
       DB_NAME: tour
       DB_PORT: 5432
+      GRPC_PORT: 50052
     depends_on:
       tour-db:
         condition: service_healthy
@@ -187,9 +190,52 @@ services:
       timeout: 5s
       retries: 5
 
+  shopping-cart:
+    build: 
+      context: .
+      dockerfile: SHOPPING-CART/Dockerfile
+    container_name: shopping-cart
+    ports:
+      - "9092:9092" # gRPC Port matching Gateway registration
+    environment:
+      # Database Config
+      DB_HOST: shopping-cart-db
+      DB_USER: cart
+      DB_PASSWORD: cartpassword
+      DB_NAME: cart
+      DB_PORT: 5432
+      # Application Config
+      PORT: 9092 
+    depends_on:
+      shopping-cart-db:
+        condition: service_healthy
+      tour:
+        condition: service_started # Must wait for Tour service to be up
+    volumes:
+      - ./SHOPPING-CART:/src
+
+  shopping-cart-db:
+    image: postgres:16
+    container_name: shopping-cart-db
+    restart: always
+    environment:
+      POSTGRES_DB: cart
+      POSTGRES_USER: cart
+      POSTGRES_PASSWORD: cartpassword
+    ports:
+      - "5435:5432" # External Port 5435
+    volumes:
+      - cart_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cart"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
 volumes:
   blog-data:
   auth_data:
   pgdata:
   tour_data:
   follower_data:
+  cart_data:

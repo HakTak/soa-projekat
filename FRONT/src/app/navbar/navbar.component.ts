@@ -53,6 +53,10 @@ export class NavbarComponent implements OnInit {
   }
 
   get isAdmin(): boolean {
-    return this.authService.isAdmin();
+    return this.authService.hasRole() == "ADMIN";
+  }
+
+  get isTourist(): boolean {
+    return this.authService.hasRole() == "TOURIST";
   }
 }
