@@ -17,6 +17,10 @@
       </li>
 
       <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
+
+      <ng-container *ngIf="isLoggedIn && isAdmin">
+        <li><a routerLink="/admin/users" class="nav-link admin-link">Users</a></li>
+      </ng-container>
     </ul>
 
     <!-- DESNA GRUPA (Ovde je promena) -->

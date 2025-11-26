@@ -18,7 +18,6 @@ export class NavbarComponent implements OnInit {
   constructor(private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
-    // OVDE JE BILA GRESKA 2: Dodali smo '(state: boolean)'
     this.authService.userState$.subscribe((state: boolean) => {
       this.isLoggedIn = state;
     });
@@ -29,7 +28,6 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/login']);
   }
 
-  // --- Ostale metode ostaju iste ---
 
   toggleDropdown(event: Event) {
     event.preventDefault();
@@ -52,5 +50,9 @@ export class NavbarComponent implements OnInit {
 
   onBlogClick() {
     this.router.navigate(['/blog']);
+  }
+
+  get isAdmin(): boolean {
+    return this.authService.isAdmin();
   }
 }

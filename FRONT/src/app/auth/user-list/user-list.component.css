@@ -1,0 +1,47 @@
+.container {
+    padding: 20px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.users-table th,
+.users-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.users-table th {
+    background-color: #f2f2f2;
+}
+
+.blocked {
+    color: red;
+    font-weight: bold;
+}
+
+.active {
+    color: green;
+    font-weight: bold;
+}
+
+.btn-block {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.btn-view {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}

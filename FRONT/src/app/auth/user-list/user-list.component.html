@@ -1,0 +1,37 @@
+<div class="container">
+    <h2>Admin Panel - Korisnici</h2>
+
+    <table class="users-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Akcije</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let user of users">
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                    <span [class.blocked]="user.blocked" [class.active]="!user.blocked">
+                        {{ user.blocked ? 'BLOKIRAN' : 'AKTIVAN' }}
+                    </span>
+                </td>
+                <td>
+                    <!-- Dugme za Profil -->
+                    <button class="btn-view">Profil</button>
+                    <!-- <button class="btn-view" (click)="onViewProfile(user.id)">Profil</button> -->
+
+                    <!-- Dugme za Block (Prikazi samo ako NIJE vec blokiran) -->
+                    <button *ngIf="!user.blocked" class="btn-block" (click)="onBlock(user)">Block</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div *ngIf="users.length === 0">Nema korisnika za prikaz.</div>
+</div>
