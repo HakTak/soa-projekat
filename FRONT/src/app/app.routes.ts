@@ -6,6 +6,7 @@ import { TourListComponent } from './tour/tour-list/tour-list.component';
 import { TourDetailComponent } from './tour/tour-detail/tour-detail.component';
 import { LoginComponent } from './infrastructure/login/login.component'
 import { RegisterComponent } from './infrastructure/register/register.component';
+import { ProfileComponent } from './infrastructure/profile/profile/profile.component';
 import { UserListComponent } from './auth/user-list/user-list.component';
 
 export const routes: Routes = [
@@ -19,5 +20,6 @@ export const routes: Routes = [
     { path: 'blog', component: BlogComponent },
     { path: 'tour-list', component: TourListComponent },
     { path: 'tours/:id', component: TourDetailComponent },
-    { path: 'admin/users', component: UserListComponent },
+    { path: 'profile', component: ProfileComponent},
+    { path: 'admin/users', component: UserListComponent }
 ];

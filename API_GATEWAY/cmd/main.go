@@ -10,6 +10,7 @@ import (
 	pbAuth "PROJEKAT/COMMON/auth/proto"
 	pbBlog "PROJEKAT/COMMON/blog/proto"
 	pbFollower "PROJEKAT/COMMON/follower/proto"
+	pbShoppingCart "PROJEKAT/COMMON/shopping-cart/proto"
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -58,6 +59,12 @@ func main() {
 	err = pbBlog.RegisterBlogServiceHandlerFromEndpoint(ctx, gwmux, "blog:9091", opts)
 	if err != nil {
 		log.Fatalf("Failed to register Blog: %v", err)
+	}
+
+	// Registracija Shopping Cart servisa
+	err = pbShoppingCart.RegisterShoppingCartServiceHandlerFromEndpoint(ctx, gwmux, "shopping-cart:9092", opts)
+	if err != nil {
+		log.Fatalf("Failed to register Shopping cart: %v", err)
 	}
 
 	// 2. GLAVNI RUTER (Standardni HTTP)

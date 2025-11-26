@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package tour;
+
+// IMPORTANT: Change this to match your actual module path
+option go_package = "tour-service/proto";
+
+service TourService {
+  // The method called by Shopping Cart
+  rpc GetTour (GetTourRequest) returns (GetTourResponse);
+}
+
+message GetTourRequest {
+  string tour_id = 1;
+}
+
+message GetTourResponse {
+  string id = 1;
+  string name = 2;
+  double price = 3;
+  // We return a boolean flag to make it easy for the Cart to decide
+  bool is_archived = 4; 
+}

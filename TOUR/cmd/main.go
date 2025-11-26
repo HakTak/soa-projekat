@@ -2,17 +2,20 @@ package main
 
 import (
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"tour-service/internal/api"
 	"tour-service/internal/model"
 	"tour-service/internal/repository"
 	"tour-service/internal/service"
+	pb "tour-service/protobuf"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"github.com/go-chi/chi/v5"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -36,6 +39,27 @@ func main() {
 	reviewRepo := repository.CreateReviewRepository(db)
 	svc := service.NewTourService(repo, reviewRepo)
 	handler := api.NewTourHandler(svc)
+
+	go func() {
+		// Listen on TCP port 50052 (defined in your Docker Compose)
+		lis, err := net.Listen("tcp", ":50052")
+		if err != nil {
+			log.Fatalf("failed to listen for gRPC: %v", err)
+		}
+
+		grpcServer := grpc.NewServer()
+
+		// Create the handler defined in Step 2
+		grpcHandler := api.NewTourGrpcHandler(svc)
+
+		// Register the handler with the server
+		pb.RegisterTourServiceServer(grpcServer, grpcHandler)
+
+		log.Println("gRPC Server started on port :50052")
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve gRPC: %v", err)
+		}
+	}()
 
 	r := chi.NewRouter()
 
