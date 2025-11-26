@@ -10,6 +10,7 @@ import { ProfileComponent } from './infrastructure/profile/profile/profile.compo
 import { UserListComponent } from './auth/user-list/user-list.component';
 import { ProfileFollowPageComponent } from './profile-follow/profile-follow-page/profile-follow-page.component';
 import { ProfileRecommendedPageComponent } from './profile-follow/profile-recommended-page/profile-recommended-page.component';
+import { LocationSimulatorComponent } from './locaiton-simulator/location-simulator/location-simulator.component';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -25,5 +26,6 @@ export const routes: Routes = [
     { path: 'profile', component: ProfileComponent },
     { path: 'admin/users', component: UserListComponent },
     { path: 'profile/:id', component: ProfileFollowPageComponent },
-    { path: 'recommendations', component: ProfileRecommendedPageComponent }
+    { path: 'recommendations', component: ProfileRecommendedPageComponent },
+    { path: 'location-simulator', component: LocationSimulatorComponent }
 ];
