@@ -11,21 +11,18 @@ namespace BLOG.Model
         public string? Id { get; set; } // jedinstveni ID komentara
 
         [BsonElement("PostId")]
-        public string? PostId { get; set; }  // ID blog posta na koji komentar ide
+        public string PostId { get; set; } = null!; // ID blog posta na koji komentar ide
 
         [BsonElement("AuthorName")]
-        public string? AuthorName { get; set; } 
-
-        [BsonElement("AuthorId")]
-        public string AuthorId { get; set; } = string.Empty; //ID autora komentara
+        public string? AuthorName { get; set; } = null!;
 
         [BsonElement("Text")]
-        public string Text { get; set; } = string.Empty;
+        public string Text { get; set; }  = null!;
 
         [BsonElement("CreatedAt")]
-        public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("UpdatedAt")]
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; } 
     }
 }

@@ -37,7 +37,7 @@ namespace BLOG.Services
                 return false; // Comment not found
             }
 
-            existingComment.Content = updatedComment.Content;
+            existingComment.Text = updatedComment.Text;
             existingComment.UpdatedAt = System.DateTime.UtcNow;
 
             await _commentRepository.UpdateCommentAsync(existingComment);

@@ -2,21 +2,21 @@ using BLOG.Model;
 using BLOG.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BLOG.Controllers
+/*namespace BLOG.Controllers
 {
     [ApiController]
     [Route("blog/[controller]")]
-    public class PostController : ControllerBase
+    public class BlogController : ControllerBase
     {
         private readonly PostService _postSerivce;
 
-        public PostController(PostService postService)
+        public BlogController(PostService postService)
         {
             _postSerivce = postService;
         }
 
         [HttpGet("All")]
-        public async Task<ActionResult<IEnumerable<Post>>> GetAll()
+        public async Task<ActionResult<IEnumerable<Model.Blog>>> GetAll()
         {
             var posts = await _postSerivce.GetPostsAsync();
             if (!posts.Any())   
@@ -27,7 +27,7 @@ namespace BLOG.Controllers
         }
         
         [HttpPost("toggleLike")]
-        public async Task<ActionResult<Post>> ToggleLike([FromBody] LikeToggleRequest req)
+        public async Task<ActionResult<Blog>> ToggleLike([FromBody] LikeToggleRequest req)
         {
             var post = await _postSerivce.TogglePostLikeAsync(req.PostId, req.UserId);
             return Ok(post);
@@ -57,3 +57,4 @@ namespace BLOG.Controllers
         }
     }
 }
+*/

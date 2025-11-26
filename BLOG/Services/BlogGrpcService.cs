@@ -3,18 +3,19 @@ using Grpc.Core;
 using BLOG.Model;
 using BLOG.Services;
 using Google.Protobuf.WellKnownTypes;
-using System.Linq; 
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace BLOG.GrpcServices
 {
-    public class BlogGrpcService : BlogService.BlogServiceBase
+    public class BlogGrpcService: Blog.BlogService.BlogServiceBase
     {
-        private readonly PostService _postService;
+        private readonly Services.BlogService _blogService;
         private readonly CommentService _commentService;
 
-        public BlogGrpcService(PostService postService, CommentService commentService)
+        public BlogGrpcService(Services.BlogService blogService, CommentService commentService)
         {
-            _postService = postService;
+            _blogService = blogService;
             _commentService = commentService;
         }
 
@@ -30,68 +31,87 @@ namespace BLOG.GrpcServices
             return userEntry.Value;
         }
 
-        public override async Task<GetAllPostsResponse> GetAllPosts(Empty request, ServerCallContext context)
+        public override async Task<GetAllBlogsResponse> GetAllPosts(Empty request, ServerCallContext context)
         {
-            var posts = await _postService.GetPostsAsync();
-            var response = new GetAllPostsResponse();
+            var blogs = await _blogService.GetBlogsAsync();
+            var response = new GetAllBlogsResponse();
 
-            foreach (var post in posts)
+            foreach (var blog in blogs)
             {
-                response.Posts.Add(MapToProtoPost(post));
+                var blogt = new Blog.Blog
+                {
+                    Id = blog.Id ?? "",
+                    Title = blog.Title,
+                    Description = blog.Description,
+                    UserName = blog.UserName ?? "",
+                    LikeCount = blog.LikeCount,
+                    CreatedAt = Timestamp.FromDateTime(blog.CreatedAt.ToUniversalTime())
+                };
+                response.Blogs.Add(blogt);
             }
 
             return response;
         }
 
-        public override async Task<PostResponse> CreatePost(CreatePostRequest request, ServerCallContext context)
+        public override async Task<BlogResponse> CreatePost(CreateBlogRequest request, ServerCallContext context)
         {
-            var newPost = new Post
+            var newBlog = new Model.Blog
             {
                 Title = request.Title,
                 Description = request.Description,
-                ImagePaths = request.ImagePaths.ToArray(),
+                ImagePaths = request.ImagePaths.ToList(),
                 CreatedAt = DateTime.UtcNow,
                 LikeCount = 0
             };
 
-            await _postService.CreatePostAsync(newPost);
-            return MapToProtoPost(newPost);
+            await _blogService.CreateBlogAsync(newBlog);
+            return MapToProtoBlog(newBlog);
         }
 
-        public override async Task<PostResponse> ToggleLike(ToggleLikeRequest request, ServerCallContext context)
+        public override async Task<BlogResponse> ToggleLike(ToggleLikeRequest request, ServerCallContext context)
         {
-            var userId = GetUserId(context); // Get from Header
-            var updatedPost = await _postService.TogglePostLikeAsync(request.PostId, userId);
+            var userId = GetUserId(context);
+            var updatedBlog = await _blogService.ToggleBlogLikeAsync(request.PostId, userId);
 
-            if (updatedPost == null)
-                throw new RpcException(new Status(StatusCode.NotFound, "Post not found"));
+            if (updatedBlog == null)
+                throw new RpcException(new Status(StatusCode.NotFound, "Blog not found"));
 
-            return MapToProtoPost(updatedPost);
+            return MapToProtoBlog(updatedBlog);
         }
 
+        // ======================
+        // COMMENT METHODS
+        // ======================
         public override async Task<GetCommentsResponse> GetComments(GetCommentsRequest request, ServerCallContext context)
         {
             var comments = await _commentService.GetCommentsByPostIdAsync(request.PostId);
             var response = new GetCommentsResponse();
 
-            foreach (var c in comments)
+            foreach (var comment in comments)
             {
-                response.Comments.Add(MapToProtoComment(c));
+                var newComment = new Blog.Comment
+                {
+                  PostId = request.PostId,
+                  Text = comment.Text,
+                  AuthorName = comment.AuthorName,
+                  CreatedAt = Timestamp.FromDateTime(comment.CreatedAt.ToUniversalTime()),
+                  UpdatedAt = Timestamp.FromDateTime(comment.UpdatedAt.ToUniversalTime())
+                };
+                response.Comments.Add(newComment);
             }
+
             return response;
         }
 
         public override async Task<CommentResponse> CreateComment(CreateCommentRequest request, ServerCallContext context)
         {
             var userId = GetUserId(context);
-            // Optional: Get Username from header if you send it from Gateway, or fetch it
-            var username = context.RequestHeaders.GetValue("x-user-username") ?? "Unknown"; 
+            var username = context.RequestHeaders.GetValue("x-user-username") ?? "Unknown";
 
-            var newComment = new Comment
+            var newComment = new Model.Comment
             {
                 PostId = request.PostId,
                 Text = request.Text,
-                AuthorId = userId,
                 AuthorName = username,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -103,10 +123,15 @@ namespace BLOG.GrpcServices
 
         public override async Task<CommentResponse> UpdateComment(UpdateCommentRequest request, ServerCallContext context)
         {
-            var comment = new Comment { Text = request.Text };
-            var success = await _commentService.UpdateCommentAsync(request.CommentId, comment);
-            
-            if (!success) 
+            var comment = new Model.Comment
+            {
+                Id = request.CommentId,
+                Text = request.Text
+            };
+
+            var success = await _commentService.UpdateCommentAsync(comment);
+
+            if (!success)
                 throw new RpcException(new Status(StatusCode.NotFound, "Comment not found"));
 
             var updated = await _commentService.GetCommentByIdAsync(request.CommentId);
@@ -119,33 +144,43 @@ namespace BLOG.GrpcServices
             return new DeleteCommentResponse { Success = true };
         }
 
-        // --- Mappers ---
-
-        private static PostResponse MapToProtoPost(Post p)
+        // ======================
+        // Mappers: Domain -> Proto
+        // ======================
+        private static BlogResponse MapToProtoBlog(Model.Blog blog)
         {
-            var resp = new PostResponse
+            var resp = new BlogResponse
             {
-                Id = p.Id ?? "",
-                Title = p.Title,
-                Description = p.Description,
-                LikeCount = p.LikeCount,
-                CreatedAt = Timestamp.FromDateTime(p.CreatedAt)
+                Blog = new Blog.Blog
+                {
+                    Id = blog.Id ?? "",
+                    Title = blog.Title,
+                    Description = blog.Description,
+                    UserName = blog.UserName ?? "",
+                    LikeCount = blog.LikeCount,
+                    CreatedAt = Timestamp.FromDateTime(blog.CreatedAt.ToUniversalTime())
+                }
             };
-            if (p.ImagePaths != null) resp.ImagePaths.AddRange(p.ImagePaths);
+
+            if (blog.ImagePaths != null)
+                resp.Blog.ImagePaths.AddRange(blog.ImagePaths);
+
             return resp;
         }
 
-        private static CommentResponse MapToProtoComment(Comment c)
+        private static CommentResponse MapToProtoComment(Model.Comment comment)
         {
             return new CommentResponse
             {
-                Id = c.Id ?? "",
-                PostId = c.PostId ?? "",
-                AuthorId = c.AuthorId ?? "",
-                AuthorName = c.AuthorName ?? "",
-                Text = c.Text ?? "",
-                CreatedAt = Timestamp.FromDateTime(c.CreatedAt ?? DateTime.UtcNow),
-                UpdatedAt = Timestamp.FromDateTime(c.UpdatedAt ?? DateTime.UtcNow)
+                Comment = new Blog.Comment
+                {
+                    Id = comment.Id ?? "",
+                    PostId = comment.PostId ?? "",
+                    AuthorName = comment.AuthorName ?? "",
+                    Text = comment.Text ?? "",
+                    CreatedAt = Timestamp.FromDateTime(comment.CreatedAt.ToUniversalTime()),
+                    UpdatedAt = Timestamp.FromDateTime(comment.UpdatedAt.ToUniversalTime())
+                }
             };
         }
     }
