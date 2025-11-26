@@ -28,6 +28,5 @@ COPY --from=builder /app/FOLLOWER/follower .
 
 RUN chmod +x follower
 
-EXPOSE 8084
 EXPOSE 9090
 CMD ["./follower"]

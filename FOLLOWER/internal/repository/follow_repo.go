@@ -105,9 +105,10 @@ func (r *followRepository) GetUserStats(ctx context.Context, userID string) (*mo
 	defer session.Close(ctx)
 
 	query := `
-		MATCH (u:User {userId: $id})
-		RETURN count((u)<-[:FOLLOWS]-()) AS followers, count((u)-[:FOLLOWS]->()) AS following
-	`
+			MATCH (u:User {userId: $id})
+			RETURN count { (u)<-[:FOLLOWS]-() } as followers, 
+				count { (u)-[:FOLLOWS]->() } as following
+		`
 	result, err := session.Run(ctx, query, map[string]any{"id": userID})
 	if err != nil {
 		return nil, err

@@ -8,6 +8,8 @@ import (
 
 	"PROJEKAT/API_GATEWAY/middleware"
 	pbAuth "PROJEKAT/COMMON/auth/proto"
+	pbBlog "PROJEKAT/COMMON/blog/proto"
+	pbFollower "PROJEKAT/COMMON/follower/proto"
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -21,7 +23,17 @@ func main() {
 	defer cancel()
 
 	// 1. GRPC GATEWAY MUX
-	gwmux := runtime.NewServeMux()
+	gwmux := runtime.NewServeMux(
+		runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
+			switch key {
+			case "Grpc-Metadata-User-Id":
+				return "x-user-id", true
+			case "Grpc-Metadata-User-Role":
+				return "x-user-role", true
+			}
+			return runtime.DefaultHeaderMatcher(key)
+		}),
+	)
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	// Registracija AUTH servisa
@@ -34,6 +46,18 @@ func main() {
 	err = pbStakeholders.RegisterStakeholdersServiceHandlerFromEndpoint(ctx, gwmux, "stakeholders:50051", opts)
 	if err != nil {
 		log.Fatalf("Failed to register Stakeholders: %v", err)
+	}
+
+	// Registracija FOLLOWER servisa
+	err = pbFollower.RegisterFollowerServiceHandlerFromEndpoint(ctx, gwmux, "follower:9090", opts)
+	if err != nil {
+		log.Fatalf("Faild to register Follower: %v", err)
+	}
+
+	// Registracija Blog servisa
+	err = pbBlog.RegisterBlogServiceHandlerFromEndpoint(ctx, gwmux, "blog:9091", opts)
+	if err != nil {
+		log.Fatalf("Failed to register Blog: %v", err)
 	}
 
 	// 2. GLAVNI RUTER (Standardni HTTP)

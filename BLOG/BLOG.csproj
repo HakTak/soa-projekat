@@ -7,9 +7,27 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.25.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.60.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.10" />
-    <PackageReference Include="MongoDB.Driver" Version="3.5.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.23.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ✅ 1. Include Blog Proto -->
+    <Protobuf Include="../COMMON/blog/proto/blog.proto" GrpcServices="Server">
+        <Link>Protos/blog.proto</Link>
+        <ProtoRoot>../COMMON</ProtoRoot>
+    </Protobuf>
+
+    <!-- ✅ 2. Include Google Protos (Annotations & Http) -->
+    <!-- We use ** to find files in subfolders like google/api/ -->
+    <Protobuf Include="../COMMON/google/api/*.proto" GrpcServices="None">
+        <Link>Protos/google/api/%(Filename)%(Extension)</Link>
+        <ProtoRoot>../COMMON</ProtoRoot>
+    </Protobuf>
   </ItemGroup>
 
 </Project>

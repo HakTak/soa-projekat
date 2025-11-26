@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package follower;
+
+option go_package = "PROJEKAT/COMMON/follower/proto";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service FollowerService {
+    rpc Follow (FollowRequest) returns (FollowResponse) {
+        option (google.api.http) = {
+            post: "/api/social/follow"
+            body: "*"
+        };
+    }
+
+    rpc Unfollow (UnfollowRequest) returns (UnfollowResponse) {
+        option (google.api.http) = {
+            post: "/api/social/unfollow"
+            body: "*"
+        };
+    }
+
+    rpc GetRecommendations (google.protobuf.Empty) returns (RecommendationsResponse) {
+        option (google.api.http) = {
+            get: "/api/social/recommendations"
+        };
+    }
+
+    rpc GetStats (StatsRequest) returns (StatsResponse) {
+        option (google.api.http) = {
+            get: "/api/social/users/{user_id}/stats"
+        };
+    }
+
+    rpc GetFollowers (GetListRequest) returns (GetListResponse) {
+        option (google.api.http) = {
+            get: "/api/social/users/{user_id}/followers"
+        };
+    }
+
+    rpc GetFollowing (GetListRequest) returns (GetListResponse) {
+        option (google.api.http) = {
+            get: "/api/social/users/{user_id}/following"
+        };
+    }
+
+    rpc IsFollowing (IsFollowingRequest) returns (IsFollowingResponse);
+}
+
+message FollowRequest {
+    string target_id = 1;
+}
+message FollowResponse {
+    string status = 1;
+}
+
+message UnfollowRequest {
+    string target_id = 1;
+}
+message UnfollowResponse {
+    string status = 1;
+}
+
+message RecommendationsResponse {
+    message RecUser {
+        string user_id = 1;
+        int64 mutual_connections = 2;
+    }
+    repeated RecUser recommendations = 1;
+}
+
+message StatsRequest {
+    string user_id = 1; 
+}
+message StatsResponse {
+    string user_id = 1;
+    int64 followers_count = 2;
+    int64 following_count = 3;
+}
+
+message GetListRequest {
+    string user_id = 1;
+}
+message GetListResponse {
+    repeated string user_ids = 1;
+}
+
+message IsFollowingRequest {
+    string follower_id = 1;
+    string followee_id = 2;
+}
+message IsFollowingResponse {
+    bool is_following = 1;
+}
+

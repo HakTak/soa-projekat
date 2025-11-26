@@ -1,9 +1,12 @@
+using BLOG.GrpcServices; 
 var builder = WebApplication.CreateBuilder(args);
 
 // Dodajemo servise za kontrolere i Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddGrpc();
 
 // Ucitavamo konfiguraciju iz appsettings.json (sekcija "MongoDatabaseSettings")
 builder.Services.Configure<BLOG.Database.MongoDatabaseSettings>(
@@ -34,5 +37,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+app.MapGrpcService<BlogGrpcService>();
 
 app.Run();
