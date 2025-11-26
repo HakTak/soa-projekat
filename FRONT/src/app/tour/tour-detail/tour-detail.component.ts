@@ -57,13 +57,44 @@ export class TourDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.fetchTour(id);
-        this.fetchReviews(id);
+    // this.route.paramMap.subscribe(params => {
+    //   const id = params.get('id');
+    //   if (id) {
+    //     this.fetchTour(id);
+    //     this.fetchReviews(id);
+    //   }
+    // });
+    this.tour =  {
+    id: "t1",
+    title: "Alps Mountain Adventure",
+    description: "A thrilling multi-day guided tour across the Alpine passes.",
+    difficulty: "Super Hard",
+    tags: "mountains, hiking, adventure",
+    status: "published",
+    price: 299.99,
+    publisedAt: new Date(),
+    archivedAt: null,
+    keypoints: [
+      {
+        id: "k1",
+        tourId: "t1",
+        title: "Base Camp",
+        latitude: 46.8182,
+        longitude: 8.2275,
+        description: "Starting point at the scenic Swiss Alps base camp.",
+        imageUrl: "https://picsum.photos/300/200?alps1"
+      },
+      {
+        id: "k2",
+        tourId: "t1",
+        title: "Glacier Ridge",
+        latitude: 46.9121,
+        longitude: 7.9980,
+        description: "A stunning viewpoint overlooking an ancient glacier.",
+        imageUrl: "https://picsum.photos/300/200?alps2"
       }
-    });
+    ]
+  }
   }
 
   fetchTour(id: string): void {
@@ -187,5 +218,37 @@ export class TourDetailComponent implements OnInit {
         this.showToast('Failed to save review.', 'error');
       }
     });
+  }
+
+  publishTour(): void { 
+    if (this.tour == null) return;
+    this.tour.status = 'published'
+    this.tour.publisedAt = new Date();
+    this.tour.archivedAt = null; 
+    this.http.put(`http://localhost:8083/tour/update`,this.tour).subscribe({
+      next: () => {
+        this.showToast('Tour successfully published!', 'success');
+      },
+      error: (err) => {
+        console.error('Publish error:', err);
+        this.showToast('Failed to publish tour. Please try again.', 'error');
+      }
+    })
+  }
+
+  archiveTour(): void {
+    if (this.tour == null) return;
+    this.tour.status = 'archived'
+    this.tour.archivedAt = new Date();
+    this.tour.publisedAt = null;
+    this.http.put(`http://localhost:8083/tour/update`, this.tour).subscribe({
+      next: () => {
+        this.showToast('Tour successfully archived!', 'success');
+      },
+      error: (err) => {
+        console.error('Archive error:', err);
+        this.showToast('Failed to archive tour. Please try again.', 'error');
+      }
+    })
   }
 }

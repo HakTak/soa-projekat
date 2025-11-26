@@ -112,7 +112,9 @@ export class BlogsComponent {
   likeBlog(blog: Blog) {
     this.blogService.toggleLike(blog.id, 'currentUserId').subscribe({
       next: (res: Blog) => {
-        this.selectedBlog.likeCount = res.likeCount;
+        if (this.selectedBlog) {
+          this.selectedBlog.likeCount = res.likeCount;
+        }
         console.log('toggleLike response:', res);
       },
       error: (err) => {

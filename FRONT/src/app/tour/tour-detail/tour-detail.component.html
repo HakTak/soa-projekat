@@ -6,10 +6,18 @@
   <header class="tour-header">
     <div class="header-content">
       <h1>{{ tour.title }}</h1>
-      <!-- Dugme za brisanje -->
-      <button class="btn btn-danger" (click)="deleteTour()">
-        Delete Tour 🗑️
-      </button>
+      <span>
+        <button class="btn btn-primary" *ngIf="tour.status != 'published'" (click)="publishTour()">
+          Publish Tour 🚀
+        </button>
+        <button class="btn btn-primary" *ngIf="tour.status === 'published'" (click)="archiveTour()">
+          Archive Tour 🗄️
+        </button>
+        <!-- Dugme za brisanje -->
+        <button class="btn btn-danger" (click)="deleteTour()">
+          Delete Tour 🗑️
+        </button>
+      </span>
     </div>
   </header>
 
@@ -31,7 +39,7 @@
       <div class="keypoints-box">
         <h3>Keypoints</h3>
         <ul class="keypoint-list">
-          <li *ngFor="let kp of tour.keypoints">
+          <li *ngFor="let kp of tour.keypoints"> <!-- turista vidi samo jednu-->
             <span class="kp-title">{{ kp.title }}</span>
             <p class="kp-desc">{{ kp.description }}</p>
           </li>
