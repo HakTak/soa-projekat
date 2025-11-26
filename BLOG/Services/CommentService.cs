@@ -38,7 +38,7 @@ namespace BLOG.Services
             }
 
             existingComment.Text = updatedComment.Text;
-            existingComment.UpdatedAt = System.DateTime.UtcNow;
+            existingComment.UpdatedAt = DateTime.UtcNow;
 
             await _commentRepository.UpdateCommentAsync(existingComment);
             return true; // Update successful

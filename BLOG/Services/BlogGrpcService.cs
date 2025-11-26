@@ -20,13 +20,13 @@ namespace BLOG.GrpcServices
         }
 
         // Helper to get UserID from Metadata (sent by Go Gateway)
-        private string GetUserId(ServerCallContext context)
+        private string GetUserName(ServerCallContext context)
         {
-            var userEntry = context.RequestHeaders.FirstOrDefault(h => h.Key == "user-id");
+            var userEntry = context.RequestHeaders.FirstOrDefault(h => h.Key == "user-username");
             
             if (userEntry == null || string.IsNullOrEmpty(userEntry.Value))
             {
-                throw new RpcException(new Status(StatusCode.Unauthenticated, "No user ID found"));
+                throw new RpcException(new Status(StatusCode.Unauthenticated, "No userName found"));
             }
             return userEntry.Value;
         }
@@ -55,9 +55,11 @@ namespace BLOG.GrpcServices
 
         public override async Task<BlogResponse> CreatePost(CreateBlogRequest request, ServerCallContext context)
         {
+            var userName = GetUserName(context);
             var newBlog = new Model.Blog
             {
                 Title = request.Title,
+                UserName = userName,
                 Description = request.Description,
                 ImagePaths = request.ImagePaths.ToList(),
                 CreatedAt = DateTime.UtcNow,
@@ -70,8 +72,8 @@ namespace BLOG.GrpcServices
 
         public override async Task<BlogResponse> ToggleLike(ToggleLikeRequest request, ServerCallContext context)
         {
-            var userId = GetUserId(context);
-            var updatedBlog = await _blogService.ToggleBlogLikeAsync(request.PostId, userId);
+            var userName = GetUserName(context);
+            var updatedBlog = await _blogService.ToggleBlogLikeAsync(request.PostId, userName);
 
             if (updatedBlog == null)
                 throw new RpcException(new Status(StatusCode.NotFound, "Blog not found"));
@@ -105,14 +107,12 @@ namespace BLOG.GrpcServices
 
         public override async Task<CommentResponse> CreateComment(CreateCommentRequest request, ServerCallContext context)
         {
-            var userId = GetUserId(context);
-            var username = context.RequestHeaders.GetValue("x-user-username") ?? "Unknown";
-
+            var userName = GetUserName(context);
             var newComment = new Model.Comment
             {
                 PostId = request.PostId,
                 Text = request.Text,
-                AuthorName = username,
+                AuthorName = userName,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -123,6 +123,7 @@ namespace BLOG.GrpcServices
 
         public override async Task<CommentResponse> UpdateComment(UpdateCommentRequest request, ServerCallContext context)
         {
+            var userName = GetUserName(context);
             var comment = new Model.Comment
             {
                 Id = request.CommentId,
@@ -140,6 +141,7 @@ namespace BLOG.GrpcServices
 
         public override async Task<DeleteCommentResponse> DeleteComment(DeleteCommentRequest request, ServerCallContext context)
         {
+            var userName = GetUserName(context);
             await _commentService.DeleteCommentAsync(request.CommentId);
             return new DeleteCommentResponse { Success = true };
         }
