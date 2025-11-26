@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 // Interfejsi za Auth ostaju ovde
@@ -54,6 +54,30 @@ export class AuthService {
       return payload.role === 'ADMIN';
     } catch (e) {
       return false;
+    }
+  }
+
+  isLoggedIn(): boolean {
+    return this.userState.value;
+  }
+
+  // Helper za headere (koristi token iz Infra servisa)
+  public getAuthHeaders(): HttpHeaders {
+    const token = this.getToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
+  public getMyId(): string {
+    const token = this.getToken()
+    if (!token) return "Unknowen user token";
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log("EVO GA ID MOJ: " + payload.id)
+      return payload.id;
+    } catch (e) {
+      return "Error user token";
     }
   }
 }

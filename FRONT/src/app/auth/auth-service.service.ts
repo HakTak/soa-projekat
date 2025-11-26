@@ -21,20 +21,13 @@ export class AuthFeatureService {
   // --- METODE PREBACENE OVDE ---
 
   getUsers(): Observable<UserListResponse> {
-    const headers = this.getAuthHeaders();
+    const headers = this.authService.getAuthHeaders();
     return this.http.get<UserListResponse>(`${this.apiUrl}/admin/users`, { headers });
   }
 
   blockUser(userId: string): Observable<User> {
-    const headers = this.getAuthHeaders();
+    const headers = this.authService.getAuthHeaders();
     return this.http.put<User>(`${this.apiUrl}/admin/block/${userId}`, {}, { headers });
   }
 
-  // Helper za headere (koristi token iz Infra servisa)
-  private getAuthHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
-  }
 }

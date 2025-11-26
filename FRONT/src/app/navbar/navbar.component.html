@@ -18,6 +18,11 @@
 
       <li><a routerLink="/stakeholders" class="nav-link">Stakeholders</a></li>
 
+      <!-- RECOMMENDATIONS (Samo za ulogovane) -->
+      <ng-container *ngIf="isLoggedIn">
+        <li><a routerLink="/recommendations" class="nav-link">Recommendations</a></li>
+      </ng-container>
+
       <ng-container *ngIf="isLoggedIn && isAdmin">
         <li><a routerLink="/admin/users" class="nav-link admin-link">Users</a></li>
       </ng-container>
