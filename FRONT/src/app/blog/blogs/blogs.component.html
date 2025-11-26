@@ -31,12 +31,12 @@
       </div>
 
       <div class="comment-content" *ngIf="editingComment !== comment.id">
-        {{ comment.content }}
+        {{ comment.text }}
       </div>
 
       <!-- Edit textarea -->
       <div *ngIf="editingComment === comment.id" class="edit-comment">
-        <input [(ngModel)]="editingContent" (keyup.enter)="saveComment(comment)" />
+        <input [(ngModel)]="editingText" (keyup.enter)="saveComment(comment)" />
         <button (click)="saveComment(comment)">Save</button>
         <button (click)="cancelEdit()">Cancel</button>
       </div>

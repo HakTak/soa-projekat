@@ -50,3 +50,11 @@ func (s *UserService) Login(username, password string) (*models.User, error) {
 func (s *UserService) GetUsersForAdmin() ([]models.UserNoPassDTO, error) {
 	return s.repo.GetUsersForAdmin()
 }
+
+func (s *UserService) GetById(id string) (*models.UserNoPassDTO, error) {
+	return s.repo.GetById(id)
+}
+
+func (s *UserService) BlockUser(id string) (*models.UserNoPassDTO, error) {
+	return s.repo.BlockUser(id)
+}

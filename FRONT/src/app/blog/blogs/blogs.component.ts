@@ -19,7 +19,7 @@ export class BlogsComponent {
     {
       id: "1",
       title: "Beautiful Mountains",
-      content: "Exploring the Alps during winter season...",
+      text: "Exploring the Alps during winter season...",
       tags: "",
       authorName: "John Doe",
       createdAt: new Date(),
@@ -28,7 +28,7 @@ export class BlogsComponent {
         "https://picsum.photos/400/300?2"
       ],
       comments: [
-        { id: "c1", postId: "1", authorName: "Alice", content: "Amazing view!", createdAt: new Date() , updatedAt: null },
+        { id: "c1", postId: "1", authorName: "Alice", text: "Amazing view!", createdAt: new Date() , updatedAt: null },
       ],
       likeCount: 0
     },
@@ -36,7 +36,7 @@ export class BlogsComponent {
       id: "2",
       authorName: "Jane Smith",
       title: "City Adventures",
-      content: "Walking through the old streets...",
+      text: "Walking through the old streets...",
       tags: "",
       createdAt: new Date(),
       imageUrls: [
@@ -50,7 +50,7 @@ export class BlogsComponent {
   selectedBlog: Blog | null = null;
   newComment = '';
   editingComment: string | null = null;
-  editingContent: string = '';
+  editingText: string = '';
   @ViewChild('feedContainer') feedContainer!: ElementRef;
 
   constructor(private blogService: BlogService, private commentService: CommentService) {
@@ -93,7 +93,7 @@ export class BlogsComponent {
       id: '',
       postId: blog.id,
       authorName: 'You',
-      content: this.newComment.trim(),
+      text: this.newComment.trim(),
       createdAt: new Date(),
       updatedAt: null
     }
@@ -125,21 +125,21 @@ export class BlogsComponent {
 
   startEdit(comment: Comment) {
   this.editingComment = comment.id;
-  this.editingContent = comment.content;
+  this.editingText = comment.text;
 }
 
   cancelEdit() {
     this.editingComment = null;
-    this.editingContent = '';
+    this.editingText = '';
   }
 
   saveComment(comment: Comment) {
-    if (!this.editingContent.trim()) return;
+    if (!this.editingText.trim()) return;
 
     // Call API to update
     this.commentService.updateComment(comment).subscribe({
       next: (res) => {
-        comment.content = this.editingContent;
+        comment.text = this.editingText;
         comment.updatedAt = new Date();
         console.log('Comment updated', res)
       },
