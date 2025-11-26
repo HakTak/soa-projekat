@@ -11,6 +11,7 @@ import (
 	pbBlog "PROJEKAT/COMMON/blog/proto"
 	pbFollower "PROJEKAT/COMMON/follower/proto"
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
+	pbTour "PROJEKAT/COMMON/tour/proto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -58,6 +59,11 @@ func main() {
 	err = pbBlog.RegisterBlogServiceHandlerFromEndpoint(ctx, gwmux, "blog:9091", opts)
 	if err != nil {
 		log.Fatalf("Failed to register Blog: %v", err)
+	}
+
+	err = pbTour.RegisterTourServiceHandlerFromEndpoint(ctx, gwmux, "tour:8083", opts)
+	if err != nil {
+		log.Fatalf("Failed to register Tour service: %v", err)
 	}
 
 	// 2. GLAVNI RUTER (Standardni HTTP)
