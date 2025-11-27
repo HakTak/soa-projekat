@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Review } from '../model/review';
-import { Tour } from '../model/tour';
+import { Tour, TourStatus } from '../model/tour';
 import { Keypoint } from '../model/keypoint';
 import { User } from '../../models/user.model'
 
@@ -30,6 +30,7 @@ export class TourDetailComponent implements OnInit {
   tour: Tour | null = null;
   reviews: Review[] = [];
   tourImage: string | null = null;
+  tourStatus = TourStatus;
   
   // Modal Kontrola
   isModalOpen = false;
@@ -60,44 +61,13 @@ export class TourDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // this.route.paramMap.subscribe(params => {
-    //   const id = params.get('id');
-    //   if (id) {
-    //     this.fetchTour(id);
-    //     this.fetchReviews(id);
-    //   }
-    // });
-    this.tour =  {
-      id: "t1",
-      title: "Alps Mountain Adventure",
-      description: "A thrilling multi-day guided tour across the Alpine passes.",
-      difficulty: "Super Hard",
-      tags: "mountains, hiking, adventure",
-      status: "published",
-      price: 299.99,
-      publisedAt: new Date(),
-      archivedAt: null,
-      keypoints: [
-        {
-          id: "k1",
-          tourId: "t1",
-          title: "Base Camp",
-          latitude: 46.8182,
-          longitude: 8.2275,
-          description: "Starting point at the scenic Swiss Alps base camp.",
-          imageUrl: "https://picsum.photos/300/200?alps1"
-        },
-        {
-          id: "k2",
-          tourId: "t1",
-          title: "Glacier Ridge",
-          latitude: 46.9121,
-          longitude: 7.9980,
-          description: "A stunning viewpoint overlooking an ancient glacier.",
-          imageUrl: "https://picsum.photos/300/200?alps2"
-        }
-      ]
-    }
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.fetchTour(id);
+        this.fetchReviews(id);
+      }
+    });
   }
 
   loadCurrentUser() {
@@ -229,7 +199,7 @@ export class TourDetailComponent implements OnInit {
       rating: Number(this.newReview.rating)
     };
 
-    this.http.post('http://localhost:8083/review/create', payload, {headers: this.getAuthHeaders()}).subscribe({
+    this.http.post('http://localhost:8080/review/create', payload, {headers: this.getAuthHeaders()}).subscribe({
       next: (res) => {
         this.showToast('Review successfully saved!', 'success'); // Koristimo novi toast umesto alert-a
         this.closeReviewModal();
@@ -246,10 +216,10 @@ export class TourDetailComponent implements OnInit {
 
   publishTour(): void { 
     if (this.tour == null) return;
-    this.tour.status = 'published'
+    this.tour.status = this.tourStatus.PUBLISHED
     this.tour.publisedAt = new Date();
     this.tour.archivedAt = null; 
-    this.http.put(`http://localhost:8083/tour/update`,this.tour, {headers: this.getAuthHeaders()}).subscribe({
+    this.http.put(`http://localhost:8080/tour/update`,this.tour, {headers: this.getAuthHeaders()}).subscribe({
       next: () => {
         this.showToast('Tour successfully published!', 'success');
       },
@@ -262,10 +232,10 @@ export class TourDetailComponent implements OnInit {
 
   archiveTour(): void {
     if (this.tour == null) return;
-    this.tour.status = 'archived'
+    this.tour.status = this.tourStatus.ARCHIVED
     this.tour.archivedAt = new Date();
     this.tour.publisedAt = null;
-    this.http.put(`http://localhost:8083/tour/update`, this.tour, {headers: this.getAuthHeaders()}).subscribe({
+    this.http.put(`http://localhost:8080/tour/update`, this.tour, {headers: this.getAuthHeaders()}).subscribe({
       next: () => {
         this.showToast('Tour successfully archived!', 'success');
       },

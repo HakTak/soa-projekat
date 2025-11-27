@@ -40,10 +40,10 @@ namespace BLOG.GrpcServices
             {
                 var blogt = new Blog.Blog
                 {
-                    Id = blog.Id ?? "",
+                    Id = blog.Id,
                     Title = blog.Title,
                     Description = blog.Description,
-                    UserName = blog.UserName ?? "",
+                    UserName = blog.UserName,
                     LikeCount = blog.LikeCount,
                     CreatedAt = Timestamp.FromDateTime(blog.CreatedAt.ToUniversalTime())
                 };
@@ -58,10 +58,10 @@ namespace BLOG.GrpcServices
             var userName = GetUserName(context);
             var newBlog = new Model.Blog
             {
-                Title = request.Title,
+                Title = request.Blog.Title,
                 UserName = userName,
-                Description = request.Description,
-                ImagePaths = request.ImagePaths.ToList(),
+                Description = request.Blog.Description,
+                ImagePaths = request.Blog.ImagePaths.ToList(),
                 CreatedAt = DateTime.UtcNow,
                 LikeCount = 0
             };
@@ -93,6 +93,7 @@ namespace BLOG.GrpcServices
             {
                 var newComment = new Blog.Comment
                 {
+                  Id = comment.Id,
                   PostId = request.PostId,
                   Text = comment.Text,
                   AuthorName = comment.AuthorName,
@@ -110,8 +111,7 @@ namespace BLOG.GrpcServices
             var userName = GetUserName(context);
             var newComment = new Model.Comment
             {
-                PostId = request.PostId,
-                Text = request.Text,
+                Text = request.Comment.Text,
                 AuthorName = userName,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -124,19 +124,21 @@ namespace BLOG.GrpcServices
         public override async Task<CommentResponse> UpdateComment(UpdateCommentRequest request, ServerCallContext context)
         {
             var userName = GetUserName(context);
-            var comment = new Model.Comment
+            var newComment = new Model.Comment
             {
-                Id = request.CommentId,
-                Text = request.Text
+                Id = request.Comment.Id,
+                PostId = request.Comment.PostId,
+                Text = request.Comment.Text,
+                AuthorName = userName,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
-            var success = await _commentService.UpdateCommentAsync(comment);
+            var success = await _commentService.UpdateCommentAsync(newComment);
 
             if (!success)
                 throw new RpcException(new Status(StatusCode.NotFound, "Comment not found"));
-
-            var updated = await _commentService.GetCommentByIdAsync(request.CommentId);
-            return MapToProtoComment(updated);
+            return MapToProtoComment(newComment);
         }
 
         public override async Task<DeleteCommentResponse> DeleteComment(DeleteCommentRequest request, ServerCallContext context)
@@ -155,10 +157,10 @@ namespace BLOG.GrpcServices
             {
                 Blog = new Blog.Blog
                 {
-                    Id = blog.Id ?? "",
+                    Id = blog.Id,
                     Title = blog.Title,
                     Description = blog.Description,
-                    UserName = blog.UserName ?? "",
+                    UserName = blog.UserName,
                     LikeCount = blog.LikeCount,
                     CreatedAt = Timestamp.FromDateTime(blog.CreatedAt.ToUniversalTime())
                 }
@@ -176,10 +178,10 @@ namespace BLOG.GrpcServices
             {
                 Comment = new Blog.Comment
                 {
-                    Id = comment.Id ?? "",
-                    PostId = comment.PostId ?? "",
-                    AuthorName = comment.AuthorName ?? "",
-                    Text = comment.Text ?? "",
+                    Id = comment.Id,
+                    PostId = comment.PostId,
+                    AuthorName = comment.AuthorName,
+                    Text = comment.Text,
                     CreatedAt = Timestamp.FromDateTime(comment.CreatedAt.ToUniversalTime()),
                     UpdatedAt = Timestamp.FromDateTime(comment.UpdatedAt.ToUniversalTime())
                 }

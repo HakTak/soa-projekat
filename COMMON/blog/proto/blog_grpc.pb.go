@@ -43,14 +43,14 @@ type BlogServiceClient interface {
 	GetAllPosts(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllBlogsResponse, error)
 	// HTTP: POST /api/blog/posts
 	CreatePost(ctx context.Context, in *CreateBlogRequest, opts ...grpc.CallOption) (*BlogResponse, error)
-	// HTTP: POST /api/blog/posts/toggleLike
+	// HTTP: POST /api/blog/posts/toggleLike/{postId}
 	// UserId comes from metadata (X-User-Id)
 	ToggleLike(ctx context.Context, in *ToggleLikeRequest, opts ...grpc.CallOption) (*BlogResponse, error)
 	// HTTP: GET /api/blog/comments/getAllPostId/{postId}
 	GetComments(ctx context.Context, in *GetCommentsRequest, opts ...grpc.CallOption) (*GetCommentsResponse, error)
 	// HTTP: POST /api/blog/comments/create
 	CreateComment(ctx context.Context, in *CreateCommentRequest, opts ...grpc.CallOption) (*CommentResponse, error)
-	// HTTP: PUT /api/blog/comments/{commentId}
+	// HTTP: PUT /api/blog/comments/edit
 	UpdateComment(ctx context.Context, in *UpdateCommentRequest, opts ...grpc.CallOption) (*CommentResponse, error)
 	// HTTP: DELETE /api/blog/comments/{commentId}
 	DeleteComment(ctx context.Context, in *DeleteCommentRequest, opts ...grpc.CallOption) (*DeleteCommentResponse, error)
@@ -148,14 +148,14 @@ type BlogServiceServer interface {
 	GetAllPosts(context.Context, *emptypb.Empty) (*GetAllBlogsResponse, error)
 	// HTTP: POST /api/blog/posts
 	CreatePost(context.Context, *CreateBlogRequest) (*BlogResponse, error)
-	// HTTP: POST /api/blog/posts/toggleLike
+	// HTTP: POST /api/blog/posts/toggleLike/{postId}
 	// UserId comes from metadata (X-User-Id)
 	ToggleLike(context.Context, *ToggleLikeRequest) (*BlogResponse, error)
 	// HTTP: GET /api/blog/comments/getAllPostId/{postId}
 	GetComments(context.Context, *GetCommentsRequest) (*GetCommentsResponse, error)
 	// HTTP: POST /api/blog/comments/create
 	CreateComment(context.Context, *CreateCommentRequest) (*CommentResponse, error)
-	// HTTP: PUT /api/blog/comments/{commentId}
+	// HTTP: PUT /api/blog/comments/edit
 	UpdateComment(context.Context, *UpdateCommentRequest) (*CommentResponse, error)
 	// HTTP: DELETE /api/blog/comments/{commentId}
 	DeleteComment(context.Context, *DeleteCommentRequest) (*DeleteCommentResponse, error)

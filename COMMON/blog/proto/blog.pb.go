@@ -257,9 +257,7 @@ func (x *GetAllBlogsResponse) GetBlogs() []*Blog {
 
 type CreateBlogRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
-	Description   string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	ImagePaths    []string               `protobuf:"bytes,3,rep,name=imagePaths,proto3" json:"imagePaths,omitempty"`
+	Blog          *Blog                  `protobuf:"bytes,1,opt,name=blog,proto3" json:"blog,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -294,23 +292,9 @@ func (*CreateBlogRequest) Descriptor() ([]byte, []int) {
 	return file_blog_proto_blog_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *CreateBlogRequest) GetTitle() string {
+func (x *CreateBlogRequest) GetBlog() *Blog {
 	if x != nil {
-		return x.Title
-	}
-	return ""
-}
-
-func (x *CreateBlogRequest) GetDescription() string {
-	if x != nil {
-		return x.Description
-	}
-	return ""
-}
-
-func (x *CreateBlogRequest) GetImagePaths() []string {
-	if x != nil {
-		return x.ImagePaths
+		return x.Blog
 	}
 	return nil
 }
@@ -494,8 +478,7 @@ func (x *GetCommentsResponse) GetComments() []*Comment {
 
 type CreateCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PostId        string                 `protobuf:"bytes,1,opt,name=postId,proto3" json:"postId,omitempty"`
-	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	Comment       *Comment               `protobuf:"bytes,1,opt,name=comment,proto3" json:"comment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -530,18 +513,11 @@ func (*CreateCommentRequest) Descriptor() ([]byte, []int) {
 	return file_blog_proto_blog_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *CreateCommentRequest) GetPostId() string {
+func (x *CreateCommentRequest) GetComment() *Comment {
 	if x != nil {
-		return x.PostId
+		return x.Comment
 	}
-	return ""
-}
-
-func (x *CreateCommentRequest) GetText() string {
-	if x != nil {
-		return x.Text
-	}
-	return ""
+	return nil
 }
 
 type CommentResponse struct {
@@ -590,8 +566,7 @@ func (x *CommentResponse) GetComment() *Comment {
 
 type UpdateCommentRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	CommentId     string                 `protobuf:"bytes,1,opt,name=commentId,proto3" json:"commentId,omitempty"`
-	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	Comment       *Comment               `protobuf:"bytes,1,opt,name=comment,proto3" json:"comment,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -626,18 +601,11 @@ func (*UpdateCommentRequest) Descriptor() ([]byte, []int) {
 	return file_blog_proto_blog_proto_rawDescGZIP(), []int{10}
 }
 
-func (x *UpdateCommentRequest) GetCommentId() string {
+func (x *UpdateCommentRequest) GetComment() *Comment {
 	if x != nil {
-		return x.CommentId
+		return x.Comment
 	}
-	return ""
-}
-
-func (x *UpdateCommentRequest) GetText() string {
-	if x != nil {
-		return x.Text
-	}
-	return ""
+	return nil
 }
 
 type DeleteCommentRequest struct {
@@ -754,13 +722,10 @@ const file_blog_proto_blog_proto_rawDesc = "" +
 	"\tupdatedAt\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"7\n" +
 	"\x13GetAllBlogsResponse\x12 \n" +
 	"\x05blogs\x18\x01 \x03(\v2\n" +
-	".blog.BlogR\x05blogs\"k\n" +
-	"\x11CreateBlogRequest\x12\x14\n" +
-	"\x05title\x18\x01 \x01(\tR\x05title\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1e\n" +
-	"\n" +
-	"imagePaths\x18\x03 \x03(\tR\n" +
-	"imagePaths\".\n" +
+	".blog.BlogR\x05blogs\"3\n" +
+	"\x11CreateBlogRequest\x12\x1e\n" +
+	"\x04blog\x18\x01 \x01(\v2\n" +
+	".blog.BlogR\x04blog\".\n" +
 	"\fBlogResponse\x12\x1e\n" +
 	"\x04blog\x18\x01 \x01(\v2\n" +
 	".blog.BlogR\x04blog\"+\n" +
@@ -769,28 +734,26 @@ const file_blog_proto_blog_proto_rawDesc = "" +
 	"\x12GetCommentsRequest\x12\x16\n" +
 	"\x06postId\x18\x01 \x01(\tR\x06postId\"@\n" +
 	"\x13GetCommentsResponse\x12)\n" +
-	"\bcomments\x18\x01 \x03(\v2\r.blog.CommentR\bcomments\"B\n" +
-	"\x14CreateCommentRequest\x12\x16\n" +
-	"\x06postId\x18\x01 \x01(\tR\x06postId\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text\":\n" +
+	"\bcomments\x18\x01 \x03(\v2\r.blog.CommentR\bcomments\"?\n" +
+	"\x14CreateCommentRequest\x12'\n" +
+	"\acomment\x18\x01 \x01(\v2\r.blog.CommentR\acomment\":\n" +
 	"\x0fCommentResponse\x12'\n" +
-	"\acomment\x18\x01 \x01(\v2\r.blog.CommentR\acomment\"H\n" +
-	"\x14UpdateCommentRequest\x12\x1c\n" +
-	"\tcommentId\x18\x01 \x01(\tR\tcommentId\x12\x12\n" +
-	"\x04text\x18\x02 \x01(\tR\x04text\"4\n" +
+	"\acomment\x18\x01 \x01(\v2\r.blog.CommentR\acomment\"?\n" +
+	"\x14UpdateCommentRequest\x12'\n" +
+	"\acomment\x18\x01 \x01(\v2\r.blog.CommentR\acomment\"4\n" +
 	"\x14DeleteCommentRequest\x12\x1c\n" +
 	"\tcommentId\x18\x01 \x01(\tR\tcommentId\"1\n" +
 	"\x15DeleteCommentResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess2\xe7\x05\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess2\xe4\x05\n" +
 	"\vBlogService\x12Y\n" +
 	"\vGetAllPosts\x12\x16.google.protobuf.Empty\x1a\x19.blog.GetAllBlogsResponse\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/api/blog/posts\x12U\n" +
 	"\n" +
-	"CreatePost\x12\x17.blog.CreateBlogRequest\x1a\x12.blog.BlogResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/api/blog/posts\x12`\n" +
+	"CreatePost\x12\x17.blog.CreateBlogRequest\x1a\x12.blog.BlogResponse\"\x1a\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/api/blog/posts\x12i\n" +
 	"\n" +
-	"ToggleLike\x12\x17.blog.ToggleLikeRequest\x1a\x12.blog.BlogResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/api/blog/posts/toggleLike\x12t\n" +
+	"ToggleLike\x12\x17.blog.ToggleLikeRequest\x1a\x12.blog.BlogResponse\".\x82\xd3\xe4\x93\x02(:\x01*\"#/api/blog/posts/toggleLike/{postId}\x12t\n" +
 	"\vGetComments\x12\x18.blog.GetCommentsRequest\x1a\x19.blog.GetCommentsResponse\"0\x82\xd3\xe4\x93\x02*\x12(/api/blog/comments/getAllPostId/{postId}\x12h\n" +
-	"\rCreateComment\x12\x1a.blog.CreateCommentRequest\x1a\x15.blog.CommentResponse\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/api/blog/comments/create\x12r\n" +
-	"\rUpdateComment\x12\x1a.blog.UpdateCommentRequest\x1a\x15.blog.CommentResponse\".\x82\xd3\xe4\x93\x02(:\x01*\x1a#/api/blog/comments/edit/{commentId}\x12p\n" +
+	"\rCreateComment\x12\x1a.blog.CreateCommentRequest\x1a\x15.blog.CommentResponse\"$\x82\xd3\xe4\x93\x02\x1e:\x01*\"\x19/api/blog/comments/create\x12f\n" +
+	"\rUpdateComment\x12\x1a.blog.UpdateCommentRequest\x1a\x15.blog.CommentResponse\"\"\x82\xd3\xe4\x93\x02\x1c:\x01*\x1a\x17/api/blog/comments/edit\x12p\n" +
 	"\rDeleteComment\x12\x1a.blog.DeleteCommentRequest\x1a\x1b.blog.DeleteCommentResponse\"&\x82\xd3\xe4\x93\x02 *\x1e/api/blog/comments/{commentId}B#Z\x1aPROJEKAT/COMMON/blog/proto\xaa\x02\x04Blogb\x06proto3"
 
 var (
@@ -828,28 +791,31 @@ var file_blog_proto_blog_proto_depIdxs = []int32{
 	13, // 1: blog.Comment.createdAt:type_name -> google.protobuf.Timestamp
 	13, // 2: blog.Comment.updatedAt:type_name -> google.protobuf.Timestamp
 	0,  // 3: blog.GetAllBlogsResponse.blogs:type_name -> blog.Blog
-	0,  // 4: blog.BlogResponse.blog:type_name -> blog.Blog
-	1,  // 5: blog.GetCommentsResponse.comments:type_name -> blog.Comment
-	1,  // 6: blog.CommentResponse.comment:type_name -> blog.Comment
-	14, // 7: blog.BlogService.GetAllPosts:input_type -> google.protobuf.Empty
-	3,  // 8: blog.BlogService.CreatePost:input_type -> blog.CreateBlogRequest
-	5,  // 9: blog.BlogService.ToggleLike:input_type -> blog.ToggleLikeRequest
-	6,  // 10: blog.BlogService.GetComments:input_type -> blog.GetCommentsRequest
-	8,  // 11: blog.BlogService.CreateComment:input_type -> blog.CreateCommentRequest
-	10, // 12: blog.BlogService.UpdateComment:input_type -> blog.UpdateCommentRequest
-	11, // 13: blog.BlogService.DeleteComment:input_type -> blog.DeleteCommentRequest
-	2,  // 14: blog.BlogService.GetAllPosts:output_type -> blog.GetAllBlogsResponse
-	4,  // 15: blog.BlogService.CreatePost:output_type -> blog.BlogResponse
-	4,  // 16: blog.BlogService.ToggleLike:output_type -> blog.BlogResponse
-	7,  // 17: blog.BlogService.GetComments:output_type -> blog.GetCommentsResponse
-	9,  // 18: blog.BlogService.CreateComment:output_type -> blog.CommentResponse
-	9,  // 19: blog.BlogService.UpdateComment:output_type -> blog.CommentResponse
-	12, // 20: blog.BlogService.DeleteComment:output_type -> blog.DeleteCommentResponse
-	14, // [14:21] is the sub-list for method output_type
-	7,  // [7:14] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	0,  // 4: blog.CreateBlogRequest.blog:type_name -> blog.Blog
+	0,  // 5: blog.BlogResponse.blog:type_name -> blog.Blog
+	1,  // 6: blog.GetCommentsResponse.comments:type_name -> blog.Comment
+	1,  // 7: blog.CreateCommentRequest.comment:type_name -> blog.Comment
+	1,  // 8: blog.CommentResponse.comment:type_name -> blog.Comment
+	1,  // 9: blog.UpdateCommentRequest.comment:type_name -> blog.Comment
+	14, // 10: blog.BlogService.GetAllPosts:input_type -> google.protobuf.Empty
+	3,  // 11: blog.BlogService.CreatePost:input_type -> blog.CreateBlogRequest
+	5,  // 12: blog.BlogService.ToggleLike:input_type -> blog.ToggleLikeRequest
+	6,  // 13: blog.BlogService.GetComments:input_type -> blog.GetCommentsRequest
+	8,  // 14: blog.BlogService.CreateComment:input_type -> blog.CreateCommentRequest
+	10, // 15: blog.BlogService.UpdateComment:input_type -> blog.UpdateCommentRequest
+	11, // 16: blog.BlogService.DeleteComment:input_type -> blog.DeleteCommentRequest
+	2,  // 17: blog.BlogService.GetAllPosts:output_type -> blog.GetAllBlogsResponse
+	4,  // 18: blog.BlogService.CreatePost:output_type -> blog.BlogResponse
+	4,  // 19: blog.BlogService.ToggleLike:output_type -> blog.BlogResponse
+	7,  // 20: blog.BlogService.GetComments:output_type -> blog.GetCommentsResponse
+	9,  // 21: blog.BlogService.CreateComment:output_type -> blog.CommentResponse
+	9,  // 22: blog.BlogService.UpdateComment:output_type -> blog.CommentResponse
+	12, // 23: blog.BlogService.DeleteComment:output_type -> blog.DeleteCommentResponse
+	17, // [17:24] is the sub-list for method output_type
+	10, // [10:17] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_blog_proto_blog_proto_init() }

@@ -88,12 +88,21 @@ func request_BlogService_ToggleLike_0(ctx context.Context, marshaler runtime.Mar
 	var (
 		protoReq ToggleLikeRequest
 		metadata runtime.ServerMetadata
+		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	val, ok := pathParams["postId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "postId")
+	}
+	protoReq.PostId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "postId", err)
 	}
 	msg, err := client.ToggleLike(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -103,9 +112,18 @@ func local_request_BlogService_ToggleLike_0(ctx context.Context, marshaler runti
 	var (
 		protoReq ToggleLikeRequest
 		metadata runtime.ServerMetadata
+		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	val, ok := pathParams["postId"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "postId")
+	}
+	protoReq.PostId, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "postId", err)
 	}
 	msg, err := server.ToggleLike(ctx, &protoReq)
 	return msg, metadata, err
@@ -181,21 +199,12 @@ func request_BlogService_UpdateComment_0(ctx context.Context, marshaler runtime.
 	var (
 		protoReq UpdateCommentRequest
 		metadata runtime.ServerMetadata
-		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 	if req.Body != nil {
 		_, _ = io.Copy(io.Discard, req.Body)
-	}
-	val, ok := pathParams["commentId"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "commentId")
-	}
-	protoReq.CommentId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commentId", err)
 	}
 	msg, err := client.UpdateComment(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
@@ -205,18 +214,9 @@ func local_request_BlogService_UpdateComment_0(ctx context.Context, marshaler ru
 	var (
 		protoReq UpdateCommentRequest
 		metadata runtime.ServerMetadata
-		err      error
 	)
 	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	val, ok := pathParams["commentId"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "commentId")
-	}
-	protoReq.CommentId, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "commentId", err)
 	}
 	msg, err := server.UpdateComment(ctx, &protoReq)
 	return msg, metadata, err
@@ -313,7 +313,7 @@ func RegisterBlogServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/blog.BlogService/ToggleLike", runtime.WithHTTPPathPattern("/api/blog/posts/toggleLike"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/blog.BlogService/ToggleLike", runtime.WithHTTPPathPattern("/api/blog/posts/toggleLike/{postId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -373,7 +373,7 @@ func RegisterBlogServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/blog.BlogService/UpdateComment", runtime.WithHTTPPathPattern("/api/blog/comments/edit/{commentId}"))
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/blog.BlogService/UpdateComment", runtime.WithHTTPPathPattern("/api/blog/comments/edit"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -485,7 +485,7 @@ func RegisterBlogServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/blog.BlogService/ToggleLike", runtime.WithHTTPPathPattern("/api/blog/posts/toggleLike"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/blog.BlogService/ToggleLike", runtime.WithHTTPPathPattern("/api/blog/posts/toggleLike/{postId}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -536,7 +536,7 @@ func RegisterBlogServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/blog.BlogService/UpdateComment", runtime.WithHTTPPathPattern("/api/blog/comments/edit/{commentId}"))
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/blog.BlogService/UpdateComment", runtime.WithHTTPPathPattern("/api/blog/comments/edit"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -572,10 +572,10 @@ func RegisterBlogServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 var (
 	pattern_BlogService_GetAllPosts_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "blog", "posts"}, ""))
 	pattern_BlogService_CreatePost_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "blog", "posts"}, ""))
-	pattern_BlogService_ToggleLike_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "blog", "posts", "toggleLike"}, ""))
+	pattern_BlogService_ToggleLike_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "blog", "posts", "toggleLike", "postId"}, ""))
 	pattern_BlogService_GetComments_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "blog", "comments", "getAllPostId", "postId"}, ""))
 	pattern_BlogService_CreateComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "blog", "comments", "create"}, ""))
-	pattern_BlogService_UpdateComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"api", "blog", "comments", "edit", "commentId"}, ""))
+	pattern_BlogService_UpdateComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "blog", "comments", "edit"}, ""))
 	pattern_BlogService_DeleteComment_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "blog", "comments", "commentId"}, ""))
 )
 

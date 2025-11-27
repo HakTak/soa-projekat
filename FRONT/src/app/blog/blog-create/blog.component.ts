@@ -63,6 +63,23 @@ export class BlogComponent {
     this.currentFiles.push(...filesArray);
   }
 
+  convertFilesToBase64(files: File[]): Promise<string[]> {
+    const promises = files.map(file => {
+      return new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          // Keep the full Data URL including "data:image/...;base64,"
+          resolve(reader.result as string);
+        };
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file); // automatically detects MIME type
+      });
+    });
+
+    return Promise.all(promises);
+}
+
+
   parseTags() {
     let value = this.blogForm.value.tags
     value = value.replace(/ +/g, ","); 
@@ -70,27 +87,21 @@ export class BlogComponent {
     this.blogForm.patchValue({ tags: value });
 }
 
-  publishBlog() {
+  async publishBlog() {
     if (!this.user) { return ;}
-    const formData = new FormData();
+    const imageUrls = await this.convertFilesToBase64(this.currentFiles);
     const currentBlog: Blog = {
       id: '',
       title: this.blogForm.value.title,
       authorName:  this.user.username,
-      imageUrls: [],
+      imageUrls: imageUrls,
       comments: [],
       likeCount: 0,
       text: this.blogForm.value.text,
       tags: this.blogForm.value.tags.replace(/^,+/, "").replace(/,+$/, ""),
       createdAt: new Date()
     }
-    formData.append('blog', JSON.stringify(currentBlog));
-    this.currentFiles.forEach((_,index) => {
-      if (this.currentFiles[index]) {
-          formData.append('images', this.currentFiles[index], `image_${index}.jpg`);
-      }
-    });
-    this.blogService.createPost(formData).subscribe({
+    this.blogService.createBlog(currentBlog).subscribe({
       next: (response: Blog) => {
         console.log('Blog post created successfully:', response);
       },

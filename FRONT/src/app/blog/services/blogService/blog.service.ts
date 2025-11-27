@@ -8,23 +8,20 @@ import { Blog } from '../../model/blog';
 })
 export class BlogService {
 
-  private baseUrl = 'http://localhost:5251/blog/post';
+  private baseUrl = 'http://localhost:8080/blog/post';
 
   constructor(private http: HttpClient){}
 
-  getAllPosts(): Observable<Blog[]> {
+  getAllBlogs(): Observable<Blog[]> {
     return this.http.get<Blog[]>(`${this.baseUrl}/all`);
   }
 
-  toggleLike(postId: string, userId: string): Observable<Blog> {
-    return this.http.post<Blog>(`${this.baseUrl}/toggleLike`, {
-      postId,
-      userId
-    }, {headers: this.getAuthHeaders()});
+  toggleLike(blogId: string): Observable<Blog> {
+    return this.http.post<Blog>(`${this.baseUrl}/toggleLike${blogId}`, {headers: this.getAuthHeaders()});
   }
 
-  createPost(formData: FormData): Observable<Blog> {
-    return this.http.post<Blog>(`${this.baseUrl}/create`, formData ,  {headers: this.getAuthHeaders()});
+  createBlog(blog: Blog): Observable<Blog> {
+    return this.http.post<Blog>(`${this.baseUrl}/create`, blog ,  {headers: this.getAuthHeaders()});
   }
 
    getAuthHeaders(): HttpHeaders {

@@ -364,7 +364,7 @@ export class TourCreateComponent implements AfterViewInit {
         return;
     }
 
-    this.http.post('http://localhost:8083/tour', this.currentTour).subscribe({
+    this.http.post('http://localhost:8080/tour', this.currentTour).subscribe({
       next: (response) => {
         this.showSuccessModal = true;
       },

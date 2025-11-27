@@ -67,6 +67,8 @@ html, body {
 .blog-footer .author {
   font-size: 14px;
   color: #555;
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .blog-footer .actions span {

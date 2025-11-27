@@ -7,6 +7,7 @@ import { BlogService } from '../services/blogService/blog.service';
 import { CommentService } from '../services/commentService/comment.service';
 import { AuthService } from '../../infrastructure/auth.service';
 import { User} from '../../models/user.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-blogs',
@@ -26,8 +27,6 @@ export class BlogsComponent {
       authorName: "John Doe",
       createdAt: new Date(),
       imageUrls: [
-        "https://picsum.photos/400/300?1",
-        "https://picsum.photos/400/300?2"
       ],
       comments: [
         { id: "c1", postId: "1", authorName: "Alice", text: "Amazing view!", createdAt: new Date() , updatedAt: null },
@@ -42,7 +41,6 @@ export class BlogsComponent {
       tags: "",
       createdAt: new Date(),
       imageUrls: [
-        "https://picsum.photos/400/300?3"
       ],
       comments: [],
       likeCount: 0
@@ -56,8 +54,10 @@ export class BlogsComponent {
   user: User | null;
   @ViewChild('feedContainer') feedContainer!: ElementRef;
 
-  constructor(private blogService: BlogService, private commentService: CommentService, private authService: AuthService) {
-    this.blogService.getAllPosts().subscribe({
+  constructor(private blogService: BlogService, private commentService: CommentService, private authService: AuthService,
+    private router: Router
+  ) {
+    this.blogService.getAllBlogs().subscribe({
       next: (data: Blog[]) => {
         this.blogs = data;
         console.log('Blogs fetched:', data);
@@ -67,6 +67,11 @@ export class BlogsComponent {
       }
     });
     this.user = this.loadCurrentUser(); 
+  }
+
+  goToAuthorPage(authorName: string)
+  {
+    this.router.navigate(['/profile', authorName])
   }
 
   loadCurrentUser() {
@@ -134,7 +139,7 @@ export class BlogsComponent {
   }
 
   likeBlog(blog: Blog) {
-    this.blogService.toggleLike(blog.id, 'currentUserId').subscribe({
+    this.blogService.toggleLike(blog.id).subscribe({
       next: (res: Blog) => {
         if (this.selectedBlog) {
           this.selectedBlog.likeCount = res.likeCount;

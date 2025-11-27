@@ -20,7 +20,7 @@ namespace BLOG.Model
         public string Text { get; set; }  = null!;
 
         [BsonElement("CreatedAt")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
 
         [BsonElement("UpdatedAt")]
         public DateTime UpdatedAt { get; set; } 

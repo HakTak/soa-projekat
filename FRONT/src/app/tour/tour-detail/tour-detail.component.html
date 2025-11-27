@@ -7,10 +7,10 @@
     <div class="header-content">
       <h1>{{ tour.title }}</h1>
       <span *ngIf="user?.role === 'guide'">
-        <button class="btn btn-primary" *ngIf="tour.status != 'published'" (click)="publishTour()">
+        <button class="btn btn-primary" *ngIf="tour.status != tourStatus.PUBLISHED" (click)="publishTour()">
           Publish Tour 🚀
         </button>
-        <button class="btn btn-primary" *ngIf="tour.status === 'published'" (click)="archiveTour()">
+        <button class="btn btn-primary" *ngIf="tour.status === tourStatus.PUBLISHED" (click)="archiveTour()">
           Archive Tour 🗄️
         </button>
         <!-- Dugme za brisanje -->
@@ -24,7 +24,7 @@
   <section class="details-container">
     <div class="details-info">
       <div class="info-group">
-        <span class="badge status-badge">{{ tour.status }}</span>
+        <span class="badge status-badge">{{ tourStatus[tour.status] }}</span>
         <span class="badge difficulty-badge">{{ tour.difficulty }}</span>
         <span class="price-tag">{{ tour.price }} €</span>
       </div>

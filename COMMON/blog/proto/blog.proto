@@ -44,9 +44,7 @@ message GetAllBlogsResponse {
 }
 
 message CreateBlogRequest {
-    string title = 1;
-    string description = 2;
-    repeated string imagePaths = 3;
+    Blog blog = 1;
 }
 
 message BlogResponse {
@@ -67,8 +65,7 @@ message GetCommentsResponse {
 }
 
 message CreateCommentRequest {
-    string postId = 1;
-    string text = 2;
+    Comment comment = 1;
 }
 
 message CommentResponse {
@@ -76,8 +73,7 @@ message CommentResponse {
 }
 
 message UpdateCommentRequest {
-    string commentId = 1;
-    string text = 2;
+    Comment comment = 1;
 }
 
 message DeleteCommentRequest {
@@ -108,11 +104,11 @@ service BlogService {
         };
     }
 
-    // HTTP: POST /api/blog/posts/toggleLike
+    // HTTP: POST /api/blog/posts/toggleLike/{postId}
     // UserId comes from metadata (X-User-Id)
     rpc ToggleLike (ToggleLikeRequest) returns (BlogResponse) {
         option (google.api.http) = {
-            post: "/api/blog/posts/toggleLike"
+            post: "/api/blog/posts/toggleLike/{postId}"
             body: "*"
         };
     }
@@ -134,10 +130,10 @@ service BlogService {
         };
     }
 
-    // HTTP: PUT /api/blog/comments/{commentId}
+    // HTTP: PUT /api/blog/comments/edit
     rpc UpdateComment (UpdateCommentRequest) returns (CommentResponse) {
         option (google.api.http) = {
-            put: "/api/blog/comments/edit/{commentId}"
+            put: "/api/blog/comments/edit"
             body: "*"
         };
     }
