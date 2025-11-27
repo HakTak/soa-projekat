@@ -146,3 +146,8 @@ func (s *ShoppingCartService) Checkout(userID string) ([]model.PurchaseToken, er
 
 	return tokens, nil
 }
+
+// Add this method to ShoppingCartService
+func (s *ShoppingCartService) GetPurchasedTours(userID string) ([]model.PurchaseToken, error) {
+	return s.repo.GetPurchasedTokens(userID)
+}

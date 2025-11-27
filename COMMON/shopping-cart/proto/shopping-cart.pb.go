@@ -446,6 +446,94 @@ func (x *CheckoutResponse) GetTokens() []*PurchaseToken {
 	return nil
 }
 
+type GetPurchasedToursRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPurchasedToursRequest) Reset() {
+	*x = GetPurchasedToursRequest{}
+	mi := &file_shopping_cart_proto_shopping_cart_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPurchasedToursRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPurchasedToursRequest) ProtoMessage() {}
+
+func (x *GetPurchasedToursRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_shopping_cart_proto_shopping_cart_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPurchasedToursRequest.ProtoReflect.Descriptor instead.
+func (*GetPurchasedToursRequest) Descriptor() ([]byte, []int) {
+	return file_shopping_cart_proto_shopping_cart_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetPurchasedToursRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetPurchasedToursResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tokens        []*PurchaseToken       `protobuf:"bytes,1,rep,name=tokens,proto3" json:"tokens,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPurchasedToursResponse) Reset() {
+	*x = GetPurchasedToursResponse{}
+	mi := &file_shopping_cart_proto_shopping_cart_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPurchasedToursResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPurchasedToursResponse) ProtoMessage() {}
+
+func (x *GetPurchasedToursResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_shopping_cart_proto_shopping_cart_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPurchasedToursResponse.ProtoReflect.Descriptor instead.
+func (*GetPurchasedToursResponse) Descriptor() ([]byte, []int) {
+	return file_shopping_cart_proto_shopping_cart_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetPurchasedToursResponse) GetTokens() []*PurchaseToken {
+	if x != nil {
+		return x.Tokens
+	}
+	return nil
+}
+
 var File_shopping_cart_proto_shopping_cart_proto protoreflect.FileDescriptor
 
 const file_shopping_cart_proto_shopping_cart_proto_rawDesc = "" +
@@ -476,13 +564,18 @@ const file_shopping_cart_proto_shopping_cart_proto_rawDesc = "" +
 	"\auser_id\x18\x03 \x01(\tR\x06userId\"b\n" +
 	"\x10CheckoutResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x124\n" +
-	"\x06tokens\x18\x02 \x03(\v2\x1c.shopping_cart.PurchaseTokenR\x06tokens2\xe7\x03\n" +
+	"\x06tokens\x18\x02 \x03(\v2\x1c.shopping_cart.PurchaseTokenR\x06tokens\"3\n" +
+	"\x18GetPurchasedToursRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"Q\n" +
+	"\x19GetPurchasedToursResponse\x124\n" +
+	"\x06tokens\x18\x01 \x03(\v2\x1c.shopping_cart.PurchaseTokenR\x06tokens2\xfd\x04\n" +
 	"\x13ShoppingCartService\x12k\n" +
 	"\aGetCart\x12\x1d.shopping_cart.GetCartRequest\x1a\x1b.shopping_cart.CartResponse\"$\x82\xd3\xe4\x93\x02\x1e\x12\x1c/api/shopping-cart/{user_id}\x12j\n" +
 	"\aAddItem\x12\x1d.shopping_cart.AddItemRequest\x1a\x1b.shopping_cart.CartResponse\"#\x82\xd3\xe4\x93\x02\x1d:\x01*\"\x18/api/shopping-cart/items\x12\x81\x01\n" +
 	"\n" +
 	"RemoveItem\x12 .shopping_cart.RemoveItemRequest\x1a\x1b.shopping_cart.CartResponse\"4\x82\xd3\xe4\x93\x02.*,/api/shopping-cart/items/{user_id}/{tour_id}\x12s\n" +
-	"\bCheckout\x12\x1e.shopping_cart.CheckoutRequest\x1a\x1f.shopping_cart.CheckoutResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/api/shopping-cart/checkoutB%Z#PROJEKAT/COMMON/shopping-cart/protob\x06proto3"
+	"\bCheckout\x12\x1e.shopping_cart.CheckoutRequest\x1a\x1f.shopping_cart.CheckoutResponse\"&\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/api/shopping-cart/checkout\x12\x93\x01\n" +
+	"\x11GetPurchasedTours\x12'.shopping_cart.GetPurchasedToursRequest\x1a(.shopping_cart.GetPurchasedToursResponse\"+\x82\xd3\xe4\x93\x02%\x12#/api/shopping-cart/orders/{user_id}B%Z#PROJEKAT/COMMON/shopping-cart/protob\x06proto3"
 
 var (
 	file_shopping_cart_proto_shopping_cart_proto_rawDescOnce sync.Once
@@ -496,33 +589,38 @@ func file_shopping_cart_proto_shopping_cart_proto_rawDescGZIP() []byte {
 	return file_shopping_cart_proto_shopping_cart_proto_rawDescData
 }
 
-var file_shopping_cart_proto_shopping_cart_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_shopping_cart_proto_shopping_cart_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
 var file_shopping_cart_proto_shopping_cart_proto_goTypes = []any{
-	(*CartItem)(nil),          // 0: shopping_cart.CartItem
-	(*CartResponse)(nil),      // 1: shopping_cart.CartResponse
-	(*GetCartRequest)(nil),    // 2: shopping_cart.GetCartRequest
-	(*AddItemRequest)(nil),    // 3: shopping_cart.AddItemRequest
-	(*RemoveItemRequest)(nil), // 4: shopping_cart.RemoveItemRequest
-	(*CheckoutRequest)(nil),   // 5: shopping_cart.CheckoutRequest
-	(*PurchaseToken)(nil),     // 6: shopping_cart.PurchaseToken
-	(*CheckoutResponse)(nil),  // 7: shopping_cart.CheckoutResponse
+	(*CartItem)(nil),                  // 0: shopping_cart.CartItem
+	(*CartResponse)(nil),              // 1: shopping_cart.CartResponse
+	(*GetCartRequest)(nil),            // 2: shopping_cart.GetCartRequest
+	(*AddItemRequest)(nil),            // 3: shopping_cart.AddItemRequest
+	(*RemoveItemRequest)(nil),         // 4: shopping_cart.RemoveItemRequest
+	(*CheckoutRequest)(nil),           // 5: shopping_cart.CheckoutRequest
+	(*PurchaseToken)(nil),             // 6: shopping_cart.PurchaseToken
+	(*CheckoutResponse)(nil),          // 7: shopping_cart.CheckoutResponse
+	(*GetPurchasedToursRequest)(nil),  // 8: shopping_cart.GetPurchasedToursRequest
+	(*GetPurchasedToursResponse)(nil), // 9: shopping_cart.GetPurchasedToursResponse
 }
 var file_shopping_cart_proto_shopping_cart_proto_depIdxs = []int32{
 	0, // 0: shopping_cart.CartResponse.items:type_name -> shopping_cart.CartItem
 	6, // 1: shopping_cart.CheckoutResponse.tokens:type_name -> shopping_cart.PurchaseToken
-	2, // 2: shopping_cart.ShoppingCartService.GetCart:input_type -> shopping_cart.GetCartRequest
-	3, // 3: shopping_cart.ShoppingCartService.AddItem:input_type -> shopping_cart.AddItemRequest
-	4, // 4: shopping_cart.ShoppingCartService.RemoveItem:input_type -> shopping_cart.RemoveItemRequest
-	5, // 5: shopping_cart.ShoppingCartService.Checkout:input_type -> shopping_cart.CheckoutRequest
-	1, // 6: shopping_cart.ShoppingCartService.GetCart:output_type -> shopping_cart.CartResponse
-	1, // 7: shopping_cart.ShoppingCartService.AddItem:output_type -> shopping_cart.CartResponse
-	1, // 8: shopping_cart.ShoppingCartService.RemoveItem:output_type -> shopping_cart.CartResponse
-	7, // 9: shopping_cart.ShoppingCartService.Checkout:output_type -> shopping_cart.CheckoutResponse
-	6, // [6:10] is the sub-list for method output_type
-	2, // [2:6] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	6, // 2: shopping_cart.GetPurchasedToursResponse.tokens:type_name -> shopping_cart.PurchaseToken
+	2, // 3: shopping_cart.ShoppingCartService.GetCart:input_type -> shopping_cart.GetCartRequest
+	3, // 4: shopping_cart.ShoppingCartService.AddItem:input_type -> shopping_cart.AddItemRequest
+	4, // 5: shopping_cart.ShoppingCartService.RemoveItem:input_type -> shopping_cart.RemoveItemRequest
+	5, // 6: shopping_cart.ShoppingCartService.Checkout:input_type -> shopping_cart.CheckoutRequest
+	8, // 7: shopping_cart.ShoppingCartService.GetPurchasedTours:input_type -> shopping_cart.GetPurchasedToursRequest
+	1, // 8: shopping_cart.ShoppingCartService.GetCart:output_type -> shopping_cart.CartResponse
+	1, // 9: shopping_cart.ShoppingCartService.AddItem:output_type -> shopping_cart.CartResponse
+	1, // 10: shopping_cart.ShoppingCartService.RemoveItem:output_type -> shopping_cart.CartResponse
+	7, // 11: shopping_cart.ShoppingCartService.Checkout:output_type -> shopping_cart.CheckoutResponse
+	9, // 12: shopping_cart.ShoppingCartService.GetPurchasedTours:output_type -> shopping_cart.GetPurchasedToursResponse
+	8, // [8:13] is the sub-list for method output_type
+	3, // [3:8] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_shopping_cart_proto_shopping_cart_proto_init() }
@@ -536,7 +634,7 @@ func file_shopping_cart_proto_shopping_cart_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_shopping_cart_proto_shopping_cart_proto_rawDesc), len(file_shopping_cart_proto_shopping_cart_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

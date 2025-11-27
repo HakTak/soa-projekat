@@ -1,35 +1,84 @@
-:host {
-    display: block;
-    min-height: 80vh;
+/* --- Global Reset & Background --- */
+body {
     background-color: #f8f9fa;
-    padding-bottom: 3rem;
+    /* Light grey background for contrast */
+    font-family: 'Inter', sans-serif;
 }
 
+/* --- Main Container & Typography --- */
+.container {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+h2 {
+    /* Ensures the primary color and bold font stand out */
+    color: black !important;
+    /* Indigo primary color */
+}
+
+/* --- Card and Shadow Enhancement --- */
 .card {
     border-radius: 12px;
+    /* Smoother corners */
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.card.shadow {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* --- Table Styling --- */
+.table-responsive {
+    border-radius: 12px 12px 0 0;
+    /* Match card border radius */
     overflow: hidden;
 }
 
-.table th {
+.table-hover tbody tr:hover {
+    background-color: #f3f4f6;
+    /* Subtle hover color */
+    transition: background-color 0.2s ease;
+}
+
+.table thead th {
     font-weight: 600;
+    /* Semi-bold headers */
+    color: #4b5563;
+    /* Darker grey text */
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    font-size: 0.85rem;
-    color: #6c757d;
-    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e5e7eb;
 }
 
-.table td {
-    padding-top: 1.2rem;
-    padding-bottom: 1.2rem;
+/* --- Checkout Button Area (Card Footer) --- */
+.card-footer {
+    border-top: 1px solid #e5e7eb;
 }
 
-.btn-outline-danger:hover {
-    background-color: #dc3545;
-    color: white;
-    transform: scale(1.1);
-    transition: all 0.2s;
+.btn-success {
+    /* Customizing success button for a strong checkout CTA */
+    background-color: #10b981 !important;
+    /* Emerald green */
+    border-color: #10b981 !important;
+    transition: all 0.2s ease;
 }
 
-.fs-3 {
-    color: #212529;
+.btn-success:hover {
+    background-color: #059669 !important;
+    border-color: #059669 !important;
+    transform: translateY(-1px);
+    /* Subtle lift on hover */
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);
+}
+
+/* --- Success Screen Enhancement --- */
+.card-body .text-success {
+    color: #10b981 !important;
+    /* Ensuring consistency with the button color */
+}
+
+.card-body .bi-check-circle-fill {
+    /* Custom shadow/glow for the success icon */
+    filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.5));
 }

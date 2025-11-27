@@ -32,7 +32,7 @@ func main() {
 	// ========================================================================
 
 	// Connect to the Tour container
-	tourConn, err := grpc.Dial("tour:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	tourConn, err := grpc.Dial("tour:8083", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to Tour Service: %v", err)
 	}

@@ -3,11 +3,13 @@ import { CommonModule } from '@angular/common';
 import { ShoppingCartService } from '../service/shopping-cart.service';
 import { AuthService } from '../../infrastructure/auth.service';
 import { CartResponse, CheckoutResponse } from '../model/model';
+import { RouterLink } from '@angular/router';
+
 
 @Component({
   selector: 'app-shopping-cart',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './shopping-cart.component.html',
   styleUrls: ['./shopping-cart.component.css']
 })
@@ -87,6 +89,7 @@ export class ShoppingCartComponent implements OnInit {
         this.purchasedTokens = response.tokens;
         this.cart = null; // Clear cart view
         this.isLoading = false;
+        alert('purchase success.');
       },
       error: (err) => {
         this.errorMsg = 'Checkout failed. Please try again.';

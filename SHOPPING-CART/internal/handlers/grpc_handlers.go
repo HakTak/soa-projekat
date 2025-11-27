@@ -165,3 +165,33 @@ func (h *ShoppingCartHandler) Checkout(ctx context.Context, req *pb.CheckoutRequ
 		Tokens:  protoTokens,
 	}, nil
 }
+
+// Add this method to ShoppingCartHandler
+func (h *ShoppingCartHandler) GetPurchasedTours(ctx context.Context, req *pb.GetPurchasedToursRequest) (*pb.GetPurchasedToursResponse, error) {
+	// 1. Safe Authentication Check
+	claims, err := h.getClaimsSafe(ctx)
+	if err != nil {
+		return nil, err
+	}
+	userID := claims["id"].(string)
+
+	// 2. Call Service
+	tokens, err := h.svc.GetPurchasedTours(userID)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	// 3. Map DB Models to Proto Messages
+	var protoTokens []*pb.PurchaseToken
+	for _, t := range tokens {
+		protoTokens = append(protoTokens, &pb.PurchaseToken{
+			TokenId: t.Token, // The secret token
+			TourId:  t.TourID,
+			UserId:  t.UserID,
+		})
+	}
+
+	return &pb.GetPurchasedToursResponse{
+		Tokens: protoTokens,
+	}, nil
+}
