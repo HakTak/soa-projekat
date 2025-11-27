@@ -30,4 +30,11 @@ export class AuthFeatureService {
     return this.http.put<User>(`${this.apiUrl}/admin/block/${userId}`, {}, { headers });
   }
 
+  // Helper za headere (koristi token iz Infra servisa)
+  getAuthHeaders(): HttpHeaders {
+    const token = this.authService.getToken();
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
 }

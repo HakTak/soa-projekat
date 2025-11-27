@@ -31,7 +31,7 @@ namespace BLOG.Repositories
 
         public async Task CreateCommentAsync(Comment comment)
         {
-            comment.UpdatedAt = null;
+            comment.UpdatedAt = DateTime.UtcNow;
             comment.CreatedAt = DateTime.UtcNow;
             await _comments.InsertOneAsync(comment);
         }

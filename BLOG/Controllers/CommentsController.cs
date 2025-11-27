@@ -40,9 +40,9 @@ namespace BLOG.Controllers
         }
 
         [HttpPut("edit/{id}")] //azuriranje komentara
-        public async Task<ActionResult> UpdateComment(string id, [FromBody] Comment updatedComment)
+        public async Task<ActionResult> UpdateComment([FromBody] Comment updatedComment)
         {
-            await _commentService.UpdateCommentAsync(id, updatedComment);
+            await _commentService.UpdateCommentAsync(updatedComment);
             return NoContent();
         }
 

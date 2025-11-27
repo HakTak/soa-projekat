@@ -2,6 +2,7 @@ import { Component, HostListener, OnInit } from '@angular/core';
 import { RouterLink, Router } from "@angular/router";
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../infrastructure/auth.service';
+import { ShoppingCartService } from '../shopping-cart/service/shopping-cart.service';
 
 @Component({
   selector: 'app-navbar',
@@ -11,16 +12,21 @@ import { AuthService } from '../infrastructure/auth.service';
   styleUrls: ['./navbar.component.css']
 })
 export class NavbarComponent implements OnInit {
+  cartCount = 0;
 
   dropdownOpen = false;
   isLoggedIn = false;
 
-  constructor(private router: Router, private authService: AuthService) { }
+  constructor(private router: Router, private authService: AuthService, private cartService: ShoppingCartService) { }
 
   ngOnInit(): void {
     this.authService.userState$.subscribe((state: boolean) => {
       this.isLoggedIn = state;
     });
+
+    this.cartService.cartCount$.subscribe(count => {
+      this.cartCount = count;
+    })
   }
 
   onLogout() {

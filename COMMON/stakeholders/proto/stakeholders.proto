@@ -1,96 +1,203 @@
 syntax = "proto3";
 
-package stakeholders;
+package tour;
 
-option go_package = "PROJEKAT/COMMON/stakeholders/proto";
+option go_package = "PROJEKAT/COMMON/tour/proto";
 
-import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
-service StakeholdersService {
-    
-    // 1. INTERNA METODA (Koristi je Auth servis)
-    rpc CreateProfile(CreateProfileRequest) returns (CreateProfileResponse) {}
-    
-    // 2. GET PROFILE (Javna/Zaštićena)
-    // GET /api/stakeholders/profiles/{user_id}
-    rpc GetProfile(GetProfileRequest) returns (GetProfileResponse) {
-        option (google.api.http) = {
-            get: "/api/stakeholders/profiles/{user_id}"
-        };
-    }
-
-    // 3. GET MY PROFILE (Za ulogovanog korisnika)
-    // GET /api/stakeholders/profiles/me
-    rpc GetMyProfile(google.protobuf.Empty) returns (GetProfileResponse) {
-        option (google.api.http) = {
-            get: "/api/stakeholders/profiles/me"
-        };
-    }
-
-    // 4. UPDATE MY PROFILE
-    // PUT /api/stakeholders/profiles/me
-    rpc UpdateMyProfile(UpdateProfileRequest) returns (GetProfileResponse) {
-        option (google.api.http) = {
-            put: "/api/stakeholders/profiles/me"
-            body: "*"
-        };
-    }
-
-    // 5. BLOCK USER (Admin only)
-    // POST /api/stakeholders/profiles/{user_id}/block
-    rpc BlockUser(BlockUserRequest) returns (google.protobuf.Empty) {
-        option (google.api.http) = {
-            post: "/api/stakeholders/profiles/{user_id}/block"
-            body: "*" // Iako je body prazan, mora da stoji * za POST
-        };
-    }
+enum RouteMode {
+  WALKING = 0;
+  CYCLING = 1;
+  DRIVING = 2;
 }
 
-// --- PORUKE ---
-
-enum Role {
-    ROLE_UNKNOWN = 0; 
-    ROLE_GUIDE   = 1;
-    ROLE_TOURIST = 2;
-    ROLE_ADMIN   = 3;
+message RouteOption {
+  string id = 1;
+  string tour_id = 2;
+  RouteMode mode = 3;
+  int64 duration_ms = 4; // time.Duration in milliseconds
 }
 
-message CreateProfileRequest {
-    string user_id = 1;
-    Role role = 2;
+message Keypoint {
+  string id = 1;
+  string tour_id = 2;
+  string title = 3;
+  double latitude = 4;
+  double longitude = 5;
+  string description = 6;
+  string image_url = 7;
 }
 
-message CreateProfileResponse {
-    string id = 1;
-    bool already_existed = 2;
+message Tour {
+  string id = 1;
+  string user_id = 2;
+  string title = 3;
+  string description = 4;
+  string difficulty = 5;
+  string tags = 6;
+  string status = 7;
+  double price = 8;
+  double distance = 9;
+  int64 duration_ms = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp published_at = 12;
+  google.protobuf.Timestamp archived_at = 13;
+  repeated Keypoint keypoints = 14;
+  repeated RouteOption route_options = 15;
 }
 
-message GetProfileRequest {
-    string user_id = 1;
+message Review {
+  string id = 1;
+  string tour_id = 2;
+  string user_id = 3;
+  string user_name = 4;
+  int32 rating = 5;
+  string comment = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp visited_at = 8;
+  string image_url = 9;
 }
 
-message GetProfileResponse {
-    string id = 1;
-    string user_id = 2;
-    string first_name = 3;
-    string last_name = 4;
-    Role role = 5;
-    string profile_picture = 6;
-    string biography = 7;
-    string motto = 8;
-    bool is_blocked = 9;
+// Requests
+message CreateTourRequest {
+  string user_id = 1;
+  string title = 2;
+  string description = 3;
+  string difficulty = 4;
+  string tags = 5;
+  double price = 6;
+  double distance = 7;
+  int64 duration_ms = 8;
+  repeated Keypoint keypoints = 9;
+  repeated RouteOption route_options = 10;
 }
 
-message UpdateProfileRequest {
-    string first_name = 1;
-    string last_name = 2;
-    string profile_picture = 3;
-    string biography = 4;
-    string motto = 5;
-    // Role se ne menja ovde
+message UpdateTourRequest {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  string difficulty = 4;
+  string tags = 5;
+  string status = 6;
+  double price = 7;
+  double distance = 8;
+  int64 duration_ms = 9;
+  repeated Keypoint keypoints = 10;
+  repeated RouteOption route_options = 11;
 }
 
-message BlockUserRequest {
-    string user_id = 1;
+message GetTourRequest {
+  string id = 1;
+}
+
+message GetToursByUserRequest {
+  string user_id = 1;
+}
+
+message CreateReviewRequest {
+  string tour_id = 1;
+  string user_id = 2;
+  string user_name = 3;
+  int32 rating = 4;
+  string comment = 5;
+  google.protobuf.Timestamp visited_at = 6;
+  string image_url = 7;
+}
+
+message GetReviewsByTourRequest {
+  string tour_id = 1;
+}
+
+message DeleteTourRequest {
+  string id = 1;
+}
+
+message DeleteReviewRequest {
+  string id = 1;
+}
+
+// Responses
+message TourResponse {
+  Tour tour = 1;
+}
+
+message GetAllToursResponse {
+  repeated Tour tours = 1;
+}
+
+message ReviewResponse {
+  Review review = 1;
+}
+
+message GetAllReviewsResponse {
+  repeated Review reviews = 1;
+}
+
+// -------------------- Service --------------------
+service TourService {
+  rpc CreateTour(CreateTourRequest) returns (TourResponse) {
+    option (google.api.http) = {
+      post: "/tour"
+      body: "*"
+    };
+  }
+
+  rpc GetTour(GetTourRequest) returns (TourResponse) {
+    option (google.api.http) = {
+      get: "/tour/{id}"
+    };
+  }
+
+  rpc GetAllTours(google.protobuf.Empty) returns (GetAllToursResponse) {
+    option (google.api.http) = {
+      get: "/tours"
+    };
+  }
+
+  rpc DeleteTour(DeleteTourRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/tour/{id}"
+    };
+  }
+
+  rpc UpdateTour(UpdateTourRequest) returns (TourResponse) {
+    option (google.api.http) = {
+      patch: "/tour/update"
+      body: "*"
+    };
+  }
+
+  rpc GetToursByUser(GetToursByUserRequest) returns (GetAllToursResponse) {
+    option (google.api.http) = {
+      get: "/tours/myTours/{user_id}"
+    };
+  }
+
+  rpc CreateReview(CreateReviewRequest) returns (ReviewResponse) {
+    option (google.api.http) = {
+      post: "/review/create"
+      body: "*"
+    };
+  }
+
+  rpc GetReviewsByTour(GetReviewsByTourRequest) returns (GetAllReviewsResponse) {
+    option (google.api.http) = {
+      get: "/review/tour/{tour_id}"
+    };
+  }
+
+  rpc DeleteReview(DeleteReviewRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = {
+      delete: "/review/delete/{id}"
+    };
+  }
+
+  rpc GetAllReviews(google.protobuf.Empty) returns (GetAllReviewsResponse) {
+    option (google.api.http) = {
+      get: "/review/getAll"
+    };
+  }
 }

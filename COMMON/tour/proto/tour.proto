@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package tour;
+
+option go_package = "PROJEKAT/COMMON/tour/proto";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+
+// =========================
+// ENUMS
+// =========================
+enum RouteMode {
+    WALKING = 0;
+    CYCLING = 1;
+    DRIVING = 2;
+}
+
+enum TourStatus {
+    DRAFT = 0;
+    PUBLISHED = 1;
+    ARCHIVED = 2;
+}
+
+// =========================
+// MESSAGES
+// =========================
+message Keypoint {
+    string id = 1;
+    string tour_id = 2;
+    string title = 3;
+    double latitude = 4;
+    double longitude = 5;
+    string description = 6;
+    string image_url = 7;
+}
+
+message RouteOption {
+    string id = 1;
+    string tour_id = 2;
+    RouteMode mode = 3;
+    int64 duration = 4; // in milliseconds
+}
+
+message Tour {
+    string id = 1;
+    string user_name = 2;
+    string title = 3;
+    string description = 4;
+    string difficulty = 5;
+    string tags = 6;
+    TourStatus status = 7;
+    double price = 8;
+    double distance = 9;
+    int64 duration = 10; // in milliseconds
+    google.protobuf.Timestamp created_at = 11;
+    google.protobuf.Timestamp published_at = 12;
+    google.protobuf.Timestamp archived_at = 13;
+    repeated Keypoint keypoints = 14;
+    repeated RouteOption route_options = 15;
+}
+
+message Review {
+    string id = 1;
+    string tour_id = 2;
+    string user_name = 3;
+    int32 rating = 4;
+    string comment = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp visited_at = 7;
+    string image_url = 8;
+}
+
+// =========================
+// REQUEST MESSAGES
+// =========================
+message CreateTourRequest {
+    Tour tour = 1;
+}
+
+message UpdateTourRequest {
+    Tour tour = 1;
+}
+
+message GetTourRequest {
+    string id = 1;
+}
+
+message GetToursByUserRequest {
+    string user_name = 1;
+}
+
+message DeleteTourRequest {
+    string id = 1;
+}
+
+message CreateReviewRequest {
+    Review review = 1;
+}
+
+message GetReviewsByTourRequest {
+    string tour_id = 1;
+}
+
+message DeleteReviewRequest {
+    string id = 1;
+}
+
+// =========================
+// RESPONSE WRAPPERS
+// =========================
+message TourResponse {
+    Tour tour = 1;
+}
+
+message GetAllToursResponse {
+    repeated Tour tours = 1;
+}
+
+message ReviewResponse {
+    Review review = 1;
+}
+
+message GetAllReviewsResponse {
+    repeated Review reviews = 1;
+}
+
+// =========================
+// SERVICE WITH ANNOTATIONS
+// =========================
+service TourService {
+    // Tours
+    rpc CreateTour(CreateTourRequest) returns (TourResponse) {
+        option (google.api.http) = {
+            post: "/tour"
+            body: "tour"
+        };
+    }
+
+    rpc GetTour(GetTourRequest) returns (TourResponse) {
+        option (google.api.http) = {
+            get: "/tour/{id}"
+        };
+    }
+
+    rpc GetAllTours(google.protobuf.Empty) returns (GetAllToursResponse) {
+        option (google.api.http) = {
+            get: "/tours"
+        };
+    }
+
+    rpc GetToursByUser(GetToursByUserRequest) returns (GetAllToursResponse) {
+        option (google.api.http) = {
+            get: "/tours/myTours/{user_name}"
+        };
+    }
+
+    rpc UpdateTour(UpdateTourRequest) returns (TourResponse) {
+        option (google.api.http) = {
+            patch: "/tour/update"
+            body: "tour"
+        };
+    }
+
+    rpc DeleteTour(DeleteTourRequest) returns (TourResponse) {
+        option (google.api.http) = {
+            delete: "/tour/{id}"
+        };
+    }
+
+    // Reviews
+    rpc CreateReview(CreateReviewRequest) returns (ReviewResponse) {
+        option (google.api.http) = {
+            post: "/review/create"
+            body: "review"
+        };
+    }
+
+    rpc GetReviewsByTour(GetReviewsByTourRequest) returns (GetAllReviewsResponse) {
+        option (google.api.http) = {
+            get: "/review/tour/{tour_id}"
+        };
+    }
+
+    rpc GetAllReviews(google.protobuf.Empty) returns (GetAllReviewsResponse) {
+        option (google.api.http) = {
+            get: "/review/getAll"
+        };
+    }
+
+    rpc DeleteReview(DeleteReviewRequest) returns (ReviewResponse) {
+        option (google.api.http) = {
+            delete: "/review/delete/{id}"
+        };
+    }
+}

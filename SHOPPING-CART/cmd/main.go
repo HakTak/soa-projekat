@@ -11,14 +11,15 @@ import (
 	"SHOPPING-CART/internal/repository"
 	"SHOPPING-CART/internal/service"
 
+	// ✅ REŠEN KONFLIKT 1: Koristimo COMMON biblioteke (Incoming grana)
 	pbCart "PROJEKAT/COMMON/shopping-cart/proto"
-	pbTour "SHOPPING-CART/common/genproto"
+	pbTour "PROJEKAT/COMMON/tour/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 
-	// --- Importi za OpenTelemetry ---
+	// --- Importi za OpenTelemetry (HEAD grana) ---
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -29,7 +30,7 @@ import (
 	"gorm.io/plugin/opentelemetry/tracing"
 )
 
-// --- Inicijalizacija Tracera (Boilerplate kod) ---
+// --- Inicijalizacija Tracera (Zadržano iz HEAD) ---
 func initTracer() (*sdktrace.TracerProvider, error) {
 	ctx := context.Background()
 
@@ -72,7 +73,7 @@ func initTracer() (*sdktrace.TracerProvider, error) {
 }
 
 func main() {
-	// --- 1. POKRETANJE TRACINGA ---
+	// --- 1. POKRETANJE TRACINGA (Zadržano iz HEAD) ---
 	tp, err := initTracer()
 	if err != nil {
 		log.Fatalf("Failed to init tracer: %v", err)
@@ -87,7 +88,6 @@ func main() {
 	db := database.Connect()
 
 	// --- 3. BAZA TRACING (GORM) ---
-	// Dodajemo plugin da vidimo SQL upite u Jaegeru
 	if err := db.Use(tracing.NewPlugin()); err != nil {
 		log.Printf("Failed to use gorm tracing plugin: %v", err)
 	}
@@ -96,16 +96,15 @@ func main() {
 
 	// ========================================================================
 	// 4. TOUR CLIENT SETUP (SA TRACINGOM)
-	// Ovo je kljucno: Kada Cart zove Tour, moramo poslati TraceID dalje.
 	// ========================================================================
 
+	// ✅ REŠEN KONFLIKT 2:
+	// - Adresa je "tour:8083" (iz Incoming grane, jer je tamo prebačen Tour servis)
+	// - Dodajemo 'WithStatsHandler' (iz HEAD grane) da bi Tracing radio
 	tourConn, err := grpc.Dial(
-		"tour:50052",
+		"tour:8083",
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-
-		// --- ISPRAVKA ---
-		// Koristimo "WithStatsHandler" jer je ovo klijent (Dial), a ne server.
-		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()), // <--- TRACING
 	)
 	if err != nil {
 		log.Fatalf("Failed to connect to Tour Service: %v", err)
@@ -118,23 +117,24 @@ func main() {
 	cartHandler := handlers.NewShoppingCartHandler(svc)
 
 	// ========================================================================
-	// 5. START GRPC SERVER (SA TRACINGOM)
+	// 5. START GRPC SERVER
 	// ========================================================================
 
-	lis, err := net.Listen("tcp", ":50053")
+	// ✅ REŠEN KONFLIKT 3: Port 9092 (iz Incoming grane) da se slaže sa Gateway-om
+	lis, err := net.Listen("tcp", ":9092")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	// Kreiramo server sa StatsHandler-om koji automatski prati sve dolazne zahteve
+	// Kreiramo server sa Tracingom (Zadržano iz HEAD)
 	grpcServer := grpc.NewServer(
-		grpc.StatsHandler(otelgrpc.NewServerHandler()), // <--- KLJUCNO: Tracing dolaznih zahteva
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
 	)
 
 	pbCart.RegisterShoppingCartServiceServer(grpcServer, cartHandler)
 	reflection.Register(grpcServer)
 
-	log.Println("Shopping Cart Microservice (gRPC) started on port 50053")
+	log.Println("Shopping Cart Microservice (gRPC) started on port 9092")
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

@@ -19,10 +19,11 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	ShoppingCartService_GetCart_FullMethodName    = "/shopping_cart.ShoppingCartService/GetCart"
-	ShoppingCartService_AddItem_FullMethodName    = "/shopping_cart.ShoppingCartService/AddItem"
-	ShoppingCartService_RemoveItem_FullMethodName = "/shopping_cart.ShoppingCartService/RemoveItem"
-	ShoppingCartService_Checkout_FullMethodName   = "/shopping_cart.ShoppingCartService/Checkout"
+	ShoppingCartService_GetCart_FullMethodName           = "/shopping_cart.ShoppingCartService/GetCart"
+	ShoppingCartService_AddItem_FullMethodName           = "/shopping_cart.ShoppingCartService/AddItem"
+	ShoppingCartService_RemoveItem_FullMethodName        = "/shopping_cart.ShoppingCartService/RemoveItem"
+	ShoppingCartService_Checkout_FullMethodName          = "/shopping_cart.ShoppingCartService/Checkout"
+	ShoppingCartService_GetPurchasedTours_FullMethodName = "/shopping_cart.ShoppingCartService/GetPurchasedTours"
 )
 
 // ShoppingCartServiceClient is the client API for ShoppingCartService service.
@@ -41,6 +42,7 @@ type ShoppingCartServiceClient interface {
 	// POST /api/shopping-cart/checkout
 	// Performs checkout and returns tokens
 	Checkout(ctx context.Context, in *CheckoutRequest, opts ...grpc.CallOption) (*CheckoutResponse, error)
+	GetPurchasedTours(ctx context.Context, in *GetPurchasedToursRequest, opts ...grpc.CallOption) (*GetPurchasedToursResponse, error)
 }
 
 type shoppingCartServiceClient struct {
@@ -91,6 +93,16 @@ func (c *shoppingCartServiceClient) Checkout(ctx context.Context, in *CheckoutRe
 	return out, nil
 }
 
+func (c *shoppingCartServiceClient) GetPurchasedTours(ctx context.Context, in *GetPurchasedToursRequest, opts ...grpc.CallOption) (*GetPurchasedToursResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPurchasedToursResponse)
+	err := c.cc.Invoke(ctx, ShoppingCartService_GetPurchasedTours_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ShoppingCartServiceServer is the server API for ShoppingCartService service.
 // All implementations must embed UnimplementedShoppingCartServiceServer
 // for forward compatibility.
@@ -107,6 +119,7 @@ type ShoppingCartServiceServer interface {
 	// POST /api/shopping-cart/checkout
 	// Performs checkout and returns tokens
 	Checkout(context.Context, *CheckoutRequest) (*CheckoutResponse, error)
+	GetPurchasedTours(context.Context, *GetPurchasedToursRequest) (*GetPurchasedToursResponse, error)
 	mustEmbedUnimplementedShoppingCartServiceServer()
 }
 
@@ -128,6 +141,9 @@ func (UnimplementedShoppingCartServiceServer) RemoveItem(context.Context, *Remov
 }
 func (UnimplementedShoppingCartServiceServer) Checkout(context.Context, *CheckoutRequest) (*CheckoutResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Checkout not implemented")
+}
+func (UnimplementedShoppingCartServiceServer) GetPurchasedTours(context.Context, *GetPurchasedToursRequest) (*GetPurchasedToursResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPurchasedTours not implemented")
 }
 func (UnimplementedShoppingCartServiceServer) mustEmbedUnimplementedShoppingCartServiceServer() {}
 func (UnimplementedShoppingCartServiceServer) testEmbeddedByValue()                             {}
@@ -222,6 +238,24 @@ func _ShoppingCartService_Checkout_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ShoppingCartService_GetPurchasedTours_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPurchasedToursRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ShoppingCartServiceServer).GetPurchasedTours(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: ShoppingCartService_GetPurchasedTours_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ShoppingCartServiceServer).GetPurchasedTours(ctx, req.(*GetPurchasedToursRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ShoppingCartService_ServiceDesc is the grpc.ServiceDesc for ShoppingCartService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -244,6 +278,10 @@ var ShoppingCartService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Checkout",
 			Handler:    _ShoppingCartService_Checkout_Handler,
+		},
+		{
+			MethodName: "GetPurchasedTours",
+			Handler:    _ShoppingCartService_GetPurchasedTours_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

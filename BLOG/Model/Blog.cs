@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace BLOG.Model
 {
-    public class Post
+    public class Blog
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -13,6 +13,9 @@ namespace BLOG.Model
         [BsonElement("Title")]
         public string Title {get; set;} = null!;
 
+        [BsonElement("UserName")]
+        public string UserName {get; set;} = null!;
+
         [BsonElement("Description")]
         public string Description {get; set;} = null!;
 
@@ -20,7 +23,7 @@ namespace BLOG.Model
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("ImagePaths")]
-        public string[]? ImagePaths {get; set;} = null!;
+        public List<string> ImagePaths {get; set;} = null!;
 
         [BsonElement("LikeCount")]
         public int LikeCount {get; set;}

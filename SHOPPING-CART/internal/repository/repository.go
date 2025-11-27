@@ -72,3 +72,17 @@ func (r *CartRepository) ProcessCheckout(tokens []model.PurchaseToken, userID st
 		return nil // Commit the transaction
 	})
 }
+
+// Add this method to CartRepository
+func (r *CartRepository) GetPurchasedTokens(userID string) ([]model.PurchaseToken, error) {
+	var tokens []model.PurchaseToken
+
+	// Fetch all tokens belonging to this user
+	result := r.db.Where("user_id = ?", userID).Find(&tokens)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return tokens, nil
+}

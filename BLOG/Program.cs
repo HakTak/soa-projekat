@@ -1,8 +1,8 @@
+
 using BLOG.GrpcServices;
-// --- NOVI IMPORTI ZA JAEGER/OPENTELEMETRY ---
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-
+using Microsoft.AspNetCore.Builder;
 var builder = WebApplication.CreateBuilder(args);
 
 // Dodajemo servise za kontrolere i Swagger
@@ -54,8 +54,8 @@ builder.Services.AddSingleton(resolver =>
 // Registracija Repository i Service slojeva
 builder.Services.AddScoped<BLOG.Repositories.ICommentRepository, BLOG.Repositories.CommentRepository>();
 builder.Services.AddScoped<BLOG.Services.CommentService>();
-builder.Services.AddScoped<BLOG.Repositories.IPostRepository, BLOG.Repositories.PostRepository>();
-builder.Services.AddScoped<BLOG.Services.PostService>();
+builder.Services.AddScoped<BLOG.Repositories.IBlogRepository, BLOG.Repositories.BlogRepository>();
+builder.Services.AddScoped<BLOG.Services.BlogService>();
 
 
 var app = builder.Build();
@@ -66,7 +66,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseStaticFiles();
 app.UseHttpsRedirection();
 
 app.MapControllers();

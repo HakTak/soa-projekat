@@ -14,7 +14,7 @@ func NewTourService(repo *repository.TourRepository, reviewRepo *repository.Revi
 	return &TourService{repo: repo, reviewRepo: reviewRepo}
 }
 
-func (s *TourService) CreateTour(t *model.Tour) error {
+func (s *TourService) CreateTour(t *model.Tour) (*model.Tour, error) {
 	return s.repo.CreateTour(t)
 }
 
@@ -30,11 +30,11 @@ func (s *TourService) DeleteTour(id string) error {
 	return s.repo.DeleteTour(id)
 }
 
-func (s *TourService) UpdateTour(t *model.Tour) error {
+func (s *TourService) UpdateTour(t *model.Tour) (*model.Tour, error) {
 	return s.repo.UpdateTour(t)
 }
 
-func (s *TourService) GetToursByUser(userId uint) ([]model.Tour, error) {
+func (s *TourService) GetToursByUser(userId string) ([]model.Tour, error) {
 	return s.repo.GetToursByUser(userId)
 }
 

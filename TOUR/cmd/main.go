@@ -4,24 +4,23 @@ import (
 	"context"
 	"log"
 	"net"
-	"net/http"
 	"os"
 
 	"tour-service/internal/api"
 	"tour-service/internal/model"
 	"tour-service/internal/repository"
 	"tour-service/internal/service"
-	pb "tour-service/protobuf"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/riandyrn/otelchi" // Middleware za Chi
+	// Koristimo Common pakete iz incoming grane
+	commonMiddleware "PROJEKAT/COMMON/middleware"
+	pb "PROJEKAT/COMMON/tour/proto"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/plugin/opentelemetry/tracing" // Plugin za Gorm
 
 	"google.golang.org/grpc"
 
-	// --- Importi za OpenTelemetry ---
+	// --- Importi za OpenTelemetry (Zadržavamo iz HEAD) ---
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -29,22 +28,18 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"gorm.io/plugin/opentelemetry/tracing" // Plugin za Gorm
 )
 
-// --- Funkcija za inicijalizaciju Jaegera (OpenTelemetry) ---
+// --- Funkcija za inicijalizaciju Jaegera (Zadržavamo iz HEAD) ---
 func initTracer() (*sdktrace.TracerProvider, error) {
 	ctx := context.Background()
 
-	// Cita adresu Jaegera iz environment varijable ili koristi default
-	// U docker-compose smo stavili OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
-	// Go exporter ochekuje host:port format za gRPC
 	otlpEndpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
 	if otlpEndpoint == "" {
 		otlpEndpoint = "jaeger:4317"
 	}
 
-	// Kreiramo exporter koji salje podatke Jaegeru preko gRPC-a
-	// Insecure je potreban jer unutar Dockera ne koristimo HTTPS sertifikate
 	exporter, err := otlptracegrpc.New(ctx,
 		otlptracegrpc.WithEndpoint("jaeger:4317"),
 		otlptracegrpc.WithInsecure(),
@@ -53,7 +48,6 @@ func initTracer() (*sdktrace.TracerProvider, error) {
 		return nil, err
 	}
 
-	// Definisemo ime servisa (ovo ce pisati u Jaeger UI)
 	serviceName := os.Getenv("OTEL_SERVICE_NAME")
 	if serviceName == "" {
 		serviceName = "tour-service"
@@ -68,13 +62,11 @@ func initTracer() (*sdktrace.TracerProvider, error) {
 		return nil, err
 	}
 
-	// Kreiramo Tracer Provider
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(exporter),
 		sdktrace.WithResource(res),
 	)
 
-	// Postavljamo globalni tracer i propagator (bitno za povezivanje servisa)
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
 
@@ -82,12 +74,11 @@ func initTracer() (*sdktrace.TracerProvider, error) {
 }
 
 func main() {
-	// --- 1. POKRETANJE TRACINGA ---
+	// --- 1. POKRETANJE TRACINGA (Zadržavamo iz HEAD) ---
 	tp, err := initTracer()
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Osiguravamo da se podaci posalju pre gasenja servisa
 	defer func() {
 		if err := tp.Shutdown(context.Background()); err != nil {
 			log.Printf("Error shutting down tracer provider: %v", err)
@@ -106,7 +97,7 @@ func main() {
 		log.Fatal("failed to connect to DB:", err)
 	}
 
-	// --- 2. DODAVANJE TRACINGA ZA BAZU (GORM) ---
+	// --- 2. DODAVANJE TRACINGA ZA BAZU (Zadržavamo iz HEAD) ---
 	if err := db.Use(tracing.NewPlugin()); err != nil {
 		log.Printf("Failed to use gorm tracing plugin: %v", err)
 	}
@@ -118,68 +109,32 @@ func main() {
 	repo := repository.NewTourRepository(db)
 	reviewRepo := repository.CreateReviewRepository(db)
 	svc := service.NewTourService(repo, reviewRepo)
-	handler := api.NewTourHandler(svc)
 
-	go func() {
-		lis, err := net.Listen("tcp", ":50052")
-		if err != nil {
-			log.Fatalf("failed to listen for gRPC: %v", err)
-		}
+	// --- REŠENJE KONFLIKTA KOD SERVERA ---
+	// Koristimo strukturu iz Incoming grane (NewTourGRPCServer umesto HTTP handlera),
+	// ali dodajemo Tracing iz HEAD grane.
 
-		// --- 3. DODAVANJE TRACINGA ZA gRPC SERVER ---
-		// StatsHandler automatski prati sve gRPC pozive
-		grpcServer := grpc.NewServer(
-			grpc.StatsHandler(otelgrpc.NewServerHandler()),
-		)
+	handler := api.NewTourGRPCServer(svc)
 
-		grpcHandler := api.NewTourGrpcHandler(svc)
-		pb.RegisterTourServiceServer(grpcServer, grpcHandler)
-
-		log.Println("gRPC Server started on port :50052")
-		if err := grpcServer.Serve(lis); err != nil {
-			log.Fatalf("failed to serve gRPC: %v", err)
-		}
-	}()
-
-	r := chi.NewRouter()
-
-	// --- 4. DODAVANJE TRACINGA ZA HTTP (Chi Router) ---
-	// "tour-service" je ime koje ce se videti u spanovima
-	r.Use(otelchi.Middleware("tour-service"))
-
-	// CORS MIDDLEWARE
-	r.Use(func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
-			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-CSRF-Token")
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-
-			if r.Method == "OPTIONS" {
-				w.WriteHeader(http.StatusOK)
-				return
-			}
-			next.ServeHTTP(w, r)
-		})
-	})
-
-	r.Post("/tour", handler.CreateTour)
-	r.Get("/tour/{id}", handler.GetTour)
-	r.Get("/tours", handler.GetAllTours)
-	r.Get("/tours/myTours/{userId}", handler.GetToursByUser)
-	r.Delete("/tour/{id}", handler.DeleteTour)
-	r.Patch("/tour/update", handler.UpdateTour)
-
-	r.Post("/review/create", handler.CreateReview)
-	r.Get("/review/tour/{tourId}", handler.GetReviewsByTour)
-	r.Get("/review/getAll", handler.GetAllReviews)
-	r.Delete("/review/delete/{id}", handler.DeleteReview)
-
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8083"
+	// Incoming grana koristi port 8083 za gRPC
+	lis, err := net.Listen("tcp", ":8083")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
 	}
 
-	log.Println("Tour service running on port", port)
-	http.ListenAndServe(":"+port, r)
+	// --- SPAJANJE INTERCEPTORA ---
+	grpcServer := grpc.NewServer(
+		// 1. Dodajemo Tracing (iz HEAD)
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+
+		// 2. Dodajemo Metadata Middleware (iz Incoming)
+		grpc.UnaryInterceptor(commonMiddleware.MetadataExtractorInterceptor),
+	)
+
+	pb.RegisterTourServiceServer(grpcServer, handler)
+
+	log.Println("Tour gRPC service running on port 8083 (with Tracing)")
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }

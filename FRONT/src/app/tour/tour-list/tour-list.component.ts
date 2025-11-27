@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Tour } from '../model/tour'; 
- import { Keypoint } from '../model/keypoint'; // Ako ti treba
+import { Tour } from '../model/tour';
+import { Keypoint } from '../model/keypoint'; // Ako ti treba
+import { ShoppingCartService } from '../../shopping-cart/service/shopping-cart.service';
+import { AuthService } from '../../infrastructure/auth.service';
 
 // Definisemo mali interfejs za Review ovde (ili ga importuj ako ga imas u models folderu)
 interface Review {
@@ -21,15 +23,18 @@ interface Review {
   styleUrls: ['./tour-list.component.css']
 })
 export class TourListComponent implements OnInit {
-  tours: Tour[] = [];
+  public tours: Tour[] = [];
+  public tourStatus = TourStatus;
   
   // Mapa koja cuva ocene: Kljuc je ID ture, Vrednost je prosek (number)
   tourRatings: { [tourId: string]: number } = {};
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private cartService: ShoppingCartService, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.fetchTours();
+    this.tours = this.tours.filter(tour => tour.status === TourStatus.PUBLISHED);
+
   }
 
   fetchTours(): void {
@@ -37,7 +42,7 @@ export class TourListComponent implements OnInit {
     this.http.get<Tour[]>('http://localhost:8083/tours').subscribe({
       next: (data) => {
         this.tours = data;
-        
+
         // Cim stignu ture, za svaku od njih pokreni dovlacenje ocena
         this.tours.forEach(tour => {
           if (tour.id) {
@@ -52,7 +57,7 @@ export class TourListComponent implements OnInit {
   }
 
   fetchAvgRating(tourId: string): void {
-    this.http.get<Review[]>(`http://localhost:8083/review/tour/${tourId}`).subscribe({
+    this.http.get<Review[]>(`http://localhost:8080/review/tour/${tourId}`).subscribe({
       next: (reviews) => {
         if (reviews.length > 0) {
           // Izracunaj sumu
@@ -80,14 +85,34 @@ export class TourListComponent implements OnInit {
   }
 
   getFirstKeypointName(tour: Tour): string {
-    return tour.keypoints && tour.keypoints.length > 0 
-      ? tour.keypoints[0].title 
+    return tour.keypoints && tour.keypoints.length > 0
+      ? tour.keypoints[0].title
       : 'No start point';
   }
 
   getLastKeypointName(tour: Tour): string {
-    return tour.keypoints && tour.keypoints.length > 0 
-      ? tour.keypoints[tour.keypoints.length - 1].title 
+    return tour.keypoints && tour.keypoints.length > 0
+      ? tour.keypoints[tour.keypoints.length - 1].title
       : 'No end point';
+  }
+
+  addToCart(event: Event, tourId?: string): void {
+    event.stopPropagation();
+
+    const userId = this.authService.getMyId();
+    if (!userId) {
+      alert('Please log in to shop.');
+      return;
+    }
+
+    this.cartService.addItem(userId, tourId).subscribe({
+      next: () => {
+        // Optional: Show a toast notification
+        alert('Added to cart!');
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to add item. It might already be in your cart.');
+      }
+    });
   }
 }

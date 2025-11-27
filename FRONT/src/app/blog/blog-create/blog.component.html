@@ -1,0 +1,38 @@
+<div class="post-wrapper">
+  <form [formGroup]="blogForm" (ngSubmit)="publishBlog()">
+    <div class="post-container">
+      <!-- LEFT PANEL -->
+      <div class="left-side">
+          <div class="card-box">
+            <h2>Create Blog Post</h2>
+            <h3>Title</h3>
+            <input formControlName="title" type="text" placeholder="Enter title...">
+            <h3>Content</h3>
+            <div class="editor-box">
+              <textarea formControlName="content" name="content" placeholder="Write your content here..."></textarea>
+            </div>
+          </div>
+
+          <!-- Buttons under the content container -->
+          <div class="bottom-bar">
+            <button type="button" (click)="resetForm()" class="discard-btn">Reset</button>
+            <button type="submit" class="publish-btn" [disabled]="blogForm.invalid || !user">Publish</button>
+          </div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right-side">
+        <div class="card-box">
+          <h3>Featured Image(s)</h3>
+          <input (change)="onFileSelected($event)" type="file" multiple accept="image/*">
+        </div>
+
+        <div class="card-box">
+          <h3>Tags</h3>
+          <input  name="tags"
+                type="text" (input)="parseTags()" formControlName="tags" placeholder="Add a tag...">
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
