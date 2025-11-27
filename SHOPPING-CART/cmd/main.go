@@ -61,7 +61,7 @@ func main() {
 	// ========================================================================
 
 	// Listen on port 50053 (Must match docker-compose for shopping-cart)
-	lis, err := net.Listen("tcp", ":50053")
+	lis, err := net.Listen("tcp", ":9092")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

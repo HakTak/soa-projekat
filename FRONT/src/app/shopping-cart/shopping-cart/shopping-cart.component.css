@@ -1,0 +1,35 @@
+:host {
+    display: block;
+    min-height: 80vh;
+    background-color: #f8f9fa;
+    padding-bottom: 3rem;
+}
+
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: #6c757d;
+    letter-spacing: 0.5px;
+}
+
+.table td {
+    padding-top: 1.2rem;
+    padding-bottom: 1.2rem;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: scale(1.1);
+    transition: all 0.2s;
+}
+
+.fs-3 {
+    color: #212529;
+}
