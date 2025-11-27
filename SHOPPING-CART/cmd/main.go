@@ -1,77 +1,137 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
+	"os"
 
-	// Update "SHOPPING-CART" to match your actual go.mod module name
 	"SHOPPING-CART/internal/database"
 	"SHOPPING-CART/internal/handlers"
 	"SHOPPING-CART/internal/repository"
 	"SHOPPING-CART/internal/service"
 
-	// Import the generated Protocol Buffers
-	// 1. The Cart Proto (We are the Server for this)
 	pbCart "PROJEKAT/COMMON/shopping-cart/proto"
-
-	// 2. The Tour Proto (We are the Client for this)
-	// Make sure this path points to where your Tour proto is generated
 	pbTour "SHOPPING-CART/common/genproto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+
+	// --- Importi za OpenTelemetry ---
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
+// --- Inicijalizacija Tracera (Boilerplate kod) ---
+func initTracer() (*sdktrace.TracerProvider, error) {
+	ctx := context.Background()
+
+	otlpEndpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if otlpEndpoint == "" {
+		otlpEndpoint = "jaeger:4317"
+	}
+
+	exporter, err := otlptracegrpc.New(ctx,
+		otlptracegrpc.WithEndpoint("jaeger:4317"),
+		otlptracegrpc.WithInsecure(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	serviceName := os.Getenv("OTEL_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "shopping-cart-service"
+	}
+
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(serviceName),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+	)
+
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	return tp, nil
+}
+
 func main() {
-	// 1. Database Connection
-	// Using the Connect function we created in internal/database/database.go
+	// --- 1. POKRETANJE TRACINGA ---
+	tp, err := initTracer()
+	if err != nil {
+		log.Fatalf("Failed to init tracer: %v", err)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
+	// 2. Database Connection
 	db := database.Connect()
 
-	// 2. Repository Initialization
+	// --- 3. BAZA TRACING (GORM) ---
+	// Dodajemo plugin da vidimo SQL upite u Jaegeru
+	if err := db.Use(tracing.NewPlugin()); err != nil {
+		log.Printf("Failed to use gorm tracing plugin: %v", err)
+	}
+
 	repo := repository.NewCartRepository(db)
 
 	// ========================================================================
-	// 3. Tour Service Client Setup (Crucial Step)
-	// The Shopping Cart needs to talk to the Tour Service to validate tours.
+	// 4. TOUR CLIENT SETUP (SA TRACINGOM)
+	// Ovo je kljucno: Kada Cart zove Tour, moramo poslati TraceID dalje.
 	// ========================================================================
 
-	// "tour:50052" matches the service name and gRPC port in docker-compose
-	tourConn, err := grpc.Dial("tour:50052", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	tourConn, err := grpc.Dial(
+		"tour:50052",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+
+		// --- ISPRAVKA ---
+		// Koristimo "WithStatsHandler" jer je ovo klijent (Dial), a ne server.
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+	)
 	if err != nil {
 		log.Fatalf("Failed to connect to Tour Service: %v", err)
 	}
 	defer tourConn.Close()
 
-	// Create the Client instance
 	tourClient := pbTour.NewTourServiceClient(tourConn)
 
-	// ========================================================================
-	// 4. Service & Handler Initialization
-	// ========================================================================
-
-	// Inject both the Repository (DB) and the Tour Client (Microservice)
 	svc := service.NewShoppingCartService(repo, tourClient)
-
-	// Create the gRPC Handler
 	cartHandler := handlers.NewShoppingCartHandler(svc)
 
 	// ========================================================================
-	// 5. Start gRPC Server
+	// 5. START GRPC SERVER (SA TRACINGOM)
 	// ========================================================================
 
-	// Listen on port 50053 (Must match docker-compose for shopping-cart)
 	lis, err := net.Listen("tcp", ":50053")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	grpcServer := grpc.NewServer()
+	// Kreiramo server sa StatsHandler-om koji automatski prati sve dolazne zahteve
+	grpcServer := grpc.NewServer(
+		grpc.StatsHandler(otelgrpc.NewServerHandler()), // <--- KLJUCNO: Tracing dolaznih zahteva
+	)
 
-	// Register the Cart Handler
 	pbCart.RegisterShoppingCartServiceServer(grpcServer, cartHandler)
-
-	// Enable Reflection (Optional, but good for testing with Postman/gRPCurl)
 	reflection.Register(grpcServer)
 
 	log.Println("Shopping Cart Microservice (gRPC) started on port 50053")

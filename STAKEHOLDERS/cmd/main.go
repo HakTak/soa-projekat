@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -11,15 +12,82 @@ import (
 	"stakeholders/internal/repository"
 	"stakeholders/internal/service"
 
-	commonMiddleware "PROJEKAT/COMMON/middleware" // <--- IMPORTUJEMO ZAJEDNICKI
+	commonMiddleware "PROJEKAT/COMMON/middleware" // Tvoj middleware
 	pb "PROJEKAT/COMMON/stakeholders/proto"
 
 	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	// --- Importi za OpenTelemetry (Jaeger) ---
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"gorm.io/plugin/opentelemetry/tracing"
 )
 
+// --- Funkcija za inicijalizaciju Jaegera ---
+func initTracer() (*sdktrace.TracerProvider, error) {
+	ctx := context.Background()
+
+	// Cita adresu iz docker-compose ili koristi default
+	otlpEndpoint := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	if otlpEndpoint == "" {
+		otlpEndpoint = "jaeger:4317"
+	}
+
+	// Kreiramo exporter (gRPC komunikacija sa Jaegerom)
+	exporter, err := otlptracegrpc.New(ctx,
+		otlptracegrpc.WithEndpoint("jaeger:4317"),
+		otlptracegrpc.WithInsecure(), // Bitno za Docker (bez SSL-a)
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// Ime servisa koje ce pisati u Grafani
+	serviceName := os.Getenv("OTEL_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "stakeholders-service"
+	}
+
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String(serviceName),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+	)
+
+	// Postavljamo globalne propagatore (da prenosimo TraceID kroz servise)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	return tp, nil
+}
+
 func main() {
+	// --- 1. POKRETANJE TRACINGA ---
+	tp, err := initTracer()
+	if err != nil {
+		log.Fatalf("failed to init tracer: %v", err)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "host=localhost user=stakeholders password=secret dbname=stakeholders port=5432 sslmode=disable"
@@ -30,13 +98,17 @@ func main() {
 		log.Fatalf("db connect: %v", err)
 	}
 
+	// --- 2. DODAVANJE TRACINGA ZA BAZU ---
+	if err := db.Use(tracing.NewPlugin()); err != nil {
+		log.Printf("Failed to use gorm tracing plugin: %v", err)
+	}
+
 	db.AutoMigrate(&model.Profile{})
-	// seedProfiles(db) // pozovi ako treba
+	// seedProfiles(db)
 
 	repo := repository.NewGormProfileRepo(db)
 	svc := service.NewProfileService(repo)
 
-	// NEMA vise http handlera, pravimo gRPC handler
 	profileHandler := handlers.NewProfileHandler(svc)
 
 	listener, err := net.Listen("tcp", ":50051")
@@ -44,8 +116,13 @@ func main() {
 		log.Fatalf("listen: %v", err)
 	}
 
-	// Ubacujemo zajednicki interceptor
+	// --- 3. KONFIGURACIJA GRPC SERVERA SA TRACINGOM ---
+	// Koristimo ChainUnaryInterceptor da povezemo OpenTelemetry I tvoj Metadata extractor
 	grpcServer := grpc.NewServer(
+		// 1. OpenTelemetry Tracing (hvata sve zahteve automatski)
+		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+
+		// 2. Tvoj Middleware (ostaje kao Interceptor)
 		grpc.UnaryInterceptor(commonMiddleware.MetadataExtractorInterceptor),
 	)
 
