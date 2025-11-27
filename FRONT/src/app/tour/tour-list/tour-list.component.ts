@@ -6,6 +6,7 @@ import { Tour } from '../model/tour';
 import { Keypoint } from '../model/keypoint'; // Ako ti treba
 import { ShoppingCartService } from '../../shopping-cart/service/shopping-cart.service';
 import { AuthService } from '../../infrastructure/auth.service';
+import { TourStatus } from '../model/tour';
 
 // Definisemo mali interfejs za Review ovde (ili ga importuj ako ga imas u models folderu)
 interface Review {
