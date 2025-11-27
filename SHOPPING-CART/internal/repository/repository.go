@@ -86,3 +86,35 @@ func (r *CartRepository) GetPurchasedTokens(userID string) ([]model.PurchaseToke
 
 	return tokens, nil
 }
+
+// STEP 1: Save tokens as PENDING
+func (r *CartRepository) CreatePendingTokens(tokens []model.PurchaseToken) error {
+	return r.db.Create(&tokens).Error
+}
+
+// STEP 3 (Success): Mark CONFIRMED and Clear Cart
+func (r *CartRepository) ConfirmPurchase(userID string) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		// 1. Update Tokens to CONFIRMED
+		if err := tx.Model(&model.PurchaseToken{}).
+			Where("user_id = ? AND status = ?", userID, "PENDING").
+			Update("status", "CONFIRMED").Error; err != nil {
+			return err
+		}
+
+		// 2. Clear Cart Items
+		if err := tx.Where("cart_id = ?", userID).Delete(&model.OrderItem{}).Error; err != nil {
+			return err
+		}
+
+		// 3. Reset Cart Total
+		return tx.Model(&model.ShoppingCart{}).Where("user_id = ?", userID).Update("total", 0).Error
+	})
+}
+
+// COMPENSATION (Failure): Delete PENDING tokens
+func (r *CartRepository) AbortPurchase(userID string) error {
+	return r.db.Model(&model.PurchaseToken{}).
+		Where("user_id = ? AND status = ?", userID, "PENDING").
+		Update("status", "FAILED").Error
+}

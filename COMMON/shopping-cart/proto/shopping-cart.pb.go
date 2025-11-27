@@ -339,6 +339,7 @@ type PurchaseToken struct {
 	TokenId       string                 `protobuf:"bytes,1,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`
 	TourId        string                 `protobuf:"bytes,2,opt,name=tour_id,json=tourId,proto3" json:"tour_id,omitempty"`
 	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -390,6 +391,13 @@ func (x *PurchaseToken) GetTourId() string {
 func (x *PurchaseToken) GetUserId() string {
 	if x != nil {
 		return x.UserId
+	}
+	return ""
+}
+
+func (x *PurchaseToken) GetStatus() string {
+	if x != nil {
+		return x.Status
 	}
 	return ""
 }
@@ -557,11 +565,12 @@ const file_shopping_cart_proto_shopping_cart_proto_rawDesc = "" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x17\n" +
 	"\atour_id\x18\x02 \x01(\tR\x06tourId\"*\n" +
 	"\x0fCheckoutRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"\\\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"t\n" +
 	"\rPurchaseToken\x12\x19\n" +
 	"\btoken_id\x18\x01 \x01(\tR\atokenId\x12\x17\n" +
 	"\atour_id\x18\x02 \x01(\tR\x06tourId\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\tR\x06userId\"b\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\"b\n" +
 	"\x10CheckoutResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x124\n" +
 	"\x06tokens\x18\x02 \x03(\v2\x1c.shopping_cart.PurchaseTokenR\x06tokens\"3\n" +

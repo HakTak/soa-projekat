@@ -120,34 +120,72 @@ func (s *ShoppingCartService) RemoveItem(userID, tourID string) (*model.Shopping
 	return cart, nil
 }
 
-// Checkout finalizes the purchase
-func (s *ShoppingCartService) Checkout(userID string) ([]model.PurchaseToken, error) {
-	cart, err := s.repo.GetOrCreateCart(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(cart.Items) == 0 {
-		return nil, errors.New("cannot checkout an empty cart")
-	}
-
-	var tokens []model.PurchaseToken
-	for _, item := range cart.Items {
-		token := model.PurchaseToken{
-			UserID: userID,
-			TourID: item.TourID,
-		}
-		tokens = append(tokens, token)
-	}
-
-	if err := s.repo.ProcessCheckout(tokens, userID); err != nil {
-		return nil, fmt.Errorf("checkout failed: %v", err)
-	}
-
-	return tokens, nil
-}
-
 // Add this method to ShoppingCartService
 func (s *ShoppingCartService) GetPurchasedTours(userID string) ([]model.PurchaseToken, error) {
 	return s.repo.GetPurchasedTokens(userID)
+}
+
+func (s *ShoppingCartService) Checkout(userID string) ([]model.PurchaseToken, error) {
+	// 1. Get Cart
+	cart, err := s.repo.GetOrCreateCart(userID)
+	if err != nil || len(cart.Items) == 0 {
+		return nil, errors.New("cart is empty")
+	}
+
+	// =========================================================
+	// SAGA STEP 1: PREPARE (Local Transaction)
+	// Create tokens but mark them as PENDING.
+	// If system crashes here, user has no valid tokens. Safe.
+	// =========================================================
+	var tokens []model.PurchaseToken
+	for _, item := range cart.Items {
+		tokens = append(tokens, model.PurchaseToken{
+			UserID: userID,
+			TourID: item.TourID,
+			Status: "PENDING",
+		})
+	}
+
+	if err := s.repo.CreatePendingTokens(tokens); err != nil {
+		return nil, fmt.Errorf("checkout init failed: %v", err)
+	}
+
+	// =========================================================
+	// SAGA STEP 2: ACTION (Remote Transaction)
+	// Call Tour Service to increment sales counter.
+	// =========================================================
+	for _, item := range cart.Items {
+		_, err := s.tourClient.UpdateTourSales(context.Background(), &tourPb.UpdateTourSalesRequest{
+			TourId: item.TourID,
+		})
+
+		if err != nil {
+			// !!! ERROR DETECTED !!!
+			// The Tour Service said NO (or is down).
+
+			// =========================================================
+			// SAGA COMPENSATION (Rollback)
+			// Undo Step 1 by deleting the pending tokens.
+			// =========================================================
+			fmt.Printf("Saga failure for tour %s: %v. Rolling back...\n", item.TourID, err)
+			_ = s.repo.AbortPurchase(userID)
+
+			return nil, fmt.Errorf("purchase failed: could not confirm tour availability. Cart has not been charged.")
+		}
+	}
+
+	// =========================================================
+	// SAGA STEP 3: COMMIT (Local Transaction)
+	// Everything went well. Make tokens valid and clear cart.
+	// =========================================================
+	if err := s.repo.ConfirmPurchase(userID); err != nil {
+		// This is a critical/rare edge case (DB died right at the end)
+		return nil, fmt.Errorf("system error during finalization: %v", err)
+	}
+
+	// Return the confirmed tokens
+	for i := range tokens {
+		tokens[i].Status = "CONFIRMED"
+	}
+	return tokens, nil
 }

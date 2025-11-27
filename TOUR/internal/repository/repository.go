@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"errors"
 	"tour-service/internal/model"
 
 	"gorm.io/gorm"
@@ -48,4 +49,16 @@ func (r *TourRepository) GetToursByUser(userId string) ([]model.Tour, error) {
 	var tours []model.Tour
 	err := r.db.Preload("Keypoints").Preload("RouteOptions").Where("user_id = ?", userId).Find(&tours).Error
 	return tours, err
+}
+
+func (r *TourRepository) IncrementSales(tourID string) error {
+	// This executes: UPDATE tours SET sales = sales + 1 WHERE id = '...'
+	result := r.db.Model(&model.Tour{}).Where("id = ?", tourID).UpdateColumn("sales", gorm.Expr("sales + ?", 1))
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("tour not found")
+	}
+	return nil
 }

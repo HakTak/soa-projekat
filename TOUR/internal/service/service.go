@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"tour-service/internal/model"
 	"tour-service/internal/repository"
 )
@@ -53,4 +54,21 @@ func (s *TourService) DeleteReview(id string) error {
 
 func (s *TourService) GetAllReviews() ([]model.Review, error) {
 	return s.reviewRepo.GetAllReviews()
+}
+
+func (s *TourService) UpdateTourSales(tourID string) error {
+	// 1. Optional: Check if tour is valid for sale
+	tour, err := s.repo.GetTour(tourID)
+	if err != nil {
+		return err
+	}
+
+	// SIMULATE SAGA FAILURE:
+	// If you try to buy a DRAFT tour, we throw error to trigger rollback in ShoppingCart
+	if tour.Status != "PUBLISHED" {
+		return errors.New("cannot update sales for non-published tour")
+	}
+
+	// 2. Perform the update
+	return s.repo.IncrementSales(tourID)
 }

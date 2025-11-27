@@ -212,6 +212,14 @@ func (s *TourGRPCServer) DeleteReview(ctx context.Context, req *pb.DeleteReviewR
 	return mapReviewToResponse(&revList[0]), nil
 }
 
+func (h *TourGRPCServer) UpdateTourSales(ctx context.Context, req *pb.UpdateTourSalesRequest) (*emptypb.Empty, error) {
+	err := h.svc.UpdateTourSales(req.TourId)
+	if err != nil {
+		return nil, status.Error(codes.FailedPrecondition, err.Error())
+	}
+	return &emptypb.Empty{}, nil
+}
+
 // ========================
 // Mapping Helpers
 // ========================

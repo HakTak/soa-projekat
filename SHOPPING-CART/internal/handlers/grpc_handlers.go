@@ -188,6 +188,7 @@ func (h *ShoppingCartHandler) GetPurchasedTours(ctx context.Context, req *pb.Get
 			TokenId: t.Token, // The secret token
 			TourId:  t.TourID,
 			UserId:  t.UserID,
+			Status:  t.Status,
 		})
 	}
 

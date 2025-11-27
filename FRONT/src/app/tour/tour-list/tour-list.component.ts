@@ -65,7 +65,7 @@ export class TourListComponent implements OnInit {
         ]
       },
       {
-        id: "t2",
+        id: "a9f9c6a6-adf7-425a-8764-9f03e087dbb6",
         title: "Old Town Cultural Walk",
         description: "A relaxed guided walk through medieval European streets.",
         difficulty: "Easy",
@@ -127,7 +127,7 @@ export class TourListComponent implements OnInit {
         ]
       },
       {
-        id: "t4",
+        id: "999755cb-97cf-442f-be25-98099087fdb7",
         title: "Rainforest Wildlife Trek",
         description: "A guided adventure through lush rainforest trails.",
         difficulty: "Hard",

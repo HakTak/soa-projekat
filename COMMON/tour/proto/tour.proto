@@ -126,6 +126,10 @@ message GetAllReviewsResponse {
     repeated Review reviews = 1;
 }
 
+message UpdateTourSalesRequest {
+    string tour_id = 1;
+}
+
 // =========================
 // SERVICE WITH ANNOTATIONS
 // =========================
@@ -194,4 +198,6 @@ service TourService {
             delete: "/review/delete/{id}"
         };
     }
+
+    rpc UpdateTourSales(UpdateTourSalesRequest) returns (google.protobuf.Empty);
 }

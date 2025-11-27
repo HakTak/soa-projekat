@@ -31,6 +31,7 @@ type PurchaseToken struct {
 	UserID   string    `json:"user_id"`
 	TourID   string    `json:"tour_id"`
 	IssuedAt time.Time `json:"issued_at"`
+	Status   string    `json:"status"`
 }
 
 // BeforeCreate generates a UUID for the token

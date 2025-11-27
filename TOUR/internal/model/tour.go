@@ -23,6 +23,7 @@ type Tour struct {
 	ArchivedAt   time.Time     `json:"archived_at"`
 	Keypoints    []Keypoint    `gorm:"foreignKey:TourID;constraint:OnDelete:CASCADE" json:"keypoints"`
 	RouteOptions []RouteOption `gorm:"foreignKey:TourID;constraint:OnDelete:CASCADE" json:"route_options"`
+	Sales        int64         `json:"sales" gorm:"default:0"`
 }
 
 func (t *Tour) BeforeCreate(tx *gorm.DB) (err error) {

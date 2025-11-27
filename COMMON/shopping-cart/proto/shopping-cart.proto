@@ -86,6 +86,7 @@ message PurchaseToken {
     string token_id = 1;
     string tour_id = 2;
     string user_id = 3;
+    string status = 4; 
 }
 
 message CheckoutResponse {
