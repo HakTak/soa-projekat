@@ -10,7 +10,6 @@ import (
 type Review struct {
 	ID        string    `gorm:"type:uuid;primaryKey" json:"id"`
 	TourID    string    `gorm:"type:uuid;index" json:"tour_id"`
-	UserID    string    `gorm:"type:uuid;index" json:"user_id"`
 	UserName  string    `json:"user_name"`
 	Rating    int       `json:"rating"` // 1-5
 	Comment   string    `json:"comment"`

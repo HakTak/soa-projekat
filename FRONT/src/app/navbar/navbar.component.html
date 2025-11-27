@@ -3,8 +3,14 @@
     <!-- LEVA GRUPA (Ostala ista) -->
     <ul class="nav-group nav-group--left">
       <li><a routerLink="/" (click)="onHomeClick()" class="nav-link">Home</a></li>
-      <li><a routerLink="/blog" (click)="onBlogClick()" class="nav-link">Blog</a></li>
-
+      <!-- BLOG DROPDOWN -->
+      <li class="dropdown">
+        <a class="nav-link">Blog ▾</a>
+        <ul class="dropdown-menu">
+          <li><a routerLink="/blogs" class="nav-link">Blogs</a></li>
+          <li><a routerLink="/blog/create"  class="nav-link">Create Blog</a></li>
+        </ul>
+      </li>
       <!-- TOURS DROPDOWN -->
       <li class="nav-item dropdown" (mouseenter)="dropdownOpen = true" (mouseleave)="dropdownOpen = false">
         <a class="nav-link" style="cursor: pointer;" (click)="toggleDropdown($event)">

@@ -9,7 +9,7 @@ import (
 
 type Tour struct {
 	ID           string        `gorm:"type:uuid;primaryKey" json:"id"`
-	UserID       string        `json:"user_id"`
+	UserName     string        `json:"user_name"`
 	Title        string        `json:"title"`
 	Description  string        `json:"description"`
 	Difficulty   string        `json:"difficulty"`

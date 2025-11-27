@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Review } from '../model/review';
 import { Tour } from '../model/tour';
 import { Keypoint } from '../model/keypoint';
+import { User } from '../../models/user.model'
 
 interface ReviewRequest {
   tour_id: string;
@@ -50,6 +51,8 @@ export class TourDetailComponent implements OnInit {
     image_url: null
   };
 
+  public user: User | null = this.loadCurrentUser()
+
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
@@ -57,13 +60,65 @@ export class TourDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.fetchTour(id);
-        this.fetchReviews(id);
-      }
-    });
+    // this.route.paramMap.subscribe(params => {
+    //   const id = params.get('id');
+    //   if (id) {
+    //     this.fetchTour(id);
+    //     this.fetchReviews(id);
+    //   }
+    // });
+    this.tour =  {
+      id: "t1",
+      title: "Alps Mountain Adventure",
+      description: "A thrilling multi-day guided tour across the Alpine passes.",
+      difficulty: "Super Hard",
+      tags: "mountains, hiking, adventure",
+      status: "published",
+      price: 299.99,
+      publisedAt: new Date(),
+      archivedAt: null,
+      keypoints: [
+        {
+          id: "k1",
+          tourId: "t1",
+          title: "Base Camp",
+          latitude: 46.8182,
+          longitude: 8.2275,
+          description: "Starting point at the scenic Swiss Alps base camp.",
+          imageUrl: "https://picsum.photos/300/200?alps1"
+        },
+        {
+          id: "k2",
+          tourId: "t1",
+          title: "Glacier Ridge",
+          latitude: 46.9121,
+          longitude: 7.9980,
+          description: "A stunning viewpoint overlooking an ancient glacier.",
+          imageUrl: "https://picsum.photos/300/200?alps2"
+        }
+      ]
+    }
+  }
+
+  loadCurrentUser() {
+   const token = localStorage.getItem('jwt');
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+
+      const user: User = {
+        id: payload.id,
+        username: payload.username,
+        email: payload.email,
+        role: payload.role,
+        blocked: false
+      };
+        return user;
+    } catch (err) {
+      console.error("Invalid JWT:", err);
+      return null;
+    }
   }
 
   fetchTour(id: string): void {
@@ -113,7 +168,7 @@ export class TourDetailComponent implements OnInit {
     const confirmDelete = confirm(`Are you sure you want to delete tour "${this.tour.title}"? This action cannot be undone.`);
     
     if (confirmDelete) {
-      this.http.delete(`http://localhost:8083/tour/${this.tour.id}`).subscribe({
+      this.http.delete(`http://localhost:8083/tour/${this.tour.id}`, {headers: this.getAuthHeaders()}).subscribe({
         next: () => {
           // Prikazi uspeh
           this.showToast('Tour successfully deleted!', 'success');
@@ -174,7 +229,7 @@ export class TourDetailComponent implements OnInit {
       rating: Number(this.newReview.rating)
     };
 
-    this.http.post('http://localhost:8083/review/create', payload).subscribe({
+    this.http.post('http://localhost:8083/review/create', payload, {headers: this.getAuthHeaders()}).subscribe({
       next: (res) => {
         this.showToast('Review successfully saved!', 'success'); // Koristimo novi toast umesto alert-a
         this.closeReviewModal();
@@ -186,6 +241,45 @@ export class TourDetailComponent implements OnInit {
         console.error('Error creating review:', err);
         this.showToast('Failed to save review.', 'error');
       }
+    });
+  }
+
+  publishTour(): void { 
+    if (this.tour == null) return;
+    this.tour.status = 'published'
+    this.tour.publisedAt = new Date();
+    this.tour.archivedAt = null; 
+    this.http.put(`http://localhost:8083/tour/update`,this.tour, {headers: this.getAuthHeaders()}).subscribe({
+      next: () => {
+        this.showToast('Tour successfully published!', 'success');
+      },
+      error: (err) => {
+        console.error('Publish error:', err);
+        this.showToast('Failed to publish tour. Please try again.', 'error');
+      }
+    })
+  }
+
+  archiveTour(): void {
+    if (this.tour == null) return;
+    this.tour.status = 'archived'
+    this.tour.archivedAt = new Date();
+    this.tour.publisedAt = null;
+    this.http.put(`http://localhost:8083/tour/update`, this.tour, {headers: this.getAuthHeaders()}).subscribe({
+      next: () => {
+        this.showToast('Tour successfully archived!', 'success');
+      },
+      error: (err) => {
+        console.error('Archive error:', err);
+        this.showToast('Failed to archive tour. Please try again.', 'error');
+      }
+    })
+  }
+
+  getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('jwt');;
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
     });
   }
 }

@@ -8,4 +8,6 @@ export interface Tour {
     status: string;
     price: number;
     keypoints: Keypoint[];
+    publisedAt: Date | null;
+    archivedAt: Date | null;
 }

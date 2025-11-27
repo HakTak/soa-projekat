@@ -9,125 +9,143 @@ import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
+// =======================
+//   MAIN BLOG MODEL
+// =======================
+message Blog {
+    string id = 1;
+    string title = 2;
+    string description = 3;
+    string userName = 4;
+    repeated string imagePaths = 5;
+    int32 likeCount = 6;
+    google.protobuf.Timestamp createdAt = 7;
+}
+
+// =======================
+//   COMMENT MODEL
+// =======================
+message Comment {
+    string id = 1;
+    string postId = 2;
+    string authorName = 3;
+    string text = 4;
+    google.protobuf.Timestamp createdAt = 5;
+    google.protobuf.Timestamp updatedAt = 6;
+}
+
+// =======================
+//   REQUEST / RESPONSE MODELS
+// =======================
+
+// ----- Blogs -----
+message GetAllBlogsResponse {
+    repeated Blog blogs = 1;
+}
+
+message CreateBlogRequest {
+    string title = 1;
+    string description = 2;
+    repeated string imagePaths = 3;
+}
+
+message BlogResponse {
+    Blog blog = 1;
+}
+
+message ToggleLikeRequest {
+    string postId = 1;
+}
+
+// ----- Comments -----
+message GetCommentsRequest {
+    string postId = 1;
+}
+
+message GetCommentsResponse {
+    repeated Comment comments = 1;
+}
+
+message CreateCommentRequest {
+    string postId = 1;
+    string text = 2;
+}
+
+message CommentResponse {
+    Comment comment = 1;
+}
+
+message UpdateCommentRequest {
+    string commentId = 1;
+    string text = 2;
+}
+
+message DeleteCommentRequest {
+    string commentId = 1;
+}
+
+message DeleteCommentResponse {
+    bool success = 1;
+}
+
+// =======================
+//   gRPC SERVICE WITH HTTP ANNOTATIONS
+// =======================
 service BlogService {
 
-    // --- POSTS ---
-
     // HTTP: GET /api/blog/posts
-    rpc GetAllPosts (google.protobuf.Empty) returns (GetAllPostsResponse) {
+    rpc GetAllPosts (google.protobuf.Empty) returns (GetAllBlogsResponse) {
         option (google.api.http) = {
             get: "/api/blog/posts"
         };
     }
 
     // HTTP: POST /api/blog/posts
-    rpc CreatePost (CreatePostRequest) returns (PostResponse) {
+    rpc CreatePost (CreateBlogRequest) returns (BlogResponse) {
         option (google.api.http) = {
             post: "/api/blog/posts"
             body: "*"
         };
     }
 
-    // HTTP: POST /api/blog/posts/{post_id}/like
-    // We get UserID from Metadata (X-User-Id), so we only need PostId here
-    rpc ToggleLike (ToggleLikeRequest) returns (PostResponse) {
+    // HTTP: POST /api/blog/posts/toggleLike
+    // UserId comes from metadata (X-User-Id)
+    rpc ToggleLike (ToggleLikeRequest) returns (BlogResponse) {
         option (google.api.http) = {
-            post: "/api/blog/posts/{post_id}/like"
+            post: "/api/blog/posts/toggleLike"
             body: "*"
         };
     }
 
     // --- COMMENTS ---
 
-    // HTTP: GET /api/blog/posts/{post_id}/comments
+    // HTTP: GET /api/blog/comments/getAllPostId/{postId}
     rpc GetComments (GetCommentsRequest) returns (GetCommentsResponse) {
         option (google.api.http) = {
-            get: "/api/blog/posts/{post_id}/comments"
+            get: "/api/blog/comments/getAllPostId/{postId}"
         };
     }
 
-    // HTTP: POST /api/blog/comments
+    // HTTP: POST /api/blog/comments/create
     rpc CreateComment (CreateCommentRequest) returns (CommentResponse) {
         option (google.api.http) = {
-            post: "/api/blog/comments"
+            post: "/api/blog/comments/create"
             body: "*"
         };
     }
 
-    // HTTP: PUT /api/blog/comments/{comment_id}
+    // HTTP: PUT /api/blog/comments/{commentId}
     rpc UpdateComment (UpdateCommentRequest) returns (CommentResponse) {
         option (google.api.http) = {
-            put: "/api/blog/comments/{comment_id}"
+            put: "/api/blog/comments/edit/{commentId}"
             body: "*"
         };
     }
 
-    // HTTP: DELETE /api/blog/comments/{comment_id}
+    // HTTP: DELETE /api/blog/comments/{commentId}
     rpc DeleteComment (DeleteCommentRequest) returns (DeleteCommentResponse) {
         option (google.api.http) = {
-            delete: "/api/blog/comments/{comment_id}"
+            delete: "/api/blog/comments/{commentId}"
         };
     }
-}
-
-// --- MESSAGES ---
-
-message PostResponse {
-    string id = 1;
-    string title = 2;
-    string description = 3;
-    repeated string image_paths = 4;
-    int32 like_count = 5;
-    google.protobuf.Timestamp created_at = 6;
-}
-
-message CommentResponse {
-    string id = 1;
-    string post_id = 2;
-    string author_name = 3;
-    string author_id = 4;
-    string text = 5;
-    google.protobuf.Timestamp created_at = 6;
-    google.protobuf.Timestamp updated_at = 7;
-}
-
-message GetAllPostsResponse {
-    repeated PostResponse posts = 1;
-}
-
-message CreatePostRequest {
-    string title = 1;
-    string description = 2;
-    repeated string image_paths = 3;
-}
-
-message ToggleLikeRequest {
-    string post_id = 1;
-}
-
-message GetCommentsRequest {
-    string post_id = 1;
-}
-
-message GetCommentsResponse {
-    repeated CommentResponse comments = 1;
-}
-
-message CreateCommentRequest {
-    string post_id = 1;
-    string text = 2;
-    // AuthorId and AuthorName will be extracted from JWT in C# code
-}
-
-message UpdateCommentRequest {
-    string comment_id = 1;
-    string text = 2;
-}
-
-message DeleteCommentRequest {
-    string comment_id = 1;
-}
-
-message DeleteCommentResponse {
-    bool success = 1;
 }

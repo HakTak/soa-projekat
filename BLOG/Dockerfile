@@ -21,7 +21,6 @@ RUN dotnet publish "BLOG.csproj" -c Release -o /app/publish /p:UseAppHost=false
 # Stage 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-EXPOSE 5251
 EXPOSE 9091
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "BLOG.dll"]
