@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"PROJEKAT/API_GATEWAY/middleware"
 	pbAuth "PROJEKAT/COMMON/auth/proto"
@@ -14,31 +15,48 @@ import (
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp" // <--- NOVA BIBLIOTEKA
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
+	// --- 0. TRACING SETUP (DODATO) ---
+	// Postavljamo adresu Jaegera (HTTP Collector port)
+	os.Setenv("JAEGER_ENDPOINT", "http://jaeger:14268/api/traces")
+
+	// Inicijalizujemo Tracer iz tvog middleware paketa
+	tp, err := middleware.InitTracer()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Osiguravamo da se podaci pošalju pre gašenja servisa (dobra praksa)
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
+	// Postavljamo globalni tracer provider
+	otel.SetTracerProvider(tp)
+	// Postavljamo propagator da bi se Trace ID prenosio kroz servise
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	// ---------------------------------
+
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	// 1. GRPC GATEWAY MUX
 	gwmux := runtime.NewServeMux()
-	// 	runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
-	// 		switch key {
-	// 		case "Grpc-Metadata-User-Id":
-	// 			return "x-user-id", true
-	// 		case "Grpc-Metadata-User-Role":
-	// 			return "x-user-role", true
-	// 		}
-	// 		return runtime.DefaultHeaderMatcher(key)
-	// 	}),
-	// )
+
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 
 	// Registracija AUTH servisa
-	err := pbAuth.RegisterAuthServiceHandlerFromEndpoint(ctx, gwmux, "auth:8082", opts)
+	err = pbAuth.RegisterAuthServiceHandlerFromEndpoint(ctx, gwmux, "auth:8082", opts)
 	if err != nil {
 		log.Fatalf("Failed to register Auth: %v", err)
 	}
@@ -68,7 +86,6 @@ func main() {
 	}
 
 	// 2. GLAVNI RUTER (Standardni HTTP)
-	// Ovo koristimo da bi mogli lako da dodamo Swagger ili Health checkove u buducnosti
 	rootMux := http.NewServeMux()
 
 	// Sve rute saljemo na gRPC Gateway
@@ -77,11 +94,17 @@ func main() {
 	// 3. AUTH MIDDLEWARE
 	authHandler := middleware.AuthMiddleware(rootMux)
 
-	//4. CORS MIDDLEWARE
+	// 4. CORS MIDDLEWARE
 	finalHandler := middleware.CorsMiddleware(authHandler)
 
+	// 5. TRACING MIDDLEWARE (DODATO NA KRAJU)
+	// Obmotavamo ceo handler sa OpenTelemetry instrumentacijom.
+	// "api-gateway-request" je ime operacije koje ćeš videti u Jaegeru.
+	tracingHandler := otelhttp.NewHandler(finalHandler, "api-gateway-request")
+
 	fmt.Println("API Gateway running on port 8080...")
-	if err := http.ListenAndServe(":8080", finalHandler); err != nil {
+	// Ovde sada pokrećemo tracingHandler umesto finalHandler
+	if err := http.ListenAndServe(":8080", tracingHandler); err != nil {
 		log.Fatal(err)
 	}
 }

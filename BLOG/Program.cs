@@ -1,4 +1,8 @@
-using BLOG.GrpcServices; 
+using BLOG.GrpcServices;
+// --- NOVI IMPORTI ZA JAEGER/OPENTELEMETRY ---
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Dodajemo servise za kontrolere i Swagger
@@ -8,21 +12,50 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddGrpc();
 
+// --- POCETAK INTEGRACIJE JAEGERA ---
+
+// Preuzimamo ime servisa iz environment varijable (definisane u docker-compose)
+// Ako nije definisano, koristimo default "blog-service"
+var serviceName = Environment.GetEnvironmentVariable("OTEL_SERVICE_NAME") ?? "blog-service";
+
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracerProviderBuilder =>
+    {
+        tracerProviderBuilder
+            .AddSource(serviceName)
+            .SetResourceBuilder(
+                ResourceBuilder.CreateDefault()
+                    .AddService(serviceName: serviceName, serviceVersion: "1.0.0"))
+            
+            // Prati sve dolazne HTTP i gRPC zahteve ka tvom servisu
+            .AddAspNetCoreInstrumentation()
+            
+            // Prati sve odlazne HTTP zahteve (ako tvoj blog servis zove nekog drugog)
+            .AddHttpClientInstrumentation()
+            
+            // Šalje podatke Jaegeru koristeći OTLP protokol
+            // Čita adresu automatski iz "OTEL_EXPORTER_OTLP_ENDPOINT" (iz docker-compose)
+            .AddOtlpExporter();
+    });
+
+// --- KRAJ INTEGRACIJE JAEGERA ---
+
+
 // Ucitavamo konfiguraciju iz appsettings.json (sekcija "MongoDatabaseSettings")
 builder.Services.Configure<BLOG.Database.MongoDatabaseSettings>(
     builder.Configuration.GetSection("MongoDatabaseSettings")
 );
 
-// Registrujemo MongoDatabaseSettings kao singleton, da se može koristiti u repository-ju
+// Registrujemo MongoDatabaseSettings kao singleton
 builder.Services.AddSingleton(resolver =>
     resolver.GetRequiredService<Microsoft.Extensions.Options.IOptions<BLOG.Database.MongoDatabaseSettings>>().Value
 );
-// Registracija CommentRepository i CommentService
+
+// Registracija Repository i Service slojeva
 builder.Services.AddScoped<BLOG.Repositories.ICommentRepository, BLOG.Repositories.CommentRepository>();
 builder.Services.AddScoped<BLOG.Services.CommentService>();
 builder.Services.AddScoped<BLOG.Repositories.IPostRepository, BLOG.Repositories.PostRepository>();
 builder.Services.AddScoped<BLOG.Services.PostService>();
-
 
 
 var app = builder.Build();
