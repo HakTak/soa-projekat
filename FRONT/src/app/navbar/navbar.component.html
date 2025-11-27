@@ -8,7 +8,7 @@
         <a class="nav-link">Blog ▾</a>
         <ul class="dropdown-menu">
           <li><a routerLink="/blogs" class="nav-link">Blogs</a></li>
-          <li><a routerLink="/blog/create"  class="nav-link">Create Blog</a></li>
+          <li><a routerLink="/blog/create" class="nav-link">Create Blog</a></li>
         </ul>
       </li>
       <!-- TOURS DROPDOWN -->
@@ -46,12 +46,20 @@
       <ng-container *ngIf="!isLoggedIn">
         <li><a routerLink="/login" class="btn btn--ghost">Login</a></li>
         <li><a routerLink="/register" class="btn btn--primary">Register</a></li>
+
       </ng-container>
 
       <!-- AKO JE ULOGOVAN: Prikazi Profile i Logout -->
       <ng-container *ngIf="isLoggedIn">
         <li><a routerLink="/profile" class="btn btn--ghost">Profile</a></li>
         <li><button (click)="onLogout()" class="btn btn--primary">Logout</button></li>
+        <li><a routerLink="/shopping-cart" class="btn btn--primary">Shopping
+            <span *ngIf="cartCount > 0"
+              class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+              style="font-size: 0.6rem;">
+              {{ cartCount }}
+            </span>
+          </a></li>
       </ng-container>
 
     </ul>

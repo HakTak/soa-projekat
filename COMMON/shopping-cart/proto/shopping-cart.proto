@@ -42,6 +42,12 @@ service ShoppingCartService {
             body: "*"
         };
     }
+
+    rpc GetPurchasedTours(GetPurchasedToursRequest) returns (GetPurchasedToursResponse) {
+        option (google.api.http) = {
+            get: "/api/shopping-cart/orders/{user_id}"
+        };
+    }
 }
 
 // --- Messages ---
@@ -85,4 +91,12 @@ message PurchaseToken {
 message CheckoutResponse {
     bool success = 1;
     repeated PurchaseToken tokens = 2;
+}
+
+message GetPurchasedToursRequest {
+    string user_id = 1;
+}
+
+message GetPurchasedToursResponse {
+    repeated PurchaseToken tokens = 1;
 }

@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace BLOG.GrpcServices
 {
-    public class BlogGrpcService: Blog.BlogService.BlogServiceBase
+    public class BlogGrpcService : Blog.BlogService.BlogServiceBase
     {
         private readonly Services.BlogService _blogService;
         private readonly CommentService _commentService;
@@ -23,7 +23,7 @@ namespace BLOG.GrpcServices
         private string GetUserName(ServerCallContext context)
         {
             var userEntry = context.RequestHeaders.FirstOrDefault(h => h.Key == "user-username");
-            
+
             if (userEntry == null || string.IsNullOrEmpty(userEntry.Value))
             {
                 throw new RpcException(new Status(StatusCode.Unauthenticated, "No userName found"));
@@ -93,11 +93,13 @@ namespace BLOG.GrpcServices
             {
                 var newComment = new Blog.Comment
                 {
-                  PostId = request.PostId,
-                  Text = comment.Text,
-                  AuthorName = comment.AuthorName,
-                  CreatedAt = Timestamp.FromDateTime(comment.CreatedAt.ToUniversalTime()),
-                  UpdatedAt = Timestamp.FromDateTime(comment.UpdatedAt.ToUniversalTime())
+                    PostId = request.PostId,
+                    Text = comment.Text,
+                    AuthorName = comment.AuthorName,
+                    CreatedAt = Timestamp.FromDateTime(comment.CreatedAt.ToUniversalTime()),
+                    UpdatedAt = comment.UpdatedAt.HasValue
+                    ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(comment.UpdatedAt.Value.ToUniversalTime())
+                    : null,
                 };
                 response.Comments.Add(newComment);
             }
@@ -181,7 +183,9 @@ namespace BLOG.GrpcServices
                     AuthorName = comment.AuthorName ?? "",
                     Text = comment.Text ?? "",
                     CreatedAt = Timestamp.FromDateTime(comment.CreatedAt.ToUniversalTime()),
-                    UpdatedAt = Timestamp.FromDateTime(comment.UpdatedAt.ToUniversalTime())
+                    UpdatedAt = comment.UpdatedAt.HasValue
+                    ? Google.Protobuf.WellKnownTypes.Timestamp.FromDateTime(comment.UpdatedAt.Value.ToUniversalTime())
+                    : null,
                 }
             };
         }

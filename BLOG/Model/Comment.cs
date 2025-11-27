@@ -17,12 +17,12 @@ namespace BLOG.Model
         public string? AuthorName { get; set; } = null!;
 
         [BsonElement("Text")]
-        public string Text { get; set; }  = null!;
+        public string Text { get; set; } = null!;
 
         [BsonElement("CreatedAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("UpdatedAt")]
-        public DateTime UpdatedAt { get; set; } 
+        public DateTime? UpdatedAt { get; set; }
     }
 }
