@@ -4,13 +4,15 @@
   --color-text: #222;
   --color-accent: #0b76ef;
   --radius: 8px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   --card-border: #b9d5f4;
 }
 
 .container {
-  max-width: 1180px; /* Ista sirina kao nav-inner */
-  margin: 40px auto; /* Malo razmaka od navbara */
+  max-width: 1180px;
+  /* Ista sirina kao nav-inner */
+  margin: 40px auto;
+  /* Malo razmaka od navbara */
   padding: 0 20px;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial;
 }
@@ -18,8 +20,10 @@
 /* Grid sistem za 3 kartice u redu */
 .tour-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Fiksno 3 kolone */
-  gap: 24px; /* Razmak izmedju kartica */
+  grid-template-columns: repeat(3, 1fr);
+  /* Fiksno 3 kolone */
+  gap: 24px;
+  /* Razmak izmedju kartica */
   padding-bottom: 40px;
 }
 
@@ -27,15 +31,17 @@
 .tour-card {
   background: #fff;
   border: 1px solid var(--card-border, #b9d5f4);
-  border-radius: 8px; /* --radius */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  border-radius: 8px;
+  /* --radius */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
   padding: 20px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-height: 200px; /* Da sve kartice imaju neku minimalnu visinu */
+  min-height: 200px;
+  /* Da sve kartice imaju neku minimalnu visinu */
   position: relative;
 }
 
@@ -78,7 +84,8 @@
 
 /* --- BODY (Kljucne tacke) --- */
 .card-body {
-  flex-grow: 1; /* Gura footer na dno */
+  flex-grow: 1;
+  /* Gura footer na dno */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -92,7 +99,8 @@
 
 .keypoint-info .label {
   font-weight: 600;
-  color: #0b76ef; /* Accent boja za labelu */
+  color: #0b76ef;
+  /* Accent boja za labelu */
   margin-right: 5px;
 }
 
@@ -105,7 +113,8 @@
 
 .rating {
   font-weight: bold;
-  color: #f59e0b; /* Zuta boja za zvezdice/ocenu */
+  color: #f59e0b;
+  /* Zuta boja za zvezdice/ocenu */
   font-size: 1rem;
 }
 
@@ -114,20 +123,47 @@
   padding-top: 12px;
   border-top: 1px solid #f0f0f0;
   /* Fiksiramo visinu footera da kartice ne skacu dok se ocene ucitavaju */
-  min-height: 40px; 
+  min-height: 40px;
 }
 
 .rating {
   font-weight: bold;
-  color: #f59e0b; /* Zuta boja */
+  color: #f59e0b;
+  /* Zuta boja */
   font-size: 1rem;
 }
 
 /* Stil za ture koje nemaju ocenu */
 .rating-empty {
-  color: #9ca3af; /* Siva boja (muted) */
+  color: #9ca3af;
+  /* Siva boja (muted) */
   font-style: italic;
   font-size: 0.9rem;
+}
+
+.btn-cart {
+  background-color: black;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-cart:hover {
+  background-color: #0b5ed7;
+  transform: scale(1.1);
+}
+
+.btn-cart:active {
+  transform: scale(0.95);
+}
+
+.btn-cart i {
+  font-size: 1rem;
 }
 
 
@@ -145,4 +181,3 @@
     grid-template-columns: 1fr;
   }
 }
-
