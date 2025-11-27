@@ -77,8 +77,6 @@ func (s *TourService) CreateTourExecution(teDto model.TourCreateExecutionDTO) (*
 		return nil, errors.New("Tura ne moze biti pokrenuta jer je u DRAFT statusu")
 	}
 
-	//ovde proveri da li je tura kupljena
-
 	err := s.tourExecutionRepo.Create(te)
 	return te, err
 }

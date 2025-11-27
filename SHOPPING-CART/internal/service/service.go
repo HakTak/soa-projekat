@@ -151,3 +151,7 @@ func (s *ShoppingCartService) Checkout(userID string) ([]model.PurchaseToken, er
 
 	return tokens, nil
 }
+
+func (s *ShoppingCartService) IsTourPurchased(tourId, touristId string) (bool, error) {
+	return s.repo.IsTourPurchased(tourId, touristId)
+}

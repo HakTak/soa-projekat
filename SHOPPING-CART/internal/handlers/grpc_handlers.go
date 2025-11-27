@@ -134,3 +134,8 @@ func (h *ShoppingCartHandler) Checkout(ctx context.Context, req *pb.CheckoutRequ
 		Tokens:  protoTokens,
 	}, nil
 }
+
+func (h *ShoppingCartHandler) IsTourPurchased(ctx context.Context, req *pb.PurchaseCheckRequest) (*pb.PurchaseCheckResponse, error) {
+	return &pb.PurchaseCheckResponse{TourPurchased: h.svc.IsTourPurchased(req.TourId, req.UserId), nil
+}
+

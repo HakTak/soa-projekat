@@ -50,6 +50,21 @@ func (r *CartRepository) RemoveItemByID(itemID uint) error {
 	return r.db.Delete(&model.OrderItem{}, itemID).Error
 }
 
+func (r *CartRepository) IsTourPurchased(tourId, touristId string) (bool, error) {
+	var purchaseToken model.PurchaseToken
+
+	err := r.db.Where("tour_id = ? AND user_id = ?", tourId, touristId).First(&purchaseToken).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
+
 // ProcessCheckout performs the "Purchase": Saves tokens and clears cart items in ONE transaction.
 func (r *CartRepository) ProcessCheckout(tokens []model.PurchaseToken, userID string) error {
 	return r.db.Transaction(func(tx *gorm.DB) error {

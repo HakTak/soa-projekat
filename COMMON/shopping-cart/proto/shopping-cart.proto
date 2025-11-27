@@ -42,6 +42,9 @@ service ShoppingCartService {
             body: "*"
         };
     }
+
+    rpc IsTourPurchased(PurchaseCheckRequest) returns (PurchaseCheckResponse){}
+
 }
 
 // --- Messages ---
@@ -85,4 +88,13 @@ message PurchaseToken {
 message CheckoutResponse {
     bool success = 1;
     repeated PurchaseToken tokens = 2;
+}
+
+message PurchaseCheckRequest{
+    string tour_id = 1;
+    string user_id = 2;
+}
+
+message PurchaseCheckResponse{
+    bool tour_purchased = 1;
 }

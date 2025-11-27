@@ -1,6 +1,7 @@
 package api
 
 import (
+	pbShop "PROJEKAT/COMMON/shopping-cart/proto"
 	"context"
 	"tour-service/internal/service"
 	pb "tour-service/protobuf" // Import generated protobuf code
@@ -12,12 +13,13 @@ import (
 // TourGrpcHandler implements the generated TourServiceServer interface
 type TourGrpcHandler struct {
 	pb.UnimplementedTourServiceServer
-	service *service.TourService
+	service    *service.TourService
+	shopClient pbShop.ShoppingCartServiceClient
 }
 
 // NewTourGrpcHandler creates a new instance
-func NewTourGrpcHandler(s *service.TourService) *TourGrpcHandler {
-	return &TourGrpcHandler{service: s}
+func NewTourGrpcHandler(s *service.TourService, sc *pbShop.ShoppingCartServiceClient) *TourGrpcHandler {
+	return &TourGrpcHandler{service: s, shopClient: sc}
 }
 
 // GetTour is the function called by the Shopping Cart Service

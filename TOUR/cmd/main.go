@@ -1,6 +1,7 @@
 package main
 
 import (
+	pbShop "PROJEKAT/COMMON/shopping-cart/proto"
 	"log"
 	"net"
 	"net/http"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
@@ -37,8 +39,17 @@ func main() {
 	// Repository -> Service -> Handler
 	repo := repository.NewTourRepository(db)
 	reviewRepo := repository.CreateReviewRepository(db)
-	svc := service.NewTourService(repo, reviewRepo)
+	repoTourExecution := repository.NewTourExecutionRepository(db)
+	svc := service.NewTourService(repo, reviewRepo, repoTourExecution)
 	handler := api.NewTourHandler(svc)
+
+	shopConn, err := grpc.NewClient("shopping-car:9092", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("Failed to connect to shopping cart: %v", err)
+	}
+	defer shopConn.Close()
+
+	shopClient := pbShop.NewShoppingCartServiceClient(shopConn)
 
 	go func() {
 		// Listen on TCP port 50052 (defined in your Docker Compose)
@@ -50,7 +61,7 @@ func main() {
 		grpcServer := grpc.NewServer()
 
 		// Create the handler defined in Step 2
-		grpcHandler := api.NewTourGrpcHandler(svc)
+		grpcHandler := api.NewTourGrpcHandler(svc, shopClient)
 
 		// Register the handler with the server
 		pb.RegisterTourServiceServer(grpcServer, grpcHandler)
