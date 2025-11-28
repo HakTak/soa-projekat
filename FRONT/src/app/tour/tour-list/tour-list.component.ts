@@ -43,7 +43,7 @@ export class TourListComponent implements OnInit {
     const roleLogged = this.authService.hasRole();
     const userId = this.authService.getMyId();
     const userName = this.authService.getMyUsername();
-    console.log('Is tourist logged in?', userName);
+    console.log('Is tourist logged in?', roleLogged);
 
     this.http.get<any>('http://localhost:8080/tours', { headers: headers }).subscribe({
       next: (response) => {
@@ -53,29 +53,32 @@ export class TourListComponent implements OnInit {
 
 
         if (roleLogged === 'TOURIST') { // dodati filter samo publiched
-          this.tours = rawTours
+          this.tours = rawTours.filter((tour: Tour) => tour.status === TourStatus.PUBLISHED);
           console.log('Fetched tours for TOURIST:', rawTours);
-          return;
+          
         }
 
         if (roleLogged === 'ADMIN') {
           this.tours = rawTours; // Admin vidi sve ture
           console.log('Fetched tours for ADMIN:', rawTours);
-          return;
+          
         }
 
-        if (roleLogged === 'AUTHOR') { //Samo ture od autora
-          this.tours = rawTours.filter((tour: Tour) => (tour.userName === userName));
+        if (roleLogged === 'GUIDE') { //Samo ture od autora
+          this.tours = rawTours ;
+
           console.log('Fetched tours for AUTHOR:', rawTours);
-          return;
+          
         }
         // 1. Sada filtriramo taj niz (ne response objekat, nego niz unutar njega)
-       this.tours = rawTours.filter((tour: Tour) => tour.status === TourStatus.DRAFT);
+      // this.tours = rawTours.filter((tour: Tour) => tour.status === TourStatus.DRAFT);
        console.log('Fetched tours:', rawTours);
 
         // 2. Dovlačimo ocene
+        console.log("ALOOOO 111.");
         this.tours.forEach(tour => {
           if (tour.id) {
+            console.log("ALOOO 222:", tour.id);
             this.fetchAvgRating(tour.id);
           }
         });
@@ -87,29 +90,34 @@ export class TourListComponent implements OnInit {
   }
 
   fetchAvgRating(tourId: string): void {
-    const headers = this.authService.getAuthHeaders();
-    this.http.get<Review[]>(`http://localhost:8080/review/tour/${tourId}`, { headers: headers }).subscribe({
-      next: (reviews) => {
-        console.log(`Fetched reviews for tour ${tourId}:`, reviews);
-        if (reviews.length > 0) {
-          // Izracunaj sumu
-          const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-          // Izracunaj prosek
-          const avg = sum / reviews.length;
-          // Sacuvaj u mapu pod ID-jem ture
-          this.tourRatings[tourId] = avg;
-        } else {
-          // Ako nema recenzija, stavimo 0
+      const headers = this.authService.getAuthHeaders();
+      
+      // 1. Koristimo <any> jer odgovor nije cist niz Review[], vec objekat
+      this.http.get<any>(`http://localhost:8080/review/tour/${tourId}`, { headers: headers }).subscribe({
+        next: (response) => {
+          
+          // 2. Izvlacimo niz iz polja 'reviews'
+          // Ako polje ne postoji, koristimo prazan niz da ne pukne kod
+          const reviewsList = response.reviews || []; 
+
+          console.log(`Reviews za ${tourId}:`, reviewsList);
+
+          if (reviewsList.length > 0) {
+            // 3. Koristimo 'reviewsList' za racunanje, a ne 'response'
+            const sum = reviewsList.reduce((acc: number, review: Review) => acc + review.rating, 0);
+            const avg = sum / reviewsList.length;
+            
+            this.tourRatings[tourId] = avg;
+          } else {
+            this.tourRatings[tourId] = 0;
+          }
+        },
+        error: (err) => {
+          console.error(`Error fetching reviews for tour ${tourId}:`, err);
           this.tourRatings[tourId] = 0;
         }
-      },
-      error: (err) => {
-        console.error(`Error fetching reviews for tour ${tourId}:`, err);
-        this.tourRatings[tourId] = 0; // Fallback na 0 ako pukne request
-      }
-    });
-  }
-
+      });
+    }
   onCardClick(tourId: string | undefined): void {
     if (tourId) {
       this.router.navigate(['/tours', tourId]);

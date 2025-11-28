@@ -17,7 +17,7 @@
           Tours
         </a>
         <div class="dropdown-menu" [class.show]="dropdownOpen">
-          <a class="dropdown-item" routerLink="/tours" (click)="closeDropdown()">Create Tour</a>
+          <a class="dropdown-item" *ngIf="isLoggedIn && isGuide" routerLink="/tours" (click)="closeDropdown()">Create Tour</a>
           <a class="dropdown-item" routerLink="/tour-list" (click)="closeDropdown()">All Tours</a>
         </div>
       </li>

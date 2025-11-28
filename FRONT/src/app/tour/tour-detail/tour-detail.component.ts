@@ -32,6 +32,7 @@ export class TourDetailComponent implements OnInit {
   reviews: Review[] = [];
   tourImage: string | null = null;
   tourStatus = TourStatus;
+  selectedFileName: string | null = null;
   
   // Modal Kontrola
   isModalOpen = false;
@@ -44,8 +45,8 @@ export class TourDetailComponent implements OnInit {
   // Podaci za novi review
   newReview: ReviewRequest = {
     tour_id: '',
-    user_id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-    user_name: 'Petar',
+    user_id: '',
+    user_name: '',
     rating: 5,
     comment: '',
     created_at: '',
@@ -109,22 +110,60 @@ export class TourDetailComponent implements OnInit {
 
   fetchReviews(tourId: string): void {
     const headers = this.authService.getAuthHeaders();
-    console.log("tourId u fetchReviews:", tourId);
-    this.http.get<any[]>(`http://localhost:8080/review/tour/${tourId}`, { headers: headers }).subscribe({
+
+    this.http.get<any>(`http://localhost:8080/review/tour/${tourId}`, { headers }).subscribe({
       next: (data) => {
-        console.log("Fetched reviews data:", data);
-       /* this.reviews = data.map(r => ({
-          id: r.id,
-          rating: r.rating,
-          comment: r.comment,
-          tourId: r.tour_id,
-          userId: r.user_id,
-          username: r.user_name,
-          createdAt: r.created_at ? new Date(r.created_at) : undefined
-        }));*/
+        console.log('Fetched reviews data:', data);
+
+        // --- ISPRAVKA ---
+        // Server vraca objekat { reviews: [...] }, a nama treba samo niz unutra.
+        // Ako koristis 'data', dobijas objekat i *ngFor puca.
+        // Moras koristiti 'data.reviews'.
+        
+        const reviewsArray = data.reviews || []; 
+
+        this.reviews = reviewsArray.map((r: any) => {
+          return {
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment,
+            username: r.userName, // Proveri da li backend salje 'userName' ili 'user_name'
+            createdAt: r.createdAt,
+            imageUrl: r.imageUrl
+          };
+        });
       },
-      error: (err) => console.error('Error fetching reviews:', err)
+      error: (err) => console.error('Error loading reviews:', err)
     });
+  }
+
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    
+    if (file) {
+      this.selectedFileName = file.name;
+
+      const reader = new FileReader();
+      
+      // Kada se fajl učita, pretvori ga u Base64 string
+      reader.onload = (e: any) => {
+        // Ovo upisujemo u newReview.image_url umesto ručnog unosa
+        this.newReview.image_url = e.target.result; 
+      };
+
+      // Čitamo fajl kao Data URL (Base64)
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // === FUNKCIJA ZA UKLANJANJE SLIKE ===
+  removeImage(): void {
+    this.newReview.image_url = null;
+    this.selectedFileName = null;
+    // Resetuj input fajl element ako treba (opciono)
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if(fileInput) fileInput.value = '';
   }
 
   setTourImage(): void {
@@ -147,7 +186,7 @@ export class TourDetailComponent implements OnInit {
     const confirmDelete = confirm(`Are you sure you want to delete tour "${this.tour.title}"? This action cannot be undone.`);
     
     if (confirmDelete) {
-      this.http.delete(`http://localhost:8083/tour/${this.tour.id}`, {headers: this.getAuthHeaders()}).subscribe({
+      this.http.delete(`http://localhost:8080/tour/${this.tour.id}`, {headers: this.getAuthHeaders()}).subscribe({
         next: () => {
           // Prikazi uspeh
           this.showToast('Tour successfully deleted!', 'success');
@@ -182,10 +221,13 @@ export class TourDetailComponent implements OnInit {
   openReviewModal(): void {
     if (!this.tour) return;
     
+    
+    const userId = this.user?.id ?? '';
+    const userName = this.user?.username ?? 'Anonymous';
     this.newReview = {
       tour_id: this.tour.id ?? '',
-      user_id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-      user_name: 'Petar',
+      user_id: userId,
+      user_name: userName,
       rating: 5,
       comment: '',
       created_at: '',

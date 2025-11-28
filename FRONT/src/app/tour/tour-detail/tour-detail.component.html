@@ -129,10 +129,36 @@
           <label>Visited Date</label>
           <input type="date" [(ngModel)]="newReview.visited_at" name="visited_at" class="form-control" required>
         </div>
+        
         <div class="form-group">
-          <label>Photo URL (Optional)</label>
-          <input type="text" [(ngModel)]="newReview.image_url" name="image_url" placeholder="http://..." class="form-control">
+          <label>Attach a Photo (Optional)</label>
+          
+          <!-- Hidden file input + Custom Button -->
+          <div class="file-upload-container">
+            <input 
+              type="file" 
+              id="fileInput" 
+              (change)="onFileSelected($event)" 
+              accept="image/*" 
+              class="file-input-hidden"
+            >
+            
+            <label for="fileInput" class="btn btn-secondary file-upload-btn">
+              <i class="bi bi-camera"></i> Choose Image
+            </label>
+            
+            <span class="file-name" *ngIf="selectedFileName">{{ selectedFileName }}</span>
+          </div>
+
+          <!-- PREVIEW SLIKE (Prikazi samo ako postoji slika) -->
+          <div class="image-preview-box" *ngIf="newReview.image_url">
+            <img [src]="newReview.image_url" alt="Selected photo" class="preview-img">
+            <button type="button" class="btn-remove-img" (click)="removeImage()" title="Remove image">
+              &times;
+            </button>
+          </div>
         </div>
+
         <div class="form-group">
           <label>Comment</label>
           <textarea [(ngModel)]="newReview.comment" name="comment" rows="4" class="form-control" placeholder="Share your experience..." required></textarea>

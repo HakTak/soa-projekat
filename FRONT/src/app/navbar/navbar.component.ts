@@ -13,7 +13,6 @@ import { ShoppingCartService } from '../shopping-cart/service/shopping-cart.serv
 })
 export class NavbarComponent implements OnInit {
   cartCount = 0;
-
   dropdownOpen = false;
   isLoggedIn = false;
 
@@ -33,7 +32,6 @@ export class NavbarComponent implements OnInit {
     this.authService.logout();
     this.router.navigate(['/login']);
   }
-
 
   toggleDropdown(event: Event) {
     event.preventDefault();
@@ -58,11 +56,18 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/blog']);
   }
 
+  // --- POSTOJEĆI GETTERI ---
   get isAdmin(): boolean {
     return this.authService.hasRole() == "ADMIN";
   }
 
   get isTourist(): boolean {
     return this.authService.hasRole() == "TOURIST";
+  }
+
+  // --- NOVI GETTER (DODAJ OVO) ---
+  get isGuide(): boolean {
+    // Proverava da li je uloga 'GUIDE' (ili 'AUTHOR', zavisi kako ti se zove u bazi)
+    return this.authService.hasRole() == "GUIDE"; 
   }
 }
