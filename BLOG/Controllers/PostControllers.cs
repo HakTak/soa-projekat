@@ -29,7 +29,7 @@ namespace BLOG.Controllers
         [HttpPost("toggleLike")]
         public async Task<ActionResult<Post>> ToggleLike([FromBody] LikeToggleRequest req)
         {
-            var post = await _postSerivce.TogglePostLikeAsync(req.PostId, req.UserId);
+            var post = await _postSerivce.TogglePostLikeAsync(req.BlogId, req.UserId);
             return Ok(post);
         } 
 

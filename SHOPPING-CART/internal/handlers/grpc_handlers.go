@@ -195,3 +195,11 @@ func (h *ShoppingCartHandler) GetPurchasedTours(ctx context.Context, req *pb.Get
 		Tokens: protoTokens,
 	}, nil
 }
+
+func (h *ShoppingCartHandler) IsTourPurchased(ctx context.Context, req *pb.PurchaseCheckRequest) (*pb.PurchaseCheckResponse, error) {
+	isPurchased, err := h.svc.IsTourPurchased(req.TourId, req.UserId)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.PurchaseCheckResponse{TourPurchased: isPurchased}, nil
+}

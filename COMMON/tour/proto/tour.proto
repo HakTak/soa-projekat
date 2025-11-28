@@ -126,6 +126,69 @@ message GetAllReviewsResponse {
     repeated Review reviews = 1;
 }
 
+message TouristPosition {
+    float lat = 1;
+    float lng = 2; 
+}
+
+message ActivateTourRequest{
+    string tour_id = 1;
+    string tourist_id = 2;
+    TouristPosition current_position = 3;
+}
+
+message TourExecutionResponse{
+    string id = 1;
+    string tour_id = 2;
+    string tourist_id = 3;
+    TourExecutionStatus status = 4;                     // Enum definisan ispod
+    google.protobuf.Timestamp started_at = 5;           // time.Time
+    google.protobuf.Timestamp last_activity_at = 6;
+    google.protobuf.Timestamp finished_at = 7;
+    repeated CompletedKeypoint completed_key_points = 8; // Slice [] se mapira u repeated
+    TouristPosition current_position = 9;
+}
+
+// Enum za status (prilagodi vrednosti onome što imaš u Go kodu)
+enum TourExecutionStatus {
+    TOUR_EXECUTION_STATUS_UNKNOWN = 0; // Proto3 zahteva da prvi enum bude 0
+    TOUR_EXECUTION_STATUS_ACTIVE = 1;
+    TOUR_EXECUTION_STATUS_FINISHED = 2;
+    TOUR_EXECUTION_STATUS_ABANDONED = 3;
+}
+
+// Pretpostavljena struktura za CompletedKeypoint
+message CompletedKeypoint {
+    string keypoint_id = 1;
+    google.protobuf.Timestamp completed_at = 2;
+}
+
+message TourExecutionByTourUserRequest {
+    string tour_id = 1;
+    string tourist_id = 2;
+}
+
+
+message AbandonTourExecutionRequest{
+    string id = 1;
+}
+
+
+message SetCurrentLocationRequest{
+    string tourist_id = 1;
+    TouristPosition current_position = 2;
+}
+
+message SetCurrentLocationResponse{
+    int32 changed_number = 1;
+}
+
+message CheckCloseKeyPointsRequest{
+    string id = 1;
+    string tourId = 2;
+}
+
+
 // =========================
 // SERVICE WITH ANNOTATIONS
 // =========================
@@ -192,6 +255,40 @@ service TourService {
     rpc DeleteReview(DeleteReviewRequest) returns (ReviewResponse) {
         option (google.api.http) = {
             delete: "/review/delete/{id}"
+        };
+    }
+
+    rpc ActivateTour(ActivateTourRequest) returns (TourExecutionResponse){
+        option (google.api.http) = {
+            post: "/tourExecute"
+            body: "*"
+        };
+    }
+
+    rpc GetTourExecutionByTourUser(TourExecutionByTourUserRequest) returns (TourExecutionResponse){
+        option (google.api.http) = {
+            get: "/tourExecute"
+        };
+    }
+
+    rpc AbandonTourExecution(AbandonTourExecutionRequest) returns (TourExecutionResponse){
+        option (google.api.http) = {
+            post: "/tourExecute/abandon"
+            body: "*"
+        };
+    }
+
+    rpc SetCurrentLocation(SetCurrentLocationRequest) returns (SetCurrentLocationResponse){
+        option (google.api.http) = {
+            put: "/tourExecute/currentLocation"
+            body: "*"
+        };
+    }
+
+    rpc CheckCloseKeyPoints(CheckCloseKeyPointsRequest) returns (TourExecutionResponse){
+        option (google.api.http) = {
+            put: "/tourExecute/check"
+            body: "*"
         };
     }
 }

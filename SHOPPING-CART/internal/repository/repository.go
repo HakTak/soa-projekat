@@ -86,3 +86,18 @@ func (r *CartRepository) GetPurchasedTokens(userID string) ([]model.PurchaseToke
 
 	return tokens, nil
 }
+
+func (r *CartRepository) IsTourPurchased(tourId, touristId string) (bool, error) {
+	var purchaseToken model.PurchaseToken
+
+	err := r.db.Where("tour_id = ? AND user_id = ?", tourId, touristId).First(&purchaseToken).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}

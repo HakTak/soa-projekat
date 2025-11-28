@@ -1,9 +1,11 @@
 package api
 
 import (
+	pbShop "PROJEKAT/COMMON/shopping-cart/proto"
 	pb "PROJEKAT/COMMON/tour/proto"
 	"PROJEKAT/COMMON/utils"
 	"context"
+	"errors"
 	"time"
 	"tour-service/internal/model"
 	"tour-service/internal/service"
@@ -16,11 +18,12 @@ import (
 
 type TourGRPCServer struct {
 	pb.UnimplementedTourServiceServer
-	svc *service.TourService
+	svc        *service.TourService
+	shopClient pbShop.ShoppingCartServiceClient
 }
 
-func NewTourGRPCServer(svc *service.TourService) *TourGRPCServer {
-	return &TourGRPCServer{svc: svc}
+func NewTourGRPCServer(svc *service.TourService, sc pbShop.ShoppingCartServiceClient) *TourGRPCServer {
+	return &TourGRPCServer{svc: svc, shopClient: sc}
 }
 
 // ========================
@@ -66,6 +69,55 @@ func (s *TourGRPCServer) CreateTour(ctx context.Context, req *pb.CreateTourReque
 	}
 
 	return mapTourToResponse(createdTour), nil
+}
+
+func mapToProtoTourExecution(te *model.TourExecution) *pb.TourExecutionResponse {
+	if te == nil {
+		return nil
+	}
+
+	// 1. Mapiranje Statusa (String -> Proto Enum)
+	var status pb.TourExecutionStatus
+	switch te.Status {
+	case model.StatusActive:
+		status = pb.TourExecutionStatus_TOUR_EXECUTION_STATUS_ACTIVE
+	case model.StatusCompleted:
+		status = pb.TourExecutionStatus_TOUR_EXECUTION_STATUS_FINISHED
+	case model.StatusAbandoned:
+		status = pb.TourExecutionStatus_TOUR_EXECUTION_STATUS_ABANDONED
+	default:
+		status = pb.TourExecutionStatus_TOUR_EXECUTION_STATUS_UNKNOWN
+	}
+
+	// 2. Mapiranje CompletedKeypoints (Slice -> Repeated)
+	var protoCompletedKeypoints []*pb.CompletedKeypoint
+	if te.CompledetKeyPonts != nil {
+		for _, ck := range te.CompledetKeyPonts {
+			protoCompletedKeypoints = append(protoCompletedKeypoints, &pb.CompletedKeypoint{
+				KeypointId:  ck.KeyPointId,
+				CompletedAt: timestamppb.New(ck.CompletedAt),
+			})
+		}
+	}
+
+	// 3. Kreiranje Response objekta
+	return &pb.TourExecutionResponse{
+		Id:             te.Id.String(), // UUID -> String
+		TourId:         te.TourId,
+		TouristId:      te.TouristId,
+		Status:         status,
+		StartedAt:      timestamppb.New(te.StartedAt),      // Time -> Timestamp
+		LastActivityAt: timestamppb.New(te.LastActivityAt), // Time -> Timestamp
+		FinishedAt:     timestamppb.New(te.FinishedAt),     // Time -> Timestamp
+
+		CompletedKeyPoints: protoCompletedKeypoints,
+
+		CurrentPosition: &pb.TouristPosition{
+			// Model koristi float64, a proto float (float32), pa moramo kastovati
+			Lat: float32(te.CurrentPosition.Latitude),
+			Lng: float32(te.CurrentPosition.Longitude),
+		},
+	}
 }
 
 func (s *TourGRPCServer) UpdateTour(ctx context.Context, req *pb.UpdateTourRequest) (*pb.TourResponse, error) {
@@ -210,6 +262,77 @@ func (s *TourGRPCServer) DeleteReview(ctx context.Context, req *pb.DeleteReviewR
 	}
 
 	return mapReviewToResponse(&revList[0]), nil
+}
+
+func (s *TourGRPCServer) ActivateTour(ctx context.Context, req *pb.ActivateTourRequest) (*pb.TourExecutionResponse, error) {
+	isPurchased, err1 := s.shopClient.IsTourPurchased(ctx, &pbShop.PurchaseCheckRequest{
+		TourId: req.TourId,
+		UserId: req.TouristId,
+	})
+
+	if err1 != nil {
+		return nil, err1
+	}
+
+	if !isPurchased.TourPurchased {
+		return nil, errors.New("Nije kupljena tura")
+	}
+
+	curPos := &model.TouristPosition{
+		Latitude:  float64(req.CurrentPosition.Lat),
+		Longitude: float64(req.CurrentPosition.Lng),
+	}
+
+	te, err2 := s.svc.CreateTourExecution(model.TourCreateExecutionDTO{
+		TourId:          req.TourId,
+		TouristId:       req.TouristId,
+		CurrentPosition: *curPos,
+	})
+
+	if err2 != nil {
+		return nil, err2
+	}
+
+	return mapToProtoTourExecution(te), nil
+}
+
+func (s *TourGRPCServer) GetTourExecutionByTourUser(ctx context.Context, req *pb.TourExecutionByTourUserRequest) (*pb.TourExecutionResponse, error) {
+	te, err := s.svc.GetTourExecutionByTourUser(req.TourId, req.TouristId)
+	if err != nil {
+		return nil, err
+	}
+	return mapToProtoTourExecution(te), nil
+}
+
+func (s *TourGRPCServer) AbandonTourExecution(ctx context.Context, req *pb.AbandonTourExecutionRequest) (*pb.TourExecutionResponse, error) {
+	te, err := s.svc.FinishOrAbandon(req.Id, "ABANDONED")
+	if err != nil {
+		return nil, err
+	}
+	return mapToProtoTourExecution(te), nil
+}
+
+func (s *TourGRPCServer) SetCurrentLocation(ctx context.Context, req *pb.SetCurrentLocationRequest) (*pb.SetCurrentLocationResponse, error) {
+	curPos := &model.TouristPosition{
+		Latitude:  float64(req.CurrentPosition.Lat),
+		Longitude: float64(req.CurrentPosition.Lng),
+	}
+
+	numLocChanged, err := s.svc.SetCurrentLocation(req.TouristId, *curPos)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.SetCurrentLocationResponse{
+		ChangedNumber: int32(numLocChanged),
+	}, nil
+}
+
+func (s *TourGRPCServer) CheckCloseKeyPoints(ctx context.Context, req *pb.CheckCloseKeyPointsRequest) (*pb.TourExecutionResponse, error) {
+	te, err := s.svc.CheckCloseKeyPoints(req.Id, req.TourId)
+	if err != nil {
+		return nil, err
+	}
+	return mapToProtoTourExecution(te), nil
 }
 
 // ========================

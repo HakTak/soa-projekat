@@ -13,12 +13,14 @@ import (
 
 	// Koristimo Common pakete iz incoming grane
 	commonMiddleware "PROJEKAT/COMMON/middleware"
+	pbShop "PROJEKAT/COMMON/shopping-cart/proto"
 	pb "PROJEKAT/COMMON/tour/proto"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	// --- Importi za OpenTelemetry (Zadržavamo iz HEAD) ---
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -108,13 +110,27 @@ func main() {
 	// Repository -> Service -> Handler
 	repo := repository.NewTourRepository(db)
 	reviewRepo := repository.CreateReviewRepository(db)
-	svc := service.NewTourService(repo, reviewRepo)
+	repoTourExecution := repository.NewTourExecutionRepository(db)
+	svc := service.NewTourService(repo, reviewRepo, repoTourExecution)
 
 	// --- REŠENJE KONFLIKTA KOD SERVERA ---
 	// Koristimo strukturu iz Incoming grane (NewTourGRPCServer umesto HTTP handlera),
 	// ali dodajemo Tracing iz HEAD grane.
 
-	handler := api.NewTourGRPCServer(svc)
+	shopConn, err := grpc.NewClient(
+		"shopping-cart:9092",
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
+	)
+
+	if err != nil {
+		log.Fatalf("Failed to connect to stakeholders: %v", err)
+	}
+	defer shopConn.Close()
+
+	shopClient := pbShop.NewShoppingCartServiceClient(shopConn)
+
+	handler := api.NewTourGRPCServer(svc, shopClient)
 
 	// Incoming grana koristi port 8083 za gRPC
 	lis, err := net.Listen("tcp", ":8083")

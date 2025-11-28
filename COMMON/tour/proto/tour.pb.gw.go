@@ -354,6 +354,149 @@ func local_request_TourService_DeleteReview_0(ctx context.Context, marshaler run
 	return msg, metadata, err
 }
 
+func request_TourService_ActivateTour_0(ctx context.Context, marshaler runtime.Marshaler, client TourServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ActivateTourRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.ActivateTour(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_TourService_ActivateTour_0(ctx context.Context, marshaler runtime.Marshaler, server TourServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq ActivateTourRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.ActivateTour(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+var filter_TourService_GetTourExecutionByTourUser_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
+
+func request_TourService_GetTourExecutionByTourUser_0(ctx context.Context, marshaler runtime.Marshaler, client TourServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq TourExecutionByTourUserRequest
+		metadata runtime.ServerMetadata
+	)
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_TourService_GetTourExecutionByTourUser_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := client.GetTourExecutionByTourUser(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_TourService_GetTourExecutionByTourUser_0(ctx context.Context, marshaler runtime.Marshaler, server TourServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq TourExecutionByTourUserRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := req.ParseForm(); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_TourService_GetTourExecutionByTourUser_0); err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.GetTourExecutionByTourUser(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_TourService_AbandonTourExecution_0(ctx context.Context, marshaler runtime.Marshaler, client TourServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AbandonTourExecutionRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.AbandonTourExecution(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_TourService_AbandonTourExecution_0(ctx context.Context, marshaler runtime.Marshaler, server TourServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq AbandonTourExecutionRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.AbandonTourExecution(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_TourService_SetCurrentLocation_0(ctx context.Context, marshaler runtime.Marshaler, client TourServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq SetCurrentLocationRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.SetCurrentLocation(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_TourService_SetCurrentLocation_0(ctx context.Context, marshaler runtime.Marshaler, server TourServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq SetCurrentLocationRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.SetCurrentLocation(ctx, &protoReq)
+	return msg, metadata, err
+}
+
+func request_TourService_CheckCloseKeyPoints_0(ctx context.Context, marshaler runtime.Marshaler, client TourServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CheckCloseKeyPointsRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	if req.Body != nil {
+		_, _ = io.Copy(io.Discard, req.Body)
+	}
+	msg, err := client.CheckCloseKeyPoints(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+}
+
+func local_request_TourService_CheckCloseKeyPoints_0(ctx context.Context, marshaler runtime.Marshaler, server TourServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var (
+		protoReq CheckCloseKeyPointsRequest
+		metadata runtime.ServerMetadata
+	)
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && !errors.Is(err, io.EOF) {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	}
+	msg, err := server.CheckCloseKeyPoints(ctx, &protoReq)
+	return msg, metadata, err
+}
+
 // RegisterTourServiceHandlerServer registers the http handlers for service TourService to "mux".
 // UnaryRPC     :call TourServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
@@ -559,6 +702,106 @@ func RegisterTourServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux
 			return
 		}
 		forward_TourService_DeleteReview_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_TourService_ActivateTour_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/tour.TourService/ActivateTour", runtime.WithHTTPPathPattern("/tourExecute"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_TourService_ActivateTour_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_ActivateTour_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_TourService_GetTourExecutionByTourUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/tour.TourService/GetTourExecutionByTourUser", runtime.WithHTTPPathPattern("/tourExecute"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_TourService_GetTourExecutionByTourUser_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_GetTourExecutionByTourUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_TourService_AbandonTourExecution_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/tour.TourService/AbandonTourExecution", runtime.WithHTTPPathPattern("/tourExecute/abandon"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_TourService_AbandonTourExecution_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_AbandonTourExecution_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPut, pattern_TourService_SetCurrentLocation_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/tour.TourService/SetCurrentLocation", runtime.WithHTTPPathPattern("/tourExecute/currentLocation"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_TourService_SetCurrentLocation_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_SetCurrentLocation_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPut, pattern_TourService_CheckCloseKeyPoints_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/tour.TourService/CheckCloseKeyPoints", runtime.WithHTTPPathPattern("/tourExecute/check"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_TourService_CheckCloseKeyPoints_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_CheckCloseKeyPoints_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
 
 	return nil
@@ -770,31 +1013,126 @@ func RegisterTourServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux
 		}
 		forward_TourService_DeleteReview_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 	})
+	mux.Handle(http.MethodPost, pattern_TourService_ActivateTour_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/tour.TourService/ActivateTour", runtime.WithHTTPPathPattern("/tourExecute"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_TourService_ActivateTour_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_ActivateTour_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodGet, pattern_TourService_GetTourExecutionByTourUser_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/tour.TourService/GetTourExecutionByTourUser", runtime.WithHTTPPathPattern("/tourExecute"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_TourService_GetTourExecutionByTourUser_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_GetTourExecutionByTourUser_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPost, pattern_TourService_AbandonTourExecution_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/tour.TourService/AbandonTourExecution", runtime.WithHTTPPathPattern("/tourExecute/abandon"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_TourService_AbandonTourExecution_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_AbandonTourExecution_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPut, pattern_TourService_SetCurrentLocation_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/tour.TourService/SetCurrentLocation", runtime.WithHTTPPathPattern("/tourExecute/currentLocation"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_TourService_SetCurrentLocation_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_SetCurrentLocation_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
+	mux.Handle(http.MethodPut, pattern_TourService_CheckCloseKeyPoints_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		annotatedContext, err := runtime.AnnotateContext(ctx, mux, req, "/tour.TourService/CheckCloseKeyPoints", runtime.WithHTTPPathPattern("/tourExecute/check"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_TourService_CheckCloseKeyPoints_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		forward_TourService_CheckCloseKeyPoints_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+	})
 	return nil
 }
 
 var (
-	pattern_TourService_CreateTour_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"tour"}, ""))
-	pattern_TourService_GetTour_0          = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"tour", "id"}, ""))
-	pattern_TourService_GetAllTours_0      = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"tours"}, ""))
-	pattern_TourService_GetToursByUser_0   = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"tours", "myTours", "user_name"}, ""))
-	pattern_TourService_UpdateTour_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"tour", "update"}, ""))
-	pattern_TourService_DeleteTour_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"tour", "id"}, ""))
-	pattern_TourService_CreateReview_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"review", "create"}, ""))
-	pattern_TourService_GetReviewsByTour_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"review", "tour", "tour_id"}, ""))
-	pattern_TourService_GetAllReviews_0    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"review", "getAll"}, ""))
-	pattern_TourService_DeleteReview_0     = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"review", "delete", "id"}, ""))
+	pattern_TourService_CreateTour_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"tour"}, ""))
+	pattern_TourService_GetTour_0                    = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"tour", "id"}, ""))
+	pattern_TourService_GetAllTours_0                = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"tours"}, ""))
+	pattern_TourService_GetToursByUser_0             = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"tours", "myTours", "user_name"}, ""))
+	pattern_TourService_UpdateTour_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"tour", "update"}, ""))
+	pattern_TourService_DeleteTour_0                 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"tour", "id"}, ""))
+	pattern_TourService_CreateReview_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"review", "create"}, ""))
+	pattern_TourService_GetReviewsByTour_0           = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"review", "tour", "tour_id"}, ""))
+	pattern_TourService_GetAllReviews_0              = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"review", "getAll"}, ""))
+	pattern_TourService_DeleteReview_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"review", "delete", "id"}, ""))
+	pattern_TourService_ActivateTour_0               = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"tourExecute"}, ""))
+	pattern_TourService_GetTourExecutionByTourUser_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"tourExecute"}, ""))
+	pattern_TourService_AbandonTourExecution_0       = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"tourExecute", "abandon"}, ""))
+	pattern_TourService_SetCurrentLocation_0         = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"tourExecute", "currentLocation"}, ""))
+	pattern_TourService_CheckCloseKeyPoints_0        = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"tourExecute", "check"}, ""))
 )
 
 var (
-	forward_TourService_CreateTour_0       = runtime.ForwardResponseMessage
-	forward_TourService_GetTour_0          = runtime.ForwardResponseMessage
-	forward_TourService_GetAllTours_0      = runtime.ForwardResponseMessage
-	forward_TourService_GetToursByUser_0   = runtime.ForwardResponseMessage
-	forward_TourService_UpdateTour_0       = runtime.ForwardResponseMessage
-	forward_TourService_DeleteTour_0       = runtime.ForwardResponseMessage
-	forward_TourService_CreateReview_0     = runtime.ForwardResponseMessage
-	forward_TourService_GetReviewsByTour_0 = runtime.ForwardResponseMessage
-	forward_TourService_GetAllReviews_0    = runtime.ForwardResponseMessage
-	forward_TourService_DeleteReview_0     = runtime.ForwardResponseMessage
+	forward_TourService_CreateTour_0                 = runtime.ForwardResponseMessage
+	forward_TourService_GetTour_0                    = runtime.ForwardResponseMessage
+	forward_TourService_GetAllTours_0                = runtime.ForwardResponseMessage
+	forward_TourService_GetToursByUser_0             = runtime.ForwardResponseMessage
+	forward_TourService_UpdateTour_0                 = runtime.ForwardResponseMessage
+	forward_TourService_DeleteTour_0                 = runtime.ForwardResponseMessage
+	forward_TourService_CreateReview_0               = runtime.ForwardResponseMessage
+	forward_TourService_GetReviewsByTour_0           = runtime.ForwardResponseMessage
+	forward_TourService_GetAllReviews_0              = runtime.ForwardResponseMessage
+	forward_TourService_DeleteReview_0               = runtime.ForwardResponseMessage
+	forward_TourService_ActivateTour_0               = runtime.ForwardResponseMessage
+	forward_TourService_GetTourExecutionByTourUser_0 = runtime.ForwardResponseMessage
+	forward_TourService_AbandonTourExecution_0       = runtime.ForwardResponseMessage
+	forward_TourService_SetCurrentLocation_0         = runtime.ForwardResponseMessage
+	forward_TourService_CheckCloseKeyPoints_0        = runtime.ForwardResponseMessage
 )

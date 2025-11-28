@@ -48,6 +48,8 @@ service ShoppingCartService {
             get: "/api/shopping-cart/orders/{user_id}"
         };
     }
+
+    rpc IsTourPurchased(PurchaseCheckRequest) returns (PurchaseCheckResponse){}
 }
 
 // --- Messages ---
@@ -99,4 +101,12 @@ message GetPurchasedToursRequest {
 
 message GetPurchasedToursResponse {
     repeated PurchaseToken tokens = 1;
+}
+message PurchaseCheckRequest{
+    string tour_id = 1;
+    string user_id = 2;
+}
+
+message PurchaseCheckResponse{
+    bool tour_purchased = 1;
 }

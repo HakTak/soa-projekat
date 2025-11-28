@@ -12,6 +12,7 @@ import (
 	"SHOPPING-CART/internal/service"
 
 	// ✅ REŠEN KONFLIKT 1: Koristimo COMMON biblioteke (Incoming grana)
+	commonMiddleware "PROJEKAT/COMMON/middleware"
 	pbCart "PROJEKAT/COMMON/shopping-cart/proto"
 	pbTour "PROJEKAT/COMMON/tour/proto"
 
@@ -129,6 +130,8 @@ func main() {
 	// Kreiramo server sa Tracingom (Zadržano iz HEAD)
 	grpcServer := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+
+		grpc.UnaryInterceptor(commonMiddleware.MetadataExtractorInterceptor),
 	)
 
 	pbCart.RegisterShoppingCartServiceServer(grpcServer, cartHandler)

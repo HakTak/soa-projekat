@@ -20,16 +20,21 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TourService_CreateTour_FullMethodName       = "/tour.TourService/CreateTour"
-	TourService_GetTour_FullMethodName          = "/tour.TourService/GetTour"
-	TourService_GetAllTours_FullMethodName      = "/tour.TourService/GetAllTours"
-	TourService_GetToursByUser_FullMethodName   = "/tour.TourService/GetToursByUser"
-	TourService_UpdateTour_FullMethodName       = "/tour.TourService/UpdateTour"
-	TourService_DeleteTour_FullMethodName       = "/tour.TourService/DeleteTour"
-	TourService_CreateReview_FullMethodName     = "/tour.TourService/CreateReview"
-	TourService_GetReviewsByTour_FullMethodName = "/tour.TourService/GetReviewsByTour"
-	TourService_GetAllReviews_FullMethodName    = "/tour.TourService/GetAllReviews"
-	TourService_DeleteReview_FullMethodName     = "/tour.TourService/DeleteReview"
+	TourService_CreateTour_FullMethodName                 = "/tour.TourService/CreateTour"
+	TourService_GetTour_FullMethodName                    = "/tour.TourService/GetTour"
+	TourService_GetAllTours_FullMethodName                = "/tour.TourService/GetAllTours"
+	TourService_GetToursByUser_FullMethodName             = "/tour.TourService/GetToursByUser"
+	TourService_UpdateTour_FullMethodName                 = "/tour.TourService/UpdateTour"
+	TourService_DeleteTour_FullMethodName                 = "/tour.TourService/DeleteTour"
+	TourService_CreateReview_FullMethodName               = "/tour.TourService/CreateReview"
+	TourService_GetReviewsByTour_FullMethodName           = "/tour.TourService/GetReviewsByTour"
+	TourService_GetAllReviews_FullMethodName              = "/tour.TourService/GetAllReviews"
+	TourService_DeleteReview_FullMethodName               = "/tour.TourService/DeleteReview"
+	TourService_ActivateTour_FullMethodName               = "/tour.TourService/ActivateTour"
+	TourService_GetTourExecutionByTourUser_FullMethodName = "/tour.TourService/GetTourExecutionByTourUser"
+	TourService_AbandonTourExecution_FullMethodName       = "/tour.TourService/AbandonTourExecution"
+	TourService_SetCurrentLocation_FullMethodName         = "/tour.TourService/SetCurrentLocation"
+	TourService_CheckCloseKeyPoints_FullMethodName        = "/tour.TourService/CheckCloseKeyPoints"
 )
 
 // TourServiceClient is the client API for TourService service.
@@ -52,6 +57,11 @@ type TourServiceClient interface {
 	GetReviewsByTour(ctx context.Context, in *GetReviewsByTourRequest, opts ...grpc.CallOption) (*GetAllReviewsResponse, error)
 	GetAllReviews(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetAllReviewsResponse, error)
 	DeleteReview(ctx context.Context, in *DeleteReviewRequest, opts ...grpc.CallOption) (*ReviewResponse, error)
+	ActivateTour(ctx context.Context, in *ActivateTourRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error)
+	GetTourExecutionByTourUser(ctx context.Context, in *TourExecutionByTourUserRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error)
+	AbandonTourExecution(ctx context.Context, in *AbandonTourExecutionRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error)
+	SetCurrentLocation(ctx context.Context, in *SetCurrentLocationRequest, opts ...grpc.CallOption) (*SetCurrentLocationResponse, error)
+	CheckCloseKeyPoints(ctx context.Context, in *CheckCloseKeyPointsRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error)
 }
 
 type tourServiceClient struct {
@@ -162,6 +172,56 @@ func (c *tourServiceClient) DeleteReview(ctx context.Context, in *DeleteReviewRe
 	return out, nil
 }
 
+func (c *tourServiceClient) ActivateTour(ctx context.Context, in *ActivateTourRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TourExecutionResponse)
+	err := c.cc.Invoke(ctx, TourService_ActivateTour_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tourServiceClient) GetTourExecutionByTourUser(ctx context.Context, in *TourExecutionByTourUserRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TourExecutionResponse)
+	err := c.cc.Invoke(ctx, TourService_GetTourExecutionByTourUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tourServiceClient) AbandonTourExecution(ctx context.Context, in *AbandonTourExecutionRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TourExecutionResponse)
+	err := c.cc.Invoke(ctx, TourService_AbandonTourExecution_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tourServiceClient) SetCurrentLocation(ctx context.Context, in *SetCurrentLocationRequest, opts ...grpc.CallOption) (*SetCurrentLocationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetCurrentLocationResponse)
+	err := c.cc.Invoke(ctx, TourService_SetCurrentLocation_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *tourServiceClient) CheckCloseKeyPoints(ctx context.Context, in *CheckCloseKeyPointsRequest, opts ...grpc.CallOption) (*TourExecutionResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TourExecutionResponse)
+	err := c.cc.Invoke(ctx, TourService_CheckCloseKeyPoints_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TourServiceServer is the server API for TourService service.
 // All implementations must embed UnimplementedTourServiceServer
 // for forward compatibility.
@@ -182,6 +242,11 @@ type TourServiceServer interface {
 	GetReviewsByTour(context.Context, *GetReviewsByTourRequest) (*GetAllReviewsResponse, error)
 	GetAllReviews(context.Context, *emptypb.Empty) (*GetAllReviewsResponse, error)
 	DeleteReview(context.Context, *DeleteReviewRequest) (*ReviewResponse, error)
+	ActivateTour(context.Context, *ActivateTourRequest) (*TourExecutionResponse, error)
+	GetTourExecutionByTourUser(context.Context, *TourExecutionByTourUserRequest) (*TourExecutionResponse, error)
+	AbandonTourExecution(context.Context, *AbandonTourExecutionRequest) (*TourExecutionResponse, error)
+	SetCurrentLocation(context.Context, *SetCurrentLocationRequest) (*SetCurrentLocationResponse, error)
+	CheckCloseKeyPoints(context.Context, *CheckCloseKeyPointsRequest) (*TourExecutionResponse, error)
 	mustEmbedUnimplementedTourServiceServer()
 }
 
@@ -221,6 +286,21 @@ func (UnimplementedTourServiceServer) GetAllReviews(context.Context, *emptypb.Em
 }
 func (UnimplementedTourServiceServer) DeleteReview(context.Context, *DeleteReviewRequest) (*ReviewResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteReview not implemented")
+}
+func (UnimplementedTourServiceServer) ActivateTour(context.Context, *ActivateTourRequest) (*TourExecutionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateTour not implemented")
+}
+func (UnimplementedTourServiceServer) GetTourExecutionByTourUser(context.Context, *TourExecutionByTourUserRequest) (*TourExecutionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTourExecutionByTourUser not implemented")
+}
+func (UnimplementedTourServiceServer) AbandonTourExecution(context.Context, *AbandonTourExecutionRequest) (*TourExecutionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AbandonTourExecution not implemented")
+}
+func (UnimplementedTourServiceServer) SetCurrentLocation(context.Context, *SetCurrentLocationRequest) (*SetCurrentLocationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetCurrentLocation not implemented")
+}
+func (UnimplementedTourServiceServer) CheckCloseKeyPoints(context.Context, *CheckCloseKeyPointsRequest) (*TourExecutionResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckCloseKeyPoints not implemented")
 }
 func (UnimplementedTourServiceServer) mustEmbedUnimplementedTourServiceServer() {}
 func (UnimplementedTourServiceServer) testEmbeddedByValue()                     {}
@@ -423,6 +503,96 @@ func _TourService_DeleteReview_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TourService_ActivateTour_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateTourRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).ActivateTour(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_ActivateTour_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).ActivateTour(ctx, req.(*ActivateTourRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TourService_GetTourExecutionByTourUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TourExecutionByTourUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).GetTourExecutionByTourUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_GetTourExecutionByTourUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).GetTourExecutionByTourUser(ctx, req.(*TourExecutionByTourUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TourService_AbandonTourExecution_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AbandonTourExecutionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).AbandonTourExecution(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_AbandonTourExecution_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).AbandonTourExecution(ctx, req.(*AbandonTourExecutionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TourService_SetCurrentLocation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetCurrentLocationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).SetCurrentLocation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_SetCurrentLocation_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).SetCurrentLocation(ctx, req.(*SetCurrentLocationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TourService_CheckCloseKeyPoints_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckCloseKeyPointsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TourServiceServer).CheckCloseKeyPoints(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TourService_CheckCloseKeyPoints_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TourServiceServer).CheckCloseKeyPoints(ctx, req.(*CheckCloseKeyPointsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TourService_ServiceDesc is the grpc.ServiceDesc for TourService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -469,6 +639,26 @@ var TourService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteReview",
 			Handler:    _TourService_DeleteReview_Handler,
+		},
+		{
+			MethodName: "ActivateTour",
+			Handler:    _TourService_ActivateTour_Handler,
+		},
+		{
+			MethodName: "GetTourExecutionByTourUser",
+			Handler:    _TourService_GetTourExecutionByTourUser_Handler,
+		},
+		{
+			MethodName: "AbandonTourExecution",
+			Handler:    _TourService_AbandonTourExecution_Handler,
+		},
+		{
+			MethodName: "SetCurrentLocation",
+			Handler:    _TourService_SetCurrentLocation_Handler,
+		},
+		{
+			MethodName: "CheckCloseKeyPoints",
+			Handler:    _TourService_CheckCloseKeyPoints_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
