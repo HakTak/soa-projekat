@@ -7,7 +7,7 @@
       <div class="card-header">
         <h3 class="tour-title">{{ tour.title }}</h3>
         <span class="status-badge">{{ tour.status }}</span>
-        <button *ngIf="tour.status === 'published'" class="btn-cart" (click)="addToCart($event, tour.id)"
+        <button *ngIf="tour.status === tourStatus.PUBLISHED" class="btn-cart" (click)="addToCart($event, tour.id)"
           title="Add to Cart">
           <i class="bi bi-cart-plus-fill">Add to cart</i>
         </button>

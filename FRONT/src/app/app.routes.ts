@@ -13,6 +13,7 @@ import { ProfileFollowPageComponent } from './profile-follow/profile-follow-page
 import { ProfileRecommendedPageComponent } from './profile-follow/profile-recommended-page/profile-recommended-page.component';
 import { LocationSimulatorComponent } from './locaiton-simulator/location-simulator/location-simulator.component';
 import { ShoppingCartComponent } from './shopping-cart/shopping-cart/shopping-cart.component';
+import { TourExecutionComponent } from './tour/tour-execution/tour-execution.component'
 
 export const routes: Routes = [
     { path: '', redirectTo: 'home', pathMatch: 'full' },
@@ -29,5 +30,6 @@ export const routes: Routes = [
     { path: 'profile/:id', component: ProfileFollowPageComponent },
     { path: 'recommendations', component: ProfileRecommendedPageComponent },
     { path: 'location-simulator', component: LocationSimulatorComponent },
-    { path: 'shopping-cart', component: ShoppingCartComponent }
+    { path: 'shopping-cart', component: ShoppingCartComponent },
+    { path: 'tour-execution', component: TourExecutionComponent}
 ];

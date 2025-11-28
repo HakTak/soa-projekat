@@ -1,0 +1,17 @@
+<div class="tour-exec-container">
+    <h2>Tour Execution</h2>
+    <p class="description">
+        Your current location is being tracked for this tour. 
+        The system checks keypoints automatically every 10 seconds.
+    </p>
+
+    <!-- Map -->
+    <div id="tourExecutionMap" class="map-frame"></div>
+
+    <!-- Actions -->
+    <div class="actions">
+        <button class="btn-confirm" [disabled]="!tourExecution">
+            Abandon
+        </button>
+    </div>
+</div>

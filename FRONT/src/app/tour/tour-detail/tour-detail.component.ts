@@ -92,7 +92,7 @@ export class TourDetailComponent implements OnInit {
   }
 
   fetchTour(id: string): void {
-    this.http.get<Tour>(`http://localhost:8083/tour/${id}`).subscribe({
+    this.http.get<Tour>(`http://localhost:8080/tour/${id}`).subscribe({
       next: (data) => {
         this.tour = data;
         this.setTourImage();
@@ -102,7 +102,7 @@ export class TourDetailComponent implements OnInit {
   }
 
   fetchReviews(tourId: string): void {
-    this.http.get<any[]>(`http://localhost:8083/review/tour/${tourId}`).subscribe({
+    this.http.get<any[]>(`http://localhost:8080/review/tour/${tourId}`).subscribe({
       next: (data) => {
         this.reviews = data.map(r => ({
           id: r.id,
@@ -138,7 +138,7 @@ export class TourDetailComponent implements OnInit {
     const confirmDelete = confirm(`Are you sure you want to delete tour "${this.tour.title}"? This action cannot be undone.`);
     
     if (confirmDelete) {
-      this.http.delete(`http://localhost:8083/tour/${this.tour.id}`, {headers: this.getAuthHeaders()}).subscribe({
+      this.http.delete(`http://localhost:8080/tour/${this.tour.id}`, {headers: this.getAuthHeaders()}).subscribe({
         next: () => {
           // Prikazi uspeh
           this.showToast('Tour successfully deleted!', 'success');

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Tour } from '../model/tour';
+import { Tour, TourStatus } from '../model/tour';
 import { Keypoint } from '../model/keypoint'; // Ako ti treba
 import { ShoppingCartService } from '../../shopping-cart/service/shopping-cart.service';
 import { AuthService } from '../../infrastructure/auth.service';
