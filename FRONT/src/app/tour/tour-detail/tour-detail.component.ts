@@ -6,7 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { Review } from '../model/review';
 import { Tour, TourStatus } from '../model/tour';
 import { Keypoint } from '../model/keypoint';
-import { User } from '../../models/user.model'
+import { User } from '../../models/user.model';
+import { AuthService } from '../../infrastructure/auth.service';
 
 interface ReviewRequest {
   tour_id: string;
@@ -57,7 +58,8 @@ export class TourDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -76,7 +78,7 @@ export class TourDetailComponent implements OnInit {
 
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-
+      
       const user: User = {
         id: payload.id,
         username: payload.username,
@@ -84,6 +86,7 @@ export class TourDetailComponent implements OnInit {
         role: payload.role,
         blocked: false
       };
+        console.log("Logged in user:", user);
         return user;
     } catch (err) {
       console.error("Invalid JWT:", err);
@@ -92,9 +95,12 @@ export class TourDetailComponent implements OnInit {
   }
 
   fetchTour(id: string): void {
-    this.http.get<Tour>(`http://localhost:8083/tour/${id}`).subscribe({
+    const headers = this.authService.getAuthHeaders();
+    this.http.get<any>(`http://localhost:8080/tour/${id}`, { headers: headers }).subscribe({
       next: (data) => {
-        this.tour = data;
+
+        console.log("Fetched tour data:", data);
+        this.tour = data.tour;
         this.setTourImage();
       },
       error: (err) => console.error('Error fetching tour:', err)
@@ -102,9 +108,12 @@ export class TourDetailComponent implements OnInit {
   }
 
   fetchReviews(tourId: string): void {
-    this.http.get<any[]>(`http://localhost:8083/review/tour/${tourId}`).subscribe({
+    const headers = this.authService.getAuthHeaders();
+    console.log("tourId u fetchReviews:", tourId);
+    this.http.get<any[]>(`http://localhost:8080/review/tour/${tourId}`, { headers: headers }).subscribe({
       next: (data) => {
-        this.reviews = data.map(r => ({
+        console.log("Fetched reviews data:", data);
+       /* this.reviews = data.map(r => ({
           id: r.id,
           rating: r.rating,
           comment: r.comment,
@@ -112,7 +121,7 @@ export class TourDetailComponent implements OnInit {
           userId: r.user_id,
           username: r.user_name,
           createdAt: r.created_at ? new Date(r.created_at) : undefined
-        }));
+        }));*/
       },
       error: (err) => console.error('Error fetching reviews:', err)
     });
@@ -219,13 +228,14 @@ export class TourDetailComponent implements OnInit {
     this.tour.status = this.tourStatus.PUBLISHED
     this.tour.publisedAt = new Date();
     this.tour.archivedAt = null; 
-    this.http.put(`http://localhost:8080/tour/update`,this.tour, {headers: this.getAuthHeaders()}).subscribe({
+    this.http.patch(`http://localhost:8080/tour/update`,this.tour, {headers: this.getAuthHeaders()}).subscribe({
       next: () => {
         this.showToast('Tour successfully published!', 'success');
       },
       error: (err) => {
         console.error('Publish error:', err);
         this.showToast('Failed to publish tour. Please try again.', 'error');
+        if (this.tour) this.tour.status = this.tourStatus.DRAFT; 
       }
     })
   }
@@ -235,7 +245,7 @@ export class TourDetailComponent implements OnInit {
     this.tour.status = this.tourStatus.ARCHIVED
     this.tour.archivedAt = new Date();
     this.tour.publisedAt = null;
-    this.http.put(`http://localhost:8080/tour/update`, this.tour, {headers: this.getAuthHeaders()}).subscribe({
+    this.http.patch(`http://localhost:8080/tour/update`, this.tour, {headers: this.getAuthHeaders()}).subscribe({
       next: () => {
         this.showToast('Tour successfully archived!', 'success');
       },

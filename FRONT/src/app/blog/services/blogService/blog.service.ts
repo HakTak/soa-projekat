@@ -13,7 +13,7 @@ export class BlogService {
   constructor(private http: HttpClient){}
 
   getAllBlogs(): Observable<Blog[]> {
-    return this.http.get<Blog[]>(`${this.baseUrl}/all`);
+    return this.http.get<Blog[]>(`${this.baseUrl}s`);
   }
 
   toggleLike(blogId: string): Observable<Blog> {

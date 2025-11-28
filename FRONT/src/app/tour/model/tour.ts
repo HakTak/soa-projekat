@@ -1,13 +1,14 @@
 import { Keypoint } from "./keypoint";
 
-export enum TourStatus{
-    DRAFT = 0,
-    PUBLISHED = 1,
-    ARCHIVED  = 2,
+export enum TourStatus {
+    DRAFT = 'DRAFT',
+    PUBLISHED = 'PUBLISHED',
+    ARCHIVED  = 'ARCHIVED',
 }
 
 export interface Tour {
     id?: string;
+    userName: string;
     title: string;
     description: string;
     difficulty: string;

@@ -91,4 +91,16 @@ export class AuthService {
       return "Error user token";
     }
   }
+
+  public getMyUsername(): string {
+    const token = this.getToken()
+    if (!token) return "Unknowen user token"; 
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log("EVO GA USERNAME MOJ: " + payload.username)
+      return payload.username;
+    } catch (e) {
+      return "Error user token";
+    }
+  }
 }

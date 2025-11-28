@@ -39,12 +39,41 @@ export class TourListComponent implements OnInit {
   }
 
   fetchTours(): void {
-    // Koristimo relativnu putanju jer imamo Proxy (ili CORS setup)
-    this.http.get<Tour[]>('http://localhost:8083/tours').subscribe({
-      next: (data) => {
-        this.tours = data;
+    const headers = this.authService.getAuthHeaders();
+    const roleLogged = this.authService.hasRole();
+    const userId = this.authService.getMyId();
+    const userName = this.authService.getMyUsername();
+    console.log('Is tourist logged in?', userName);
 
-        // Cim stignu ture, za svaku od njih pokreni dovlacenje ocena
+    this.http.get<any>('http://localhost:8080/tours', { headers: headers }).subscribe({
+      next: (response) => {
+        // ISPRAVKA: Vadimo niz iz polja 'tours'
+        // Ako response.tours ne postoji, stavljamo prazan niz [] da ne pukne app
+        const rawTours = response.tours || [];
+
+
+        if (roleLogged === 'TOURIST') { // dodati filter samo publiched
+          this.tours = rawTours
+          console.log('Fetched tours for TOURIST:', rawTours);
+          return;
+        }
+
+        if (roleLogged === 'ADMIN') {
+          this.tours = rawTours; // Admin vidi sve ture
+          console.log('Fetched tours for ADMIN:', rawTours);
+          return;
+        }
+
+        if (roleLogged === 'AUTHOR') { //Samo ture od autora
+          this.tours = rawTours.filter((tour: Tour) => (tour.userName === userName));
+          console.log('Fetched tours for AUTHOR:', rawTours);
+          return;
+        }
+        // 1. Sada filtriramo taj niz (ne response objekat, nego niz unutar njega)
+       this.tours = rawTours.filter((tour: Tour) => tour.status === TourStatus.DRAFT);
+       console.log('Fetched tours:', rawTours);
+
+        // 2. Dovlačimo ocene
         this.tours.forEach(tour => {
           if (tour.id) {
             this.fetchAvgRating(tour.id);
@@ -58,8 +87,10 @@ export class TourListComponent implements OnInit {
   }
 
   fetchAvgRating(tourId: string): void {
-    this.http.get<Review[]>(`http://localhost:8080/review/tour/${tourId}`).subscribe({
+    const headers = this.authService.getAuthHeaders();
+    this.http.get<Review[]>(`http://localhost:8080/review/tour/${tourId}`, { headers: headers }).subscribe({
       next: (reviews) => {
+        console.log(`Fetched reviews for tour ${tourId}:`, reviews);
         if (reviews.length > 0) {
           // Izracunaj sumu
           const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
