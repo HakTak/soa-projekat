@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { Tour, TourStatus } from '../model/tour';
 import { Keypoint } from '../model/keypoint';
 import { User } from '../../models/user.model';
 import { AuthService } from '../../infrastructure/auth.service';
+import { ShoppingCartService } from '../../shopping-cart/service/shopping-cart.service';
 
 interface ReviewRequest {
   tour_id: string;
@@ -34,15 +35,16 @@ export class TourDetailComponent implements OnInit {
   tourStatus = TourStatus;
   selectedFileName: string | null = null;
   
-  // Modal Kontrola
-  isModalOpen = false;
+  // Status kupovine
+  isPurchased: boolean = false; 
 
-  // Notification Popup Kontrola
+  // Modal & Notification
+  isModalOpen = false;
   showNotification = false;
   notificationMessage = '';
   notificationType: 'success' | 'error' = 'success';
 
-  // Podaci za novi review
+  // Novi review
   newReview: ReviewRequest = {
     tour_id: '',
     user_id: '',
@@ -54,13 +56,14 @@ export class TourDetailComponent implements OnInit {
     image_url: null
   };
 
-  public user: User | null = this.loadCurrentUser()
+  public user: User | null = this.loadCurrentUser();
 
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private shoppingCartService: ShoppingCartService
   ) {}
 
   ngOnInit(): void {
@@ -76,19 +79,15 @@ export class TourDetailComponent implements OnInit {
   loadCurrentUser() {
    const token = localStorage.getItem('jwt');
     if (!token) return null;
-
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      
-      const user: User = {
+      return {
         id: payload.id,
         username: payload.username,
         email: payload.email,
         role: payload.role,
         blocked: false
-      };
-        console.log("Logged in user:", user);
-        return user;
+      } as User;
     } catch (err) {
       console.error("Invalid JWT:", err);
       return null;
@@ -99,35 +98,61 @@ export class TourDetailComponent implements OnInit {
     const headers = this.authService.getAuthHeaders();
     this.http.get<any>(`http://localhost:8080/tour/${id}`, { headers: headers }).subscribe({
       next: (data) => {
-
         console.log("Fetched tour data:", data);
         this.tour = data.tour;
+
+        // --- FIX ZA DUPLIKATE ---
+        // Posto baza vraca duplirane tacke, ovde ih filtriramo da ostanu samo unikatne (po ID-u ili Naslovu)
+        if (this.tour && this.tour.keypoints) {
+            this.tour.keypoints = this.tour.keypoints.filter((kp, index, self) =>
+                index === self.findIndex((t) => (
+                    t.id === kp.id || t.title === kp.title
+                ))
+            );
+        }
+        // ------------------------
+
         this.setTourImage();
+
+        if (this.user && this.user.role === 'TOURIST') {
+          this.checkPurchaseStatus();
+        }
       },
       error: (err) => console.error('Error fetching tour:', err)
     });
   }
 
+  checkPurchaseStatus(): void {
+    if (!this.user || !this.user.id || !this.tour) return;
+
+    const headers = this.authService.getAuthHeaders();
+    this.http.get<any>(`http://localhost:8080/api/shopping-cart/orders/${this.user.id}`, { headers: headers })
+      .subscribe({
+        next: (response) => {
+          const purchasedTokens = response.tokens || response || [];
+          const match = purchasedTokens.find((token: any) => 
+            (token.tourId === this.tour?.id) || (token.tour_id === this.tour?.id)
+          );
+          this.isPurchased = !!match;
+        },
+        error: (err) => {
+          console.error("Error checking purchase status:", err);
+          this.isPurchased = false;
+        }
+      });
+  }
+
   fetchReviews(tourId: string): void {
     const headers = this.authService.getAuthHeaders();
-
     this.http.get<any>(`http://localhost:8080/review/tour/${tourId}`, { headers }).subscribe({
       next: (data) => {
-        console.log('Fetched reviews data:', data);
-
-        // --- ISPRAVKA ---
-        // Server vraca objekat { reviews: [...] }, a nama treba samo niz unutra.
-        // Ako koristis 'data', dobijas objekat i *ngFor puca.
-        // Moras koristiti 'data.reviews'.
-        
         const reviewsArray = data.reviews || []; 
-
         this.reviews = reviewsArray.map((r: any) => {
           return {
             id: r.id,
             rating: r.rating,
             comment: r.comment,
-            username: r.userName, // Proveri da li backend salje 'userName' ili 'user_name'
+            username: r.userName,
             createdAt: r.createdAt,
             imageUrl: r.imageUrl
           };
@@ -137,31 +162,65 @@ export class TourDetailComponent implements OnInit {
     });
   }
 
+  // --- PUBLISH / ARCHIVE (VRACENO NA STARO) ---
+  
+  publishTour(): void { 
+    if (this.tour == null) return;
+    
+    this.tour.status = this.tourStatus.PUBLISHED;
+    this.tour.publisedAt = new Date();
+    this.tour.archivedAt = null; 
+    
+    // Saljemo ceo this.tour objekat, bez posebnog payload-a
+    this.http.patch<any>('http://localhost:8080/tour/update', this.tour, {headers: this.getAuthHeaders()}).subscribe({
+      next: () => {
+        this.showToast('Tour successfully published!', 'success');
+      },
+      error: (err) => {
+        console.error('Publish error:', err);
+        this.showToast('Failed to publish tour.', 'error');
+        if (this.tour) this.tour.status = this.tourStatus.DRAFT; 
+      }
+    })
+  }
+
+  archiveTour(): void {
+    if (this.tour == null) return;
+    
+    this.tour.status = this.tourStatus.ARCHIVED;
+    this.tour.archivedAt = new Date();
+    this.tour.publisedAt = null;
+
+    // Saljemo ceo this.tour objekat
+    this.http.patch<any>('http://localhost:8080/tour/update', this.tour, {headers: this.getAuthHeaders()}).subscribe({
+      next: () => {
+        this.showToast('Tour successfully archived!', 'success');
+      },
+      error: (err) => {
+        console.error('Archive error:', err);
+        this.showToast('Failed to archive tour.', 'error');
+        if (this.tour) this.tour.status = this.tourStatus.PUBLISHED;
+      }
+    })
+  }
+
+  // --- OSTALE POMOCNE FUNKCIJE ---
 
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
-    
     if (file) {
       this.selectedFileName = file.name;
-
       const reader = new FileReader();
-      
-      // Kada se fajl učita, pretvori ga u Base64 string
       reader.onload = (e: any) => {
-        // Ovo upisujemo u newReview.image_url umesto ručnog unosa
         this.newReview.image_url = e.target.result; 
       };
-
-      // Čitamo fajl kao Data URL (Base64)
       reader.readAsDataURL(file);
     }
   }
 
-  // === FUNKCIJA ZA UKLANJANJE SLIKE ===
   removeImage(): void {
     this.newReview.image_url = null;
     this.selectedFileName = null;
-    // Resetuj input fajl element ako treba (opciono)
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
     if(fileInput) fileInput.value = '';
   }
@@ -174,54 +233,31 @@ export class TourDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/tour-list']); // Proveri da li je ovo tvoja ispravna ruta za listu
+    this.router.navigate(['/tour-list']);
   }
-
-  // --- DELETE FUNKCIONALNOST ---
 
   deleteTour(): void {
     if (!this.tour || !this.tour.id) return;
-
-    // Potvrda od korisnika pre brisanja
-    const confirmDelete = confirm(`Are you sure you want to delete tour "${this.tour.title}"? This action cannot be undone.`);
+    const confirmDelete = confirm(`Are you sure you want to delete tour "${this.tour.title}"?`);
     
     if (confirmDelete) {
       this.http.delete(`http://localhost:8080/tour/${this.tour.id}`, {headers: this.getAuthHeaders()}).subscribe({
         next: () => {
-          // Prikazi uspeh
           this.showToast('Tour successfully deleted!', 'success');
-          
-          // Vrati nazad na listu posle 2 sekunde (da stigne da vidi poruku)
           setTimeout(() => {
             this.router.navigate(['/tour-list']);
           }, 2000);
         },
         error: (err) => {
           console.error('Delete error:', err);
-          this.showToast('Failed to delete tour. Please try again.', 'error');
+          this.showToast('Failed to delete tour.', 'error');
         }
       });
     }
   }
 
-  // --- TOAST NOTIFICATION HELPER ---
-  showToast(message: string, type: 'success' | 'error'): void {
-    this.notificationMessage = message;
-    this.notificationType = type;
-    this.showNotification = true;
-
-    // Sakrij automatski posle 3 sekunde
-    setTimeout(() => {
-      this.showNotification = false;
-    }, 3000);
-  }
-
-  // --- LOGIKA ZA MODAL ---
-
   openReviewModal(): void {
     if (!this.tour) return;
-    
-    
     const userId = this.user?.id ?? '';
     const userName = this.user?.username ?? 'Anonymous';
     this.newReview = {
@@ -234,7 +270,6 @@ export class TourDetailComponent implements OnInit {
       visited_at: new Date().toISOString().split('T')[0],
       image_url: null
     };
-    
     this.isModalOpen = true;
   }
 
@@ -252,11 +287,9 @@ export class TourDetailComponent implements OnInit {
 
     this.http.post('http://localhost:8080/review/create', payload, {headers: this.getAuthHeaders()}).subscribe({
       next: (res) => {
-        this.showToast('Review successfully saved!', 'success'); // Koristimo novi toast umesto alert-a
+        this.showToast('Review saved!', 'success');
         this.closeReviewModal();
-        if (this.tour) {
-          this.fetchReviews(this.tour.id ?? '');
-        }
+        if (this.tour) this.fetchReviews(this.tour.id ?? '');
       },
       error: (err) => {
         console.error('Error creating review:', err);
@@ -265,43 +298,37 @@ export class TourDetailComponent implements OnInit {
     });
   }
 
-  publishTour(): void { 
-    if (this.tour == null) return;
-    this.tour.status = this.tourStatus.PUBLISHED
-    this.tour.publisedAt = new Date();
-    this.tour.archivedAt = null; 
-    this.http.patch(`http://localhost:8080/tour/update`,this.tour, {headers: this.getAuthHeaders()}).subscribe({
-      next: () => {
-        this.showToast('Tour successfully published!', 'success');
-      },
-      error: (err) => {
-        console.error('Publish error:', err);
-        this.showToast('Failed to publish tour. Please try again.', 'error');
-        if (this.tour) this.tour.status = this.tourStatus.DRAFT; 
-      }
-    })
-  }
-
-  archiveTour(): void {
-    if (this.tour == null) return;
-    this.tour.status = this.tourStatus.ARCHIVED
-    this.tour.archivedAt = new Date();
-    this.tour.publisedAt = null;
-    this.http.patch(`http://localhost:8080/tour/update`, this.tour, {headers: this.getAuthHeaders()}).subscribe({
-      next: () => {
-        this.showToast('Tour successfully archived!', 'success');
-      },
-      error: (err) => {
-        console.error('Archive error:', err);
-        this.showToast('Failed to archive tour. Please try again.', 'error');
-      }
-    })
+  showToast(message: string, type: 'success' | 'error'): void {
+    this.notificationMessage = message;
+    this.notificationType = type;
+    this.showNotification = true;
+    setTimeout(() => {
+      this.showNotification = false;
+    }, 3000);
   }
 
   getAuthHeaders(): HttpHeaders {
     const token = localStorage.getItem('jwt');;
-    return new HttpHeaders({
-      'Authorization': `Bearer ${token}`
+    return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  }
+
+    addToCart(event: Event, tourId?: string): void {
+    event.stopPropagation();
+
+    const userId = this.authService.getMyId();
+    if (!userId) {
+      alert('Please log in to shop.');
+      return;
+    }
+
+    this.shoppingCartService.addItem(userId, tourId).subscribe({
+      next: () => {
+        // Optional: Show a toast notification
+        alert('Added to cart!');
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to add item. It might already be in your cart.');
+      }
     });
   }
 }

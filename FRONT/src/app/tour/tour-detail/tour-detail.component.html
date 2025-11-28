@@ -2,7 +2,6 @@
   
   <button class="btn-back" (click)="goBack()">← Back to Tours</button>
 
-  <!-- IZMENJEN HEADER: Flex kontejner za naslov i dugme -->
   <header class="tour-header">
     <div class="header-content">
       <h1>{{ tour.title }}</h1>
@@ -13,7 +12,6 @@
         <button class="btn btn-primary" *ngIf="tour.status === tourStatus.PUBLISHED" (click)="archiveTour()">
           Archive Tour 📦
         </button>
-        <!-- Dugme za brisanje -->
         <button class="btn btn-danger" (click)="deleteTour()">
           Delete Tour 🗑️
         </button>
@@ -23,11 +21,26 @@
 
   <section class="details-container">
     <div class="details-info">
+      
+      <!-- === IZMENA 1: BADGES (STATUS + PURCHASED) === -->
       <div class="info-group">
         <span class="badge status-badge">{{ tourStatus[tour.status] }}</span>
         <span class="badge difficulty-badge">{{ tour.difficulty }}</span>
+        
+        <!-- Prikazi 'Purchased' ako je kupljeno -->
+        <span *ngIf="isPurchased" class="badge purchased-badge">
+          Purchased ✅
+        </span>
+
+        <!-- Prikazi 'Add to Cart' ako nije kupljeno i korisnik je turista -->
+        <span *ngIf="!isPurchased && user?.role === 'TOURIST'" class="badge not-purchased-badge" (click)="addToCart($event, tour.id!)" style="cursor: pointer;">
+          Add to Cart 🛒
+        </span>
+
         <span class="price-tag">{{ tour.price }} €</span>
       </div>
+      <!-- ============================================== -->
+
       <div class="description-box">
         <h3>Description</h3>
         <p>{{ tour.description }}</p>
@@ -36,19 +49,50 @@
         <h3>Tags</h3>
         <p class="tags-text">#{{ tour.tags }}</p>
       </div>
+
+      <!-- === IZMENA 2: KEYPOINTS LOGIKA === -->
       <div class="keypoints-box">
         <h3>Keypoints</h3>
-        <ul class="keypoint-list" *ngIf="user?.role === 'GUIDE'">
-          <li *ngFor="let kp of tour.keypoints"> <!-- turista vidi samo jednu-->
-            <span class="kp-title">{{ kp.title }}</span>
-            <p class="kp-desc">{{ kp.description }}</p>
-          </li>
-        </ul>
-        <ul class="keypoint-list" *ngIf="user?.role === 'TOURIST'">
-          <span class="kp-title">{{ tour.keypoints[0].title }}</span>
-          <p class="kp-desc">{{ tour.keypoints[0].description }}</p>
-        </ul>
+        
+        <!-- GRUPA 1: Vidi SVE tacke (Ako je GUIDE ili ADMIN ili je tura KUPLJENA) -->
+        <ng-container *ngIf="user?.role === 'GUIDE' || user?.role === 'ADMIN' || isPurchased">
+          <ul class="keypoint-list">
+            <li *ngFor="let kp of tour.keypoints"> 
+              <span class="kp-title">{{ kp.title }}</span>
+              <p class="kp-desc">{{ kp.description }}</p>
+            </li>
+          </ul>
+        </ng-container>
+
+        <!-- GRUPA 2: Vidi SAMO PRVU tacku (Ako je TOURIST i NIJE KUPLJENA) -->
+        <ng-container *ngIf="user?.role === 'TOURIST' && !isPurchased">
+          <ul class="keypoint-list">
+            <!-- Provera da li uopste postoje tacke -->
+            <li *ngIf="tour.keypoints && tour.keypoints.length > 0">
+              <span class="kp-title">{{ tour.keypoints[0].title }}</span>
+              <p class="kp-desc">{{ tour.keypoints[0].description }}</p>
+              
+              <!-- BLUR / ZAKLJUCANO OBAVESTENJE -->
+              <div class="blur-overlay" style="margin-top: 15px; padding: 10px; background: #f9fafb; border: 1px dashed #d1d5db; border-radius: 6px; color: #6b7280; display: flex; align-items: center; gap: 8px;">
+                <span>🔒</span> 
+                <span *ngIf="tour.keypoints.length > 1">
+                  Buy this tour to see {{ tour.keypoints.length - 1 }} more keypoints!
+                </span>
+                <span *ngIf="tour.keypoints.length <= 1">
+                  Buy this tour to unlock full content!
+                </span>
+              </div>
+            </li>
+            
+            <li *ngIf="(!tour.keypoints || tour.keypoints.length === 0)">
+              No keypoints available yet.
+            </li>
+          </ul>
+        </ng-container>
+
       </div>
+      <!-- ============================================== -->
+
     </div>
 
     <div class="details-image-wrapper">
@@ -63,6 +107,7 @@
   <section class="reviews-section">
     <div class="reviews-section-header">
       <h2 class="section-title">Reviews</h2>
+      <!-- Turista moze da doda review samo ako je kupio turu? (Opciono, ovde sam ostavio da moze uvek ako je turista) -->
       <button class="btn btn-primary btn-add-review" (click)="openReviewModal()" *ngIf="user?.role === 'TOURIST'">
         + Add Review
       </button>
@@ -133,7 +178,6 @@
         <div class="form-group">
           <label>Attach a Photo (Optional)</label>
           
-          <!-- Hidden file input + Custom Button -->
           <div class="file-upload-container">
             <input 
               type="file" 
@@ -142,15 +186,12 @@
               accept="image/*" 
               class="file-input-hidden"
             >
-            
             <label for="fileInput" class="btn btn-secondary file-upload-btn">
               <i class="bi bi-camera"></i> Choose Image
             </label>
-            
             <span class="file-name" *ngIf="selectedFileName">{{ selectedFileName }}</span>
           </div>
 
-          <!-- PREVIEW SLIKE (Prikazi samo ako postoji slika) -->
           <div class="image-preview-box" *ngIf="newReview.image_url">
             <img [src]="newReview.image_url" alt="Selected photo" class="preview-img">
             <button type="button" class="btn-remove-img" (click)="removeImage()" title="Remove image">
@@ -172,7 +213,6 @@
   </div>
 </div>
 
-<!-- ================= POPUP NOTIFIKACIJA ================= -->
 <div class="toast-notification" 
      [ngClass]="{'show': showNotification, 'success': notificationType === 'success', 'error': notificationType === 'error'}">
   <span class="toast-icon">

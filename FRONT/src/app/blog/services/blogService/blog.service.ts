@@ -8,12 +8,12 @@ import { Blog } from '../../model/blog';
 })
 export class BlogService {
 
-  private baseUrl = 'http://localhost:8080/blog/post';
+  private baseUrl = 'http://localhost:8080/api/blog/posts';
 
   constructor(private http: HttpClient){}
 
   getAllBlogs(): Observable<Blog[]> {
-    return this.http.get<Blog[]>(`${this.baseUrl}s`);
+    return this.http.get<Blog[]>(`${this.baseUrl}`, {headers: this.getAuthHeaders()});
   }
 
   toggleLike(blogId: string): Observable<Blog> {
@@ -21,7 +21,7 @@ export class BlogService {
   }
 
   createBlog(blog: Blog): Observable<Blog> {
-    return this.http.post<Blog>(`${this.baseUrl}/create`, blog ,  {headers: this.getAuthHeaders()});
+    return this.http.post<Blog>(`${this.baseUrl}`, blog ,  {headers: this.getAuthHeaders()});
   }
 
    getAuthHeaders(): HttpHeaders {

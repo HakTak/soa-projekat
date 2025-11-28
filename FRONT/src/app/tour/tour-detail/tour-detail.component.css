@@ -313,6 +313,39 @@
   object-fit: cover;
 }
 
+.purchased-badge {
+  background-color: #dcfce7; /* Svetlo zelena */
+  color: #166534; /* Tamno zelena */
+  border: 1px solid #bbf7d0;
+}
+
+.not-purchased-badge {
+  background-color: #ffedd5; /* Svetlo narandzasta */
+  color: #c2410c; /* Tamno narandzasta */
+  border: 1px solid #fed7aa;
+  cursor: pointer; /* Da deluje kao dugme */
+  transition: transform 0.2s;
+}
+
+.not-purchased-badge:hover {
+  transform: scale(1.05);
+  background-color: #fed7aa;
+}
+
+/* --- LOCKED KEYPOINTS OVERLAY --- */
+.blur-overlay {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .btn-remove-img {
   position: absolute;
   top: 5px;
