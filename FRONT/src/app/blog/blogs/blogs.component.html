@@ -1,0 +1,60 @@
+<div class="feed-container" #feedContainer>
+  <div class="blog-wrapper" *ngFor="let blog of blogs">
+    <div class="blog-card">
+      <div class="image-collage">
+        <img *ngFor="let img of blog.imageUrls; let i = index" 
+             [src]="img"
+             [style.zIndex]="blog.imageUrls.length - i">
+      </div>
+      <h2>{{ blog.title }}</h2>
+      <p>{{ blog.text }}</p>
+      <div class="blog-footer">
+        <span class="author" (click)="goToAuthorPage(blog.authorName)">{{ blog.authorName }}</span>
+        <span class="actions">
+          <button (click)="likeBlog(blog)" [disabled]="!user">❤️ {{ blog.likeCount }}</button>
+          <button (click)="openComments(blog)" [disabled]="!user">💬 {{ blog.comments.length }}</button>
+        </span>
+      </div>
+    </div>
+
+    <div class="comments-panel" *ngIf="selectedBlog">
+  <h3>Comments</h3>
+  <div class="comments-list">
+    <div *ngFor="let comment of selectedBlog.comments" class="comment">
+      <div class="comment-header">
+        <strong>{{ comment.authorName }}</strong>
+        <span class="comment-time">
+          {{ comment.updatedAt
+            ? ('Last edited at ' + (comment.updatedAt | date:'short')) 
+            : (comment.createdAt | date:'short') }}
+        </span>
+      </div>
+
+      <div class="comment-content" *ngIf="editingComment !== comment.id">
+        {{ comment.text }}
+      </div>
+
+      <!-- Edit textarea -->
+      <div *ngIf="editingComment === comment.id" class="edit-comment">
+        <input [(ngModel)]="editingText" (keyup.enter)="saveComment(comment)" />
+        <button (click)="saveComment(comment)">Save</button>
+        <button (click)="cancelEdit()">Cancel</button>
+      </div>
+
+      <!-- Actions -->
+      <div class="comment-actions" *ngIf="comment.authorName === user?.username">
+        <button (click)="startEdit(comment)">Edit</button>
+        <button (click)="deleteComment(comment, selectedBlog)">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="add-comment">
+    <input [(ngModel)]="newComment" 
+           placeholder="Write a comment..." 
+           (keyup.enter)="addComment(selectedBlog)" />
+    <button (click)="addComment(selectedBlog)">Add</button>
+  </div>
+</div>
+  </div>
+</div>

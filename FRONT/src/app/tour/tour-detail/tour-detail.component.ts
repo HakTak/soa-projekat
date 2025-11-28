@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Review } from '../model/review';
-import { Tour } from '../model/tour';
+import { Tour, TourStatus } from '../model/tour';
 import { Keypoint } from '../model/keypoint';
+import { User } from '../../models/user.model';
+import { AuthService } from '../../infrastructure/auth.service';
 
 interface ReviewRequest {
   tour_id: string;
@@ -29,6 +31,8 @@ export class TourDetailComponent implements OnInit {
   tour: Tour | null = null;
   reviews: Review[] = [];
   tourImage: string | null = null;
+  tourStatus = TourStatus;
+  selectedFileName: string | null = null;
   
   // Modal Kontrola
   isModalOpen = false;
@@ -41,8 +45,8 @@ export class TourDetailComponent implements OnInit {
   // Podaci za novi review
   newReview: ReviewRequest = {
     tour_id: '',
-    user_id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-    user_name: 'Petar',
+    user_id: '',
+    user_name: '',
     rating: 5,
     comment: '',
     created_at: '',
@@ -50,10 +54,13 @@ export class TourDetailComponent implements OnInit {
     image_url: null
   };
 
+  public user: User | null = this.loadCurrentUser()
+
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -66,10 +73,35 @@ export class TourDetailComponent implements OnInit {
     });
   }
 
+  loadCurrentUser() {
+   const token = localStorage.getItem('jwt');
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      
+      const user: User = {
+        id: payload.id,
+        username: payload.username,
+        email: payload.email,
+        role: payload.role,
+        blocked: false
+      };
+        console.log("Logged in user:", user);
+        return user;
+    } catch (err) {
+      console.error("Invalid JWT:", err);
+      return null;
+    }
+  }
+
   fetchTour(id: string): void {
-    this.http.get<Tour>(`http://localhost:8083/tour/${id}`).subscribe({
+    const headers = this.authService.getAuthHeaders();
+    this.http.get<any>(`http://localhost:8080/tour/${id}`, { headers: headers }).subscribe({
       next: (data) => {
-        this.tour = data;
+
+        console.log("Fetched tour data:", data);
+        this.tour = data.tour;
         this.setTourImage();
       },
       error: (err) => console.error('Error fetching tour:', err)
@@ -77,20 +109,61 @@ export class TourDetailComponent implements OnInit {
   }
 
   fetchReviews(tourId: string): void {
-    this.http.get<any[]>(`http://localhost:8083/review/tour/${tourId}`).subscribe({
+    const headers = this.authService.getAuthHeaders();
+
+    this.http.get<any>(`http://localhost:8080/review/tour/${tourId}`, { headers }).subscribe({
       next: (data) => {
-        this.reviews = data.map(r => ({
-          id: r.id,
-          rating: r.rating,
-          comment: r.comment,
-          tourId: r.tour_id,
-          userId: r.user_id,
-          username: r.user_name,
-          createdAt: r.created_at ? new Date(r.created_at) : undefined
-        }));
+        console.log('Fetched reviews data:', data);
+
+        // --- ISPRAVKA ---
+        // Server vraca objekat { reviews: [...] }, a nama treba samo niz unutra.
+        // Ako koristis 'data', dobijas objekat i *ngFor puca.
+        // Moras koristiti 'data.reviews'.
+        
+        const reviewsArray = data.reviews || []; 
+
+        this.reviews = reviewsArray.map((r: any) => {
+          return {
+            id: r.id,
+            rating: r.rating,
+            comment: r.comment,
+            username: r.userName, // Proveri da li backend salje 'userName' ili 'user_name'
+            createdAt: r.createdAt,
+            imageUrl: r.imageUrl
+          };
+        });
       },
-      error: (err) => console.error('Error fetching reviews:', err)
+      error: (err) => console.error('Error loading reviews:', err)
     });
+  }
+
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    
+    if (file) {
+      this.selectedFileName = file.name;
+
+      const reader = new FileReader();
+      
+      // Kada se fajl učita, pretvori ga u Base64 string
+      reader.onload = (e: any) => {
+        // Ovo upisujemo u newReview.image_url umesto ručnog unosa
+        this.newReview.image_url = e.target.result; 
+      };
+
+      // Čitamo fajl kao Data URL (Base64)
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // === FUNKCIJA ZA UKLANJANJE SLIKE ===
+  removeImage(): void {
+    this.newReview.image_url = null;
+    this.selectedFileName = null;
+    // Resetuj input fajl element ako treba (opciono)
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if(fileInput) fileInput.value = '';
   }
 
   setTourImage(): void {
@@ -113,7 +186,7 @@ export class TourDetailComponent implements OnInit {
     const confirmDelete = confirm(`Are you sure you want to delete tour "${this.tour.title}"? This action cannot be undone.`);
     
     if (confirmDelete) {
-      this.http.delete(`http://localhost:8083/tour/${this.tour.id}`).subscribe({
+      this.http.delete(`http://localhost:8080/tour/${this.tour.id}`, {headers: this.getAuthHeaders()}).subscribe({
         next: () => {
           // Prikazi uspeh
           this.showToast('Tour successfully deleted!', 'success');
@@ -148,10 +221,13 @@ export class TourDetailComponent implements OnInit {
   openReviewModal(): void {
     if (!this.tour) return;
     
+    
+    const userId = this.user?.id ?? '';
+    const userName = this.user?.username ?? 'Anonymous';
     this.newReview = {
       tour_id: this.tour.id ?? '',
-      user_id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-      user_name: 'Petar',
+      user_id: userId,
+      user_name: userName,
       rating: 5,
       comment: '',
       created_at: '',
@@ -174,7 +250,7 @@ export class TourDetailComponent implements OnInit {
       rating: Number(this.newReview.rating)
     };
 
-    this.http.post('http://localhost:8083/review/create', payload).subscribe({
+    this.http.post('http://localhost:8080/review/create', payload, {headers: this.getAuthHeaders()}).subscribe({
       next: (res) => {
         this.showToast('Review successfully saved!', 'success'); // Koristimo novi toast umesto alert-a
         this.closeReviewModal();
@@ -186,6 +262,46 @@ export class TourDetailComponent implements OnInit {
         console.error('Error creating review:', err);
         this.showToast('Failed to save review.', 'error');
       }
+    });
+  }
+
+  publishTour(): void { 
+    if (this.tour == null) return;
+    this.tour.status = this.tourStatus.PUBLISHED
+    this.tour.publisedAt = new Date();
+    this.tour.archivedAt = null; 
+    this.http.patch(`http://localhost:8080/tour/update`,this.tour, {headers: this.getAuthHeaders()}).subscribe({
+      next: () => {
+        this.showToast('Tour successfully published!', 'success');
+      },
+      error: (err) => {
+        console.error('Publish error:', err);
+        this.showToast('Failed to publish tour. Please try again.', 'error');
+        if (this.tour) this.tour.status = this.tourStatus.DRAFT; 
+      }
+    })
+  }
+
+  archiveTour(): void {
+    if (this.tour == null) return;
+    this.tour.status = this.tourStatus.ARCHIVED
+    this.tour.archivedAt = new Date();
+    this.tour.publisedAt = null;
+    this.http.patch(`http://localhost:8080/tour/update`, this.tour, {headers: this.getAuthHeaders()}).subscribe({
+      next: () => {
+        this.showToast('Tour successfully archived!', 'success');
+      },
+      error: (err) => {
+        console.error('Archive error:', err);
+        this.showToast('Failed to archive tour. Please try again.', 'error');
+      }
+    })
+  }
+
+  getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('jwt');;
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
     });
   }
 }

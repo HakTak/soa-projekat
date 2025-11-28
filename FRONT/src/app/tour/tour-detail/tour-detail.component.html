@@ -6,17 +6,25 @@
   <header class="tour-header">
     <div class="header-content">
       <h1>{{ tour.title }}</h1>
-      <!-- Dugme za brisanje -->
-      <button class="btn btn-danger" (click)="deleteTour()">
-        Delete Tour 🗑️
-      </button>
+      <span *ngIf="user?.role === 'GUIDE'">
+        <button class="btn btn-primary" *ngIf="tour.status != tourStatus.PUBLISHED" (click)="publishTour()">
+          Publish Tour 🚀
+        </button>
+        <button class="btn btn-primary" *ngIf="tour.status === tourStatus.PUBLISHED" (click)="archiveTour()">
+          Archive Tour 📦
+        </button>
+        <!-- Dugme za brisanje -->
+        <button class="btn btn-danger" (click)="deleteTour()">
+          Delete Tour 🗑️
+        </button>
+      </span>
     </div>
   </header>
 
   <section class="details-container">
     <div class="details-info">
       <div class="info-group">
-        <span class="badge status-badge">{{ tour.status }}</span>
+        <span class="badge status-badge">{{ tourStatus[tour.status] }}</span>
         <span class="badge difficulty-badge">{{ tour.difficulty }}</span>
         <span class="price-tag">{{ tour.price }} €</span>
       </div>
@@ -30,11 +38,15 @@
       </div>
       <div class="keypoints-box">
         <h3>Keypoints</h3>
-        <ul class="keypoint-list">
-          <li *ngFor="let kp of tour.keypoints">
+        <ul class="keypoint-list" *ngIf="user?.role === 'GUIDE'">
+          <li *ngFor="let kp of tour.keypoints"> <!-- turista vidi samo jednu-->
             <span class="kp-title">{{ kp.title }}</span>
             <p class="kp-desc">{{ kp.description }}</p>
           </li>
+        </ul>
+        <ul class="keypoint-list" *ngIf="user?.role === 'TOURIST'">
+          <span class="kp-title">{{ tour.keypoints[0].title }}</span>
+          <p class="kp-desc">{{ tour.keypoints[0].description }}</p>
         </ul>
       </div>
     </div>
@@ -51,7 +63,7 @@
   <section class="reviews-section">
     <div class="reviews-section-header">
       <h2 class="section-title">Reviews</h2>
-      <button class="btn btn-primary btn-add-review" (click)="openReviewModal()">
+      <button class="btn btn-primary btn-add-review" (click)="openReviewModal()" *ngIf="user?.role === 'TOURIST'">
         + Add Review
       </button>
     </div>
@@ -117,10 +129,36 @@
           <label>Visited Date</label>
           <input type="date" [(ngModel)]="newReview.visited_at" name="visited_at" class="form-control" required>
         </div>
+        
         <div class="form-group">
-          <label>Photo URL (Optional)</label>
-          <input type="text" [(ngModel)]="newReview.image_url" name="image_url" placeholder="http://..." class="form-control">
+          <label>Attach a Photo (Optional)</label>
+          
+          <!-- Hidden file input + Custom Button -->
+          <div class="file-upload-container">
+            <input 
+              type="file" 
+              id="fileInput" 
+              (change)="onFileSelected($event)" 
+              accept="image/*" 
+              class="file-input-hidden"
+            >
+            
+            <label for="fileInput" class="btn btn-secondary file-upload-btn">
+              <i class="bi bi-camera"></i> Choose Image
+            </label>
+            
+            <span class="file-name" *ngIf="selectedFileName">{{ selectedFileName }}</span>
+          </div>
+
+          <!-- PREVIEW SLIKE (Prikazi samo ako postoji slika) -->
+          <div class="image-preview-box" *ngIf="newReview.image_url">
+            <img [src]="newReview.image_url" alt="Selected photo" class="preview-img">
+            <button type="button" class="btn-remove-img" (click)="removeImage()" title="Remove image">
+              &times;
+            </button>
+          </div>
         </div>
+
         <div class="form-group">
           <label>Comment</label>
           <textarea [(ngModel)]="newReview.comment" name="comment" rows="4" class="form-control" placeholder="Share your experience..." required></textarea>

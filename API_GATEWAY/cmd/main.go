@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"PROJEKAT/API_GATEWAY/middleware"
 	pbAuth "PROJEKAT/COMMON/auth/proto"
@@ -13,38 +12,70 @@ import (
 	pbFollower "PROJEKAT/COMMON/follower/proto"
 	pbShoppingCart "PROJEKAT/COMMON/shopping-cart/proto"
 	pbStakeholders "PROJEKAT/COMMON/stakeholders/proto"
+	pbTour "PROJEKAT/COMMON/tour/proto"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp" // <--- NOVA BIBLIOTEKA
+
+	// --- DODATI IMPORTI ZA TRACING ---
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func main() {
-	// --- 0. TRACING SETUP (DODATO) ---
-	// Postavljamo adresu Jaegera (HTTP Collector port)
-	os.Setenv("JAEGER_ENDPOINT", "http://jaeger:14268/api/traces")
+// --- OVO JE JEDINA NOVA FUNKCIJA (BOILERPLATE) ---
+// Ona sluzi samo da se povezemo na Jaeger kontejner.
+func initTracer() (*sdktrace.TracerProvider, error) {
+	ctx := context.Background()
 
-	// Inicijalizujemo Tracer iz tvog middleware paketa
-	tp, err := middleware.InitTracer()
+	// Povezivanje na Jaeger
+	exporter, err := otlptracegrpc.New(ctx,
+		otlptracegrpc.WithEndpoint("jaeger:4317"),
+		otlptracegrpc.WithInsecure(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := resource.New(ctx,
+		resource.WithAttributes(
+			semconv.ServiceNameKey.String("api-gateway"), // Ime servisa
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(res),
+	)
+
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+
+	return tp, nil
+}
+
+func main() {
+	// --- 1. POKRETANJE TRACINGA ---
+	// Umesto middleware.InitTracer, koristimo ovu lokalnu funkciju
+	// da budemo sigurni da gadja pravi Jaeger port.
+	tp, err := initTracer()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Osiguravamo da se podaci pošalju pre gašenja servisa (dobra praksa)
 	defer func() {
 		if err := tp.Shutdown(context.Background()); err != nil {
 			log.Printf("Error shutting down tracer provider: %v", err)
 		}
 	}()
-
-	// Postavljamo globalni tracer provider
-	otel.SetTracerProvider(tp)
-	// Postavljamo propagator da bi se Trace ID prenosio kroz servise
-	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
-	// ---------------------------------
 
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -53,7 +84,13 @@ func main() {
 	// 1. GRPC GATEWAY MUX
 	gwmux := runtime.NewServeMux()
 
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
+	// --- OVO JE KLJUCNA IZMENA ---
+	// Dodajemo 'grpc.WithStatsHandler(otelgrpc.NewClientHandler())'
+	// Ovo omogucava da Gateway prosledi TraceID ka mikroservisima.
+	opts := []grpc.DialOption{
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()), // <--- DODATO
+	}
 
 	// Registracija AUTH servisa
 	err = pbAuth.RegisterAuthServiceHandlerFromEndpoint(ctx, gwmux, "auth:8082", opts)
@@ -79,6 +116,10 @@ func main() {
 		log.Fatalf("Failed to register Blog: %v", err)
 	}
 
+	err = pbTour.RegisterTourServiceHandlerFromEndpoint(ctx, gwmux, "tour:8083", opts)
+	if err != nil {
+		log.Fatalf("Failed to register Tour service: %v", err)
+	}
 	// Registracija Shopping Cart servisa
 	err = pbShoppingCart.RegisterShoppingCartServiceHandlerFromEndpoint(ctx, gwmux, "shopping-cart:9092", opts)
 	if err != nil {
@@ -97,13 +138,12 @@ func main() {
 	// 4. CORS MIDDLEWARE
 	finalHandler := middleware.CorsMiddleware(authHandler)
 
-	// 5. TRACING MIDDLEWARE (DODATO NA KRAJU)
-	// Obmotavamo ceo handler sa OpenTelemetry instrumentacijom.
-	// "api-gateway-request" je ime operacije koje ćeš videti u Jaegeru.
+	// 5. TRACING MIDDLEWARE
+	// Ovo hvata dolazni zahtev od Frontenda
 	tracingHandler := otelhttp.NewHandler(finalHandler, "api-gateway-request")
 
 	fmt.Println("API Gateway running on port 8080...")
-	// Ovde sada pokrećemo tracingHandler umesto finalHandler
+	// Pokrecemo tracingHandler umesto finalHandler
 	if err := http.ListenAndServe(":8080", tracingHandler); err != nil {
 		log.Fatal(err)
 	}

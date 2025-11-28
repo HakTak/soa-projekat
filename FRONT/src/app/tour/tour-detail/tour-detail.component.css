@@ -258,6 +258,84 @@
   background-color: #d1d5db;
   color: #111;
 }
+.file-input-hidden {
+  display: none; 
+}
+
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 5px;
+}
+
+.file-upload-btn {
+  background-color: #e9ecef;
+  color: #333;
+  border: 1px solid #ced4da;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.file-upload-btn:hover {
+  background-color: #dde0e3;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  color: #666;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* --- IMAGE PREVIEW STYLES --- */
+.image-preview-box {
+  position: relative;
+  margin-top: 15px;
+  width: 100%;
+  max-width: 300px; /* Ogranici sirinu */
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+}
+
+.preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+.btn-remove-img {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  color: #dc3545;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.btn-remove-img:hover {
+  background: #fff;
+  color: #bd2130;
+}
 
 /* --- REVIEWS GRID --- */
 .reviews-grid {

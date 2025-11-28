@@ -45,15 +45,26 @@ export class AuthService {
     return localStorage.getItem('jwt');
   }
 
-  // Ovu proveru ostavljamo ovde jer zavisi od dekodiranja tokena
-  isAdmin(): boolean {
+  // // Ovu proveru ostavljamo ovde jer zavisi od dekodiranja tokena
+  // isAdmin(): boolean {
+  //   const token = this.getToken();
+  //   if (!token) return false;
+  //   try {
+  //     const payload = JSON.parse(atob(token.split('.')[1]));
+  //     return payload.role === 'ADMIN';
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // }
+
+  hasRole(): string {
     const token = this.getToken();
-    if (!token) return false;
+    if (!token) return "UNAUTHORIZED";
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      return payload.role === 'ADMIN';
+      return payload.role;
     } catch (e) {
-      return false;
+      return "ROLE_ERROR"
     }
   }
 
@@ -76,6 +87,18 @@ export class AuthService {
       const payload = JSON.parse(atob(token.split('.')[1]));
       console.log("EVO GA ID MOJ: " + payload.id)
       return payload.id;
+    } catch (e) {
+      return "Error user token";
+    }
+  }
+
+  public getMyUsername(): string {
+    const token = this.getToken()
+    if (!token) return "Unknowen user token"; 
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      console.log("EVO GA USERNAME MOJ: " + payload.username)
+      return payload.username;
     } catch (e) {
       return "Error user token";
     }

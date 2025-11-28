@@ -1,0 +1,19 @@
+<div class="simulator-container">
+    <h2>Position Simulator</h2>
+    <p class="description">
+        Click on the map to simulate your current GPS location. This will be used for tour tracking.
+    </p>
+
+    <!-- Poruka o statusu -->
+    <div class="status-bar" [ngClass]="messageType" *ngIf="message">
+        {{ message }}
+    </div>
+
+    <!-- Mapa -->
+    <div id="mapSimulator" class="map-frame"></div>
+
+    <!-- Akcije -->
+    <div class="actions">
+        <button class="btn-confirm" (click)="confirmLocation()">Confirm Location</button>
+    </div>
+</div>

@@ -9,7 +9,15 @@ require (
 	google.golang.org/grpc v1.77.0
 )
 
-require github.com/felixge/httpsnoop v1.0.4 // indirect
+require (
+	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
+	github.com/felixge/httpsnoop v1.0.4 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.63.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.38.0 // indirect
+	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.38.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.7.1 // indirect
+	gorm.io/plugin/opentelemetry v0.1.16 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.14.0 // indirect

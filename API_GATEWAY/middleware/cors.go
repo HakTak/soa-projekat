@@ -7,7 +7,7 @@ func CorsMiddleware(next http.Handler) http.Handler {
 		// Dozvoljavamo pristup sa Angular porta
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:4200")
 		// Dozvoljavamo metode
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
 		// Dozvoljavamo headere (ukljucujuci Authorization)
 		w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type, Grpc-Metadata-User-Id, Grpc-Metadata-User-Role")
 		w.Header().Set("Access-Control-Allow-Credentials", "true")

@@ -153,7 +153,6 @@ services:
       dockerfile: BLOG/Dockerfile
     container_name: blog
     ports:
-      - "5251:5251"
       - "9091:9091"
     volumes:
       - ./BLOG:/src
@@ -192,7 +191,6 @@ services:
     container_name: tour
     ports:
       - "8083:8083"
-      - "50052:50052"
     environment:
       DB_HOST: tour-db
       DB_USER: tour

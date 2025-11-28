@@ -1,0 +1,187 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* disables outer page scroll */
+}
+
+/* Full height vertical scroll with snap */
+.feed-container {
+  height: 90vh;
+  width: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+}
+
+/* Each blog + comments wrapper takes entire viewport height */
+.blog-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;            /* fills viewport */
+  scroll-snap-align: start;  /* snap perfectly */
+  box-sizing: border-box;
+}
+
+/* Blog card */
+.blog-card {
+  width: 600px;
+  height: 700px;             /* leave some vertical space */
+  background: #fff;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.image-collage {
+  display: flex;
+  flex-wrap: wrap;          /* wrap images to new line if needed */
+  gap: 5px;
+  margin-bottom: 15px;
+  width: 100%;              /* fill blog card width */
+  height: 200px;            /* desired collage height */
+  overflow: hidden;         /* crop if images overflow */
+}
+
+.image-collage img {
+  flex: 1 0 auto;           /* images grow to fill space */
+  height: 100%;             /* match collage height */
+  object-fit: cover;        /* cover entire space */
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+
+/* Footer: author bottom-left, actions bottom-right */
+.blog-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: auto;
+  font-weight: bold;
+}
+
+.blog-footer .author {
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.blog-footer .actions span {
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #007bff;
+}
+
+/* Comments panel */
+.comments-panel {
+  width: 500px;
+  height: 80%;
+  margin-left: 20px;
+  background: #f8f8f8;
+  border-radius: 15px;
+  padding: 15px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.comments-list {
+  flex: 1;                /* take all remaining space */
+  overflow-y: auto;       /* scrollable if many comments */
+  margin-bottom: 10px;
+  padding-right: 5px;
+}
+
+/* Add comment fixed at bottom */
+.add-comment {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;         /* never shrink */
+}
+
+.add-comment input {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.add-comment button {
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+
+.comment {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 3px;
+}
+
+.comment-time {
+  font-weight: normal;
+  color: #aaa;
+}
+
+.comment-actions {
+  margin-top: 5px;
+  font-size: 12px;
+  display: flex;
+  gap: 5px;
+}
+
+.comment-actions button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  padding: 0;
+}
+
+.edit-comment {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.edit-comment input {
+  flex: 1;
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.edit-comment button {
+  padding: 5px 8px;
+  border-radius: 6px;
+  border: none;
+  background: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.comment-content {
+  white-space: normal;   /* allow wrapping */
+  word-break: break-word; /* break long words if needed */
+  overflow-wrap: anywhere; /* support wrapping in modern browsers */
+  font-size: 14px;
+  line-height: 1.4;
+}

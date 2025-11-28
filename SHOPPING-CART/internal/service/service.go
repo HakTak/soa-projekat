@@ -7,14 +7,13 @@ import (
 	"errors"
 	"fmt"
 
-	// Import the generated protobuf code for the Tour Service
-	// Make sure this path matches your go.mod module name
-	tourPb "SHOPPING-CART/common/genproto"
+	// ✅ USE THE COMMON IMPORT (Matches your proto option go_package)
+	tourPb "PROJEKAT/COMMON/tour/proto"
 )
 
 type ShoppingCartService struct {
 	repo       *repository.CartRepository
-	tourClient tourPb.TourServiceClient // gRPC Client interface
+	tourClient tourPb.TourServiceClient
 }
 
 func NewShoppingCartService(repo *repository.CartRepository, tourClient tourPb.TourServiceClient) *ShoppingCartService {
@@ -32,14 +31,20 @@ func (s *ShoppingCartService) GetCart(userID string) (*model.ShoppingCart, error
 // AddItem adds a tour to the cart
 func (s *ShoppingCartService) AddItem(userID, tourID string) (*model.ShoppingCart, error) {
 	// 1. CALL TOUR SERVICE (gRPC)
-	// We need to fetch details (Name, Price) and check status
-	tourResp, err := s.tourClient.GetTour(context.Background(), &tourPb.GetTourRequest{TourId: tourID})
+	// Note: The proto field is now 'id', not 'tour_id'
+	tourResp, err := s.tourClient.GetTour(context.Background(), &tourPb.GetTourRequest{Id: tourID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to communicate with Tour service: %v", err)
 	}
 
-	// 2. VALIDATION: "Arhivirane ture se ne mogu kupiti"
-	if tourResp.IsArchived {
+	// Safety check if Tour is nil inside the response
+	if tourResp.Tour == nil {
+		return nil, errors.New("tour not found")
+	}
+
+	// 2. VALIDATION: Check Enum Status
+	// "Arhivirane ture se ne mogu kupiti" (Also probably not DRAFTs)
+	if tourResp.Tour.Status == tourPb.TourStatus_ARCHIVED || tourResp.Tour.Status == tourPb.TourStatus_DRAFT {
 		return nil, errors.New("this tour is archived or draft and cannot be purchased")
 	}
 
@@ -49,7 +54,7 @@ func (s *ShoppingCartService) AddItem(userID, tourID string) (*model.ShoppingCar
 		return nil, err
 	}
 
-	// 4. Check if item already exists (Prevent duplicates)
+	// 4. Check if item already exists
 	for _, item := range cart.Items {
 		if item.TourID == tourID {
 			return nil, errors.New("tour is already in your cart")
@@ -57,20 +62,21 @@ func (s *ShoppingCartService) AddItem(userID, tourID string) (*model.ShoppingCar
 	}
 
 	// 5. Create new Item
+	// Note: We access fields via tourResp.Tour.Title / Price
 	newItem := model.OrderItem{
 		CartID:   userID,
-		TourID:   tourResp.Id,
-		TourName: tourResp.Name,
-		Price:    tourResp.Price,
+		TourID:   tourResp.Tour.Id,
+		TourName: tourResp.Tour.Title, // Proto field is 'title', mapped to 'TourName'
+		Price:    tourResp.Tour.Price,
 	}
 
 	// Add to list
 	cart.Items = append(cart.Items, newItem)
 
-	// 6. "Korpa računa ukupnu cenu..."
+	// 6. Recalculate
 	cart.CalculateTotal()
 
-	// 7. Save to DB
+	// 7. Save
 	if err := s.repo.UpdateCart(cart); err != nil {
 		return nil, err
 	}
@@ -85,7 +91,6 @@ func (s *ShoppingCartService) RemoveItem(userID, tourID string) (*model.Shopping
 		return nil, err
 	}
 
-	// Filter items
 	var keptItems []model.OrderItem
 	var foundItem *model.OrderItem
 
@@ -101,16 +106,13 @@ func (s *ShoppingCartService) RemoveItem(userID, tourID string) (*model.Shopping
 		return nil, errors.New("item not found in cart")
 	}
 
-	// 1. Delete the item from DB specifically
 	if err := s.repo.RemoveItemByID(foundItem.ID); err != nil {
 		return nil, err
 	}
 
-	// 2. Update struct locally to recalculate price
 	cart.Items = keptItems
 	cart.CalculateTotal()
 
-	// 3. Update Cart Header (Total Price) in DB
 	if err := s.repo.UpdateCart(cart); err != nil {
 		return nil, err
 	}
@@ -120,7 +122,6 @@ func (s *ShoppingCartService) RemoveItem(userID, tourID string) (*model.Shopping
 
 // Checkout finalizes the purchase
 func (s *ShoppingCartService) Checkout(userID string) ([]model.PurchaseToken, error) {
-	// 1. Get Cart
 	cart, err := s.repo.GetOrCreateCart(userID)
 	if err != nil {
 		return nil, err
@@ -130,24 +131,23 @@ func (s *ShoppingCartService) Checkout(userID string) ([]model.PurchaseToken, er
 		return nil, errors.New("cannot checkout an empty cart")
 	}
 
-	// 2. Generate Tokens
-	// "...za svaku stavku iz korpe dobija token"
 	var tokens []model.PurchaseToken
 	for _, item := range cart.Items {
-		// UUIDs are usually generated in the Model's BeforeCreate hook,
-		// but we create the struct here.
 		token := model.PurchaseToken{
 			UserID: userID,
 			TourID: item.TourID,
-			// Token ID and Secret are handled by GORM Hooks (model.go)
 		}
 		tokens = append(tokens, token)
 	}
 
-	// 3. Execute Transaction (Save Tokens + Clear Cart)
 	if err := s.repo.ProcessCheckout(tokens, userID); err != nil {
 		return nil, fmt.Errorf("checkout failed: %v", err)
 	}
 
 	return tokens, nil
+}
+
+// Add this method to ShoppingCartService
+func (s *ShoppingCartService) GetPurchasedTours(userID string) ([]model.PurchaseToken, error) {
+	return s.repo.GetPurchasedTokens(userID)
 }

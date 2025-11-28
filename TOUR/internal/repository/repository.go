@@ -14,8 +14,11 @@ func NewTourRepository(db *gorm.DB) *TourRepository {
 	return &TourRepository{db}
 }
 
-func (r *TourRepository) CreateTour(t *model.Tour) error {
-	return r.db.Create(t).Error
+func (r *TourRepository) CreateTour(t *model.Tour) (*model.Tour, error) {
+	if err := r.db.Create(t).Error; err != nil {
+		return nil, err
+	}
+	return t, nil
 }
 
 func (r *TourRepository) GetTour(id string) (*model.Tour, error) {
@@ -34,12 +37,14 @@ func (r *TourRepository) DeleteTour(id string) error {
 	return r.db.Delete(&model.Tour{}, "id = ?", id).Error
 }
 
-func (r *TourRepository) UpdateTour(t *model.Tour) error {
-	return r.db.Session(&gorm.Session{FullSaveAssociations: true}).
-		Updates(t).Error
+func (r *TourRepository) UpdateTour(t *model.Tour) (*model.Tour, error) {
+	if err := r.db.Session(&gorm.Session{FullSaveAssociations: true}).Updates(t).Error; err != nil {
+		return nil, err
+	}
+	return t, nil
 }
 
-func (r *TourRepository) GetToursByUser(userId uint) ([]model.Tour, error) {
+func (r *TourRepository) GetToursByUser(userId string) ([]model.Tour, error) {
 	var tours []model.Tour
 	err := r.db.Preload("Keypoints").Preload("RouteOptions").Where("user_id = ?", userId).Find(&tours).Error
 	return tours, err
