@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from "@angular/common";
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { AuthService } from '../../infrastructure/auth.service';
 import * as L from 'leaflet';
 
 // --- MODELS ---
@@ -121,7 +122,7 @@ export class TourCreateComponent implements AfterViewInit {
   public showSuccessModal = false;
   public showErrorModal = false;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, private authService: AuthService) {}
 
   ngAfterViewInit(): void {
     this.initMap();
@@ -341,6 +342,8 @@ export class TourCreateComponent implements AfterViewInit {
   public saveTour(): void {
     this.currentTour.keypoints = this.keypoints;
     this.currentTour.status = "Published"; 
+    
+    const headers = this.authService.getAuthHeaders();
 
     // Konverzija Tagova: Niz stringova -> Jedan string odvojen zarezima
     this.currentTour.tags = this.selectedTags.join(', ');
@@ -364,7 +367,7 @@ export class TourCreateComponent implements AfterViewInit {
         return;
     }
 
-    this.http.post('http://localhost:8080/tour', this.currentTour).subscribe({
+    this.http.post('http://localhost:8080/tour', this.currentTour, { headers : headers }).subscribe({
       next: (response) => {
         this.showSuccessModal = true;
       },
